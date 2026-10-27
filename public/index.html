@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>citycenter: Town of Sample Creek lot split helper</title>
+<link rel="stylesheet" href="/public/app.css">
+<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>citycenter <span>· Town of Sample Creek · lot split helper</span></h1>
+    <nav><a href="/">Resident</a><a href="/staff">Staff portal</a><a href="https://github.com/johnroy007/citycenter" rel="noopener">Source</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card" id="intro">
+    <h2>Tell us what you want to do with your land</h2>
+    <p class="lead">Describe it in your own words and add a photo of your sketch. citycenter reads both with Meta's Muse Spark, drafts your lot-split application, and lists anything still missing before you file. Town staff and the Planning Commission make the decision; this tool only helps you prepare a complete packet.</p>
+    <div class="notice small">Everything here is a demo. The Town of Sample Creek, its code, parcels and people are invented. Do not enter real personal information.</div>
+    <form id="form">
+      <label for="text">Your request</label>
+      <textarea id="text" name="text" maxlength="6000" placeholder="Example: I am Dana Whitlock, 14 Juniper Lane, phone 555-0142. I own parcel SC-204-118, about half an acre, zoned R-1. I want to split it into two lots of about 12,000 and 9,700 square feet, each with frontage on Juniper Lane. Both would use town water and sewer. There is a house on the north half..."></textarea>
+      <label for="image">Photo of your sketch (optional, JPEG or PNG)</label>
+      <input type="file" id="image" name="image" accept="image/*">
+      <div class="small">The photo is shrunk in your browser before upload. Show the parcel outline with dimensions, the proposed new line, any buildings, the road, and a north arrow.</div>
+      <div class="row" style="margin-top:14px">
+        <button type="submit" id="submit">Prepare my application</button>
+        <span class="small" id="formMsg"></span>
+      </div>
+    </form>
+    <details style="margin-top:14px">
+      <summary>Already have a reference code?</summary>
+      <form id="lookup" class="row" style="margin-top:10px">
+        <input type="text" id="lookupRef" placeholder="SC-2026-0104" style="max-width:180px" aria-label="Reference code">
+        <input type="text" id="lookupKey" placeholder="access key" style="max-width:160px" aria-label="Access key">
+        <button type="submit" class="secondary">Open</button>
+      </form>
+    </details>
+  </section>
+
+  <section class="card hidden" id="progress">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">Reference <span class="refbox" id="refCode"></span></h2>
+      <span id="statusChip" class="chip"></span>
+    </div>
+    <p class="small" id="saveLink"></p>
+    <div class="steps" id="steps"></div>
+    <div id="runError"></div>
+  </section>
+
+  <div id="results"></div>
+</main>
+
+<footer class="wrap no-print">Built during the Meta Global AI Developer Hackathon (Oct 26 to Nov 4, 2026). Runs on Meta's Muse Spark through the Meta Model API. Fictional town; invented data.</footer>
+<script src="/public/resident.js"></script>
+</body>
+</html>

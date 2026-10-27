@@ -1,0 +1,31 @@
+# Render blueprint for citycenter. In Render: New -> Blueprint -> pick this repo.
+# Secrets (MODEL_API_KEY, STAFF_PASSCODE) are typed into Render's dashboard, never stored here.
+services:
+  - type: web
+    name: citycenter
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: "echo no build step"
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: citycenter-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: DATA_DIR
+        value: /var/data
+      - key: META_MODEL
+        value: muse-spark-1.3
+      - key: DAILY_CALL_CAP
+        value: "400"
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: MODEL_API_KEY
+        sync: false
+      - key: STAFF_PASSCODE
+        sync: false

@@ -1,0 +1,70 @@
+{
+  "town": "Town of Sample Creek",
+  "title": "Sample Creek Land Use Code, Chapter 12: Land Division (Lot Splits)",
+  "notice": "The Town of Sample Creek is fictional. This code was invented for the citycenter demo and does not describe any real place or law.",
+  "districts": {
+    "R-1": { "name": "Residential, large lot", "min_lot_sqft": 10000, "min_frontage_ft": 60 },
+    "R-2": { "name": "Residential, standard lot", "min_lot_sqft": 7500, "min_frontage_ft": 50 },
+    "C-1": { "name": "Neighborhood commercial", "min_lot_sqft": 6000, "min_frontage_ft": 50 }
+  },
+  "sections": [
+    {
+      "id": "12.01",
+      "title": "Purpose and applicability",
+      "text": "This chapter governs the division of one existing parcel into two or three lots (a 'lot split'). Divisions into four or more lots are subdivisions and follow Chapter 13 instead. A lot split takes effect only after the Planning Commission approves it and the approved map is recorded with the county."
+    },
+    {
+      "id": "12.02",
+      "title": "Application type",
+      "text": "A request to divide one parcel into two or three lots is processed as a Lot Split application. Requests that change a zoning district, adjust a line between two existing parcels without creating a new lot, or create four or more lots are different application types and are not covered by this chapter."
+    },
+    {
+      "id": "12.03",
+      "title": "Minimum lot size",
+      "text": "Every lot created by a lot split must meet the minimum lot size for its zoning district: R-1 10,000 square feet; R-2 7,500 square feet; C-1 6,000 square feet. Area is measured to the lot lines and excludes any portion inside a public road right-of-way."
+    },
+    {
+      "id": "12.04",
+      "title": "Minimum frontage",
+      "text": "Every lot created by a lot split must have continuous frontage on a public road of at least 60 feet in R-1 and 50 feet in R-2 and C-1, measured along the front lot line."
+    },
+    {
+      "id": "12.05",
+      "title": "Setbacks for existing buildings",
+      "text": "Where a building already stands on the parcel, every new lot line must be placed so the building keeps the required setbacks: 25 feet from the front lot line, 8 feet from each side lot line, and 20 feet from the rear lot line. The application must state the distance from each existing building to each proposed lot line."
+    },
+    {
+      "id": "12.06",
+      "title": "Road access",
+      "text": "Each new lot must either front directly on a dedicated public road or be served by a recorded access easement at least 20 feet wide that connects it to a public road. The application must state how each lot will reach a public road."
+    },
+    {
+      "id": "12.07",
+      "title": "Water and sewer",
+      "text": "The application must state how each new lot will be served with water and with sewer. Lots inside the town water and sewer service area connect to town service. Lots outside it must describe the intended well and septic arrangement, which the county health office reviews separately."
+    },
+    {
+      "id": "12.08",
+      "title": "Sketch and legal description",
+      "text": "Every application must include (a) a sketch or site plan showing the existing parcel boundary with dimensions, the proposed new lot line with dimensions, the location of every existing building, the adjoining road, and a north arrow; and (b) the legal description of the existing parcel as it appears on the recorded deed."
+    },
+    {
+      "id": "12.09",
+      "title": "Owner authorization and fee",
+      "text": "The applicant must be the owner of record or must attach the owner's written authorization. A lot split review fee of $250 is due when the application is filed."
+    },
+    {
+      "id": "12.10",
+      "title": "Review process",
+      "text": "Town staff check the application for completeness within 10 business days of filing and either accept it as complete or send the applicant a written list of what is missing. Complete applications are scheduled for the next available Planning Commission meeting, which meets on the second Tuesday of each month. The Planning Commission decides whether the lot split is approved, approved with conditions, or denied. Staff do not decide lot splits."
+    },
+    {
+      "id": "12.11",
+      "title": "Drainage and flood note",
+      "text": "If any part of the parcel lies in a mapped flood hazard area, the application must say so. A lot split may not direct additional storm water onto a neighboring property."
+    }
+  ],
+  "contents_section": "12.08",
+  "fee_usd": 250,
+  "max_lots": 3
+}

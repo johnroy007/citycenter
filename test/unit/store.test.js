@@ -1,0 +1,36 @@
+"use strict";
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const os = require("os");
+const fs = require("fs");
+const path = require("path");
+const { openStore } = require("../../lib/store");
+
+test("store round-trips an application, steps, actions, pre-review and usage", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-store-"));
+  const s = openStore(dir);
+  const { ref, viewKey } = s.createApplication({ requestText: "hello world", sketch: { mime: "image/png", data: Buffer.from([0x89, 0x50, 0x4e, 0x47]) } });
+  assert.match(ref, /^SC-\d{4}-\d{4}$/);
+  assert.ok(viewKey.length >= 8);
+  s.setStep(ref, "extract", { status: "running" });
+  s.setStep(ref, "extract", { status: "done", output: { items: [] } });
+  s.updateApplication(ref, { status: "draft_ready", facts: { items: [] } });
+  s.addStaffAction(ref, { action: "request_info", note: "n", payload: { a: 1 } });
+  s.savePrereview(ref, { sections: [] }, "muse-spark-1.3");
+  s.logUsage({ tag: "t", model: "m", prompt_tokens: 10, completion_tokens: 5, ms: 1 });
+  const app = s.getApplication(ref);
+  assert.equal(app.status, "draft_ready");
+  assert.equal(app.has_sketch, true);
+  assert.equal(app.view_key, viewKey);
+  assert.equal(app.steps[0].status, "done");
+  assert.deepEqual(app.steps[0].output, { items: [] });
+  assert.equal(app.staff_actions[0].payload.a, 1);
+  assert.equal(app.prereview.model, "muse-spark-1.3");
+  assert.equal(s.callsToday().n, 1);
+  assert.equal(s.getSketch(ref).data.length, 4);
+  assert.equal(s.listApplications().length, 1);
+  assert.throws(() => s.updateApplication(ref, { status: "bogus" }));
+  const second = s.createApplication({ requestText: "second", sketch: null });
+  assert.notEqual(second.ref, ref);
+  s.close();
+});

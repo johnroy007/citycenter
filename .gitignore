@@ -147,3 +147,10 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Claude Code local notes and settings (reviewer-only setup; never committed)
+CLAUDE.local.md
+.claude/
+
+# citycenter runtime data (SQLite database, local only)
+data/runtime/

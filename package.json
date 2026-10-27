@@ -1,0 +1,17 @@
+{
+  "name": "citycenter",
+  "version": "0.2.0",
+  "private": true,
+  "description": "An agent for small towns: turns a resident's plain-English request and sketch into a complete land use application, then prepares a pre-review for town staff. Runs on Meta's Muse models.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test \"test/unit/*.test.js\"",
+    "test:live": "node --test --test-timeout=600000 \"test/live/*.test.js\"",
+    "seed": "node scripts/seed.js",
+    "make-sketches": "node scripts/make-test-sketches.js"
+  }
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>citycenter staff portal</title>
+<link rel="stylesheet" href="/public/app.css">
+<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>citycenter <span>· staff portal · Town of Sample Creek</span></h1>
+    <nav><a href="/">Resident</a><a href="/staff">Staff portal</a><button type="button" class="quiet hidden" id="logout" style="margin-left:16px;padding:4px 10px">Sign out</button></nav>
+  </div>
+</header>
+<main class="wrap">
+  <section class="card" id="login">
+    <h2>Staff sign-in</h2>
+    <p class="lead">Enter the staff passcode. The agent prepares a completeness pre-review with code sections cited; you make every decision.</p>
+    <form id="loginForm" class="row">
+      <input type="password" id="passcode" placeholder="Passcode" style="max-width:260px" autocomplete="current-password">
+      <button type="submit">Sign in</button>
+      <span class="small" id="loginMsg"></span>
+    </form>
+  </section>
+
+  <div id="portal" class="hidden">
+    <div class="split two">
+      <section class="card" id="queueCard">
+        <div class="row" style="justify-content:space-between"><h2 style="margin:0">Queue</h2><button type="button" class="quiet" id="refresh">Refresh</button></div>
+        <p class="small" id="usage"></p>
+        <table class="queue"><thead><tr><th>Ref</th><th>Status</th></tr></thead><tbody id="queue"></tbody></table>
+      </section>
+      <section id="detail">
+        <div class="card"><p class="lead">Pick an application from the queue.</p></div>
+      </section>
+    </div>
+  </div>
+</main>
+<footer class="wrap">The pre-review describes documents against the Sample Creek code. It never recommends a decision. Staff and the Planning Commission decide.</footer>
+<script src="/public/staff.js"></script>
+</body>
+</html>

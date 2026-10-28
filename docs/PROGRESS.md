@@ -46,6 +46,8 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - **Resident accounts (2026-10-28 afternoon, John's request "log back in and keep working"):** email + password only, built with Node built-ins (scrypt hashes, signed HttpOnly cookie for 30 days). No Google/Apple sign-in and no password reset by email in this build; `LOGIN-TODO.md` lists them with reasons. Visits started while signed in, or opened by reference + key while signed in, attach to the account and appear under "My visits" (header button and welcome screen). The reference + access key keep working without an account.
 - **Working after submission:** residents can keep talking and editing after they submit. The staff-facing status stays as staff last set it (submitted, needs info, forwarded, answered) and the visit is flagged "Updated; not resubmitted yet" until they press **Resubmit and update application**, which bumps a resubmit counter, logs a staff action and posts a desk message. Staff queue and workspace show "resident is updating" and "resubmitted Nx".
 
+- **Stub departments (2026-10-28, John's request):** Utility Department (Reyes), Public Works (Sol), Police Department (Harper), Fire Department (Mateo), Parks and Recreation (Rosa), plus the existing Building (Bob), Code Enforcement (Dakota) and City Recorder (Avery). Each new character was generated with Muse Image (`scripts/make-characters.js --only sol,harper,mateo,rosa`; looks are in that script). When the front desk routes to one of them, the character replies: "Hi, I'm <name> at <department>. I can't help you yet because this area of the program is not built out yet. For now, please reach <contact>." The wording lives in `data/towns/hildale.json` under `wording.stub`. Five one-line demo examples (water leak, pothole, bike theft, brush burning, park pavilion) show the routing.
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -56,6 +58,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (late afternoon, later) — Claude Code on John's laptop — Marlowe greets; five stub departments with their own characters
+- Greeting: Marlowe's opening line now appears in the conversation panel at the start of every visit (it had lived in the removed bubble).
+- Departments: added public_works, police, fire, parks; utilities renamed Utility Department. Route schema enum now comes from the town config. Stub desks answer in their own voice with the "not built out yet" line and the contact. Four characters generated with Muse Image (12 images, about $0.12). Five routing examples added to `data/demo.json`; all five verified locally (correct desk each time). 30 of 30 tests pass.
 
 ### 2026-10-28 (late afternoon) — Claude Code on John's laptop — demo examples finish properly
 - John: the daycare example stopped with Juniper still asking questions. Added a third scripted line to the daycare and casita examples that answers the usual follow-ups (state certificate type, caregiver, rooms, parking; owner-occupancy, setbacks that meet R1-10, kitchen, no rental, parking). Verified locally: daycare ends in the administrative tier (home based business), casita in the administrative tier (ADU + building permit). An earlier draft of Ryan's line with 10 ft rear / 8 ft side setbacks produced a variance, which is the code working as intended, so the numbers were corrected to 25 / 12. The demo bar's finished message now says the resident can answer any remaining questions themselves.

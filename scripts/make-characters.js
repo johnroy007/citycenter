@@ -16,9 +16,13 @@ const CHARACTERS = {
   marlowe: { role: "front desk greeter", look: "a cheerful middle-aged person with short silver hair, round glasses, a teal cardigan over a collared shirt, warm smile" },
   juniper: { role: "land use planner", look: "a calm thirty-something person with dark curly hair tied back, a mustard yellow blouse, a rolled zoning map tucked under one arm" },
   bob: { role: "building official", look: "a sturdy person in a white hard hat and an orange safety vest over a plaid shirt, clipboard in hand, friendly expression" },
-  reyes: { role: "public works and utilities desk", look: "a practical person with a blue work shirt, short hair, a small wrench embroidered patch, kind expression" },
+  reyes: { role: "utility department desk", look: "a practical person with a blue work shirt, short hair, a small wrench embroidered patch, kind expression" },
   dakota: { role: "code enforcement officer", look: "a person in a navy polo shirt with a small city badge patch, a lanyard, neat short hair, patient expression" },
   avery: { role: "city recorder", look: "an older person with a grey bob haircut, a cardigan, reading glasses on a chain, holding a folder, gentle smile" },
+  sol: { role: "public works crew lead", look: "a weathered, friendly person with a grey beard, a yellow high-visibility jacket over a work shirt, a city cap, holding a rolled street map" },
+  harper: { role: "police officer", look: "a calm person in a plain dark blue police uniform shirt with a small star badge and no text, short dark hair, reassuring expression" },
+  mateo: { role: "fire chief", look: "a broad-shouldered person in a navy fire department polo with a small red shield patch, a white fire chief helmet held under one arm, warm smile" },
+  rosa: { role: "parks and recreation coordinator", look: "an energetic person with a long dark braid, a green polo shirt with a small leaf patch, a whistle on a lanyard, sunny smile" },
 };
 const POSES = {
   neutral: "standing relaxed with a small friendly smile, hands at sides or lightly clasped",

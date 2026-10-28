@@ -63,6 +63,46 @@
       "turns": [
         "My neighbor's three dogs bark all day and all night. Who do I talk to?"
       ]
+    },
+    {
+      "id": "water-leak",
+      "title": "Sam reports water bubbling up by the meter (Utility Department)",
+      "persona": "Sam",
+      "turns": [
+        "Water is bubbling up out of the ground next to my water meter at 1105 N Canyon St. Who do I call?"
+      ]
+    },
+    {
+      "id": "pothole",
+      "title": "Grace reports a pothole on her street (Public Works)",
+      "persona": "Grace",
+      "turns": [
+        "There is a huge pothole in the middle of Utah Avenue near Canyon Street and it is getting worse. Can the city fix it?"
+      ]
+    },
+    {
+      "id": "bike-theft",
+      "title": "Theo's bike was stolen off his porch (Police Department)",
+      "persona": "Theo",
+      "turns": [
+        "Someone took my bike off my front porch last night. Who do I report this to? It is not an emergency."
+      ]
+    },
+    {
+      "id": "burn-permit",
+      "title": "Nadia asks about burning a brush pile (Fire Department)",
+      "persona": "Nadia",
+      "turns": [
+        "I have a big pile of tree branches in my back yard. Can I burn it, and do I need some kind of permit?"
+      ]
+    },
+    {
+      "id": "pavilion",
+      "title": "Lena wants to reserve the park pavilion (Parks and Recreation)",
+      "persona": "Lena",
+      "turns": [
+        "I want to reserve the pavilion at the city park for my daughter's birthday party on a Saturday in November. How do I do that?"
+      ]
     }
   ]
 }

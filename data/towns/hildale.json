@@ -246,16 +246,58 @@
       "role": "building official",
       "live": false,
       "handles": "building permits, inspections, construction plans, anything on private property that involves structures, plumbing or electrical",
-      "contact": "Hildale City Building Department (call the city office)"
+      "contact": "Hildale City Building Department (call the city office)",
+      "stub": true
     },
     {
       "id": "utilities",
-      "name": "Public Works & Utilities",
+      "name": "Utility Department",
       "character": "Reyes",
-      "role": "utilities desk",
+      "role": "utility desk",
       "live": false,
-      "handles": "water, sewer, gas and streets in the public right of way, utility connections and billing",
+      "handles": "water, sewer and gas service connections, meters, outages and leaks at the meter, utility billing",
+      "contact": "Hildale City Utility Department (call the city office)",
+      "stub": true
+    },
+    {
+      "id": "public_works",
+      "name": "Public Works",
+      "character": "Sol",
+      "role": "public works crew lead",
+      "live": false,
+      "stub": true,
+      "handles": "streets, potholes, sidewalks, storm drains, street lights, snow and debris in the public right of way",
       "contact": "Hildale City Public Works (call the city office)"
+    },
+    {
+      "id": "police",
+      "name": "Police Department",
+      "character": "Harper",
+      "role": "police officer",
+      "live": false,
+      "stub": true,
+      "handles": "crimes, theft, traffic, suspicious activity, non-emergency police reports (emergencies: call 911)",
+      "contact": "Hildale City Police non-emergency line (call the city office); emergencies 911"
+    },
+    {
+      "id": "fire",
+      "name": "Fire Department",
+      "character": "Mateo",
+      "role": "fire chief",
+      "live": false,
+      "stub": true,
+      "handles": "fire safety inspections, burn permits, fireworks, fire code questions (emergencies: call 911)",
+      "contact": "Hildale Fire Department (call the city office); emergencies 911"
+    },
+    {
+      "id": "parks",
+      "name": "Parks and Recreation",
+      "character": "Rosa",
+      "role": "parks and recreation coordinator",
+      "live": false,
+      "stub": true,
+      "handles": "parks, pavilion and field reservations, recreation programs, trails, community events",
+      "contact": "Hildale City Parks and Recreation (call the city office)"
     },
     {
       "id": "enforcement",
@@ -264,7 +306,8 @@
       "role": "code enforcement officer",
       "live": false,
       "handles": "complaints about neighbors: animals, noise, junk, weeds, work without permits",
-      "contact": "Hildale City Code Enforcement (call the city office)"
+      "contact": "Hildale City Code Enforcement (call the city office)",
+      "stub": true
     },
     {
       "id": "recorder",
@@ -273,7 +316,8 @@
       "role": "city recorder",
       "live": false,
       "handles": "public records, meeting agendas, fee schedule, business licenses",
-      "contact": "Hildale City Recorder, 320 E Newel Ave"
+      "contact": "Hildale City Recorder, 320 E Newel Ave",
+      "stub": true
     }
   ],
   "processTiers": [
@@ -447,7 +491,8 @@
   "wording": {
     "fee": "Fees are set by the city's schedule of fees (section 152-7-3); the City Recorder has the current amounts.",
     "timing": "Timing depends on when the application is complete and, for hearings, on the notice period in section 152-7-4. Staff can give current meeting dates.",
-    "staffDecide": "This desk prepares paperwork and cites the code. City staff, the Planning Commission, the Hearing Officer and the City Council make every decision."
+    "staffDecide": "This desk prepares paperwork and cites the code. City staff, the Planning Commission, the Hearing Officer and the City Council make every decision.",
+    "stub": "I can't help you yet because this area of the program is not built out yet."
   },
   "notes": {
     "fictionalOwners": "Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.",

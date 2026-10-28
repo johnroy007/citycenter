@@ -2,58 +2,40 @@
   "generated_with": "muse-image-1.0",
   "style": "Friendly flat vector cartoon illustration of a city hall employee, waist-up portrait, centered, facing the viewer, clean bold outlines, soft warm colors, simple shapes, plain solid light cream background (#FBF7EF) with nothing else, no text, no logos, no name tag text, no desk, consistent style for a set of characters.",
   "characters": {
-    "marlowe": {
-      "role": "front desk greeter",
-      "department": "front_desk",
+    "sol": {
+      "role": "public works crew lead",
+      "department": "public_works",
       "poses": {
-        "neutral": "/public/characters/marlowe-neutral.webp",
-        "talking": "/public/characters/marlowe-talking.webp",
-        "thinking": "/public/characters/marlowe-thinking.webp"
+        "neutral": "/public/characters/sol-neutral.webp",
+        "talking": "/public/characters/sol-talking.webp",
+        "thinking": "/public/characters/sol-thinking.webp"
       }
     },
-    "juniper": {
-      "role": "land use planner",
-      "department": "planning",
+    "harper": {
+      "role": "police officer",
+      "department": "police",
       "poses": {
-        "neutral": "/public/characters/juniper-neutral.webp",
-        "talking": "/public/characters/juniper-talking.webp",
-        "thinking": "/public/characters/juniper-thinking.webp"
+        "neutral": "/public/characters/harper-neutral.webp",
+        "talking": "/public/characters/harper-talking.webp",
+        "thinking": "/public/characters/harper-thinking.webp"
       }
     },
-    "bob": {
-      "role": "building official",
-      "department": "building",
+    "mateo": {
+      "role": "fire chief",
+      "department": "fire",
       "poses": {
-        "neutral": "/public/characters/bob-neutral.webp",
-        "talking": "/public/characters/bob-talking.webp",
-        "thinking": "/public/characters/bob-thinking.webp"
+        "neutral": "/public/characters/mateo-neutral.webp",
+        "talking": "/public/characters/mateo-talking.webp",
+        "thinking": "/public/characters/mateo-thinking.webp"
       }
     },
-    "reyes": {
-      "role": "public works and utilities desk",
-      "department": "utilities",
+    "rosa": {
+      "role": "parks and recreation coordinator",
+      "department": "parks",
       "poses": {
-        "neutral": "/public/characters/reyes-neutral.webp",
-        "talking": "/public/characters/reyes-talking.webp",
-        "thinking": "/public/characters/reyes-thinking.webp"
-      }
-    },
-    "dakota": {
-      "role": "code enforcement officer",
-      "department": "enforcement",
-      "poses": {
-        "neutral": "/public/characters/dakota-neutral.webp",
-        "talking": "/public/characters/dakota-talking.webp",
-        "thinking": "/public/characters/dakota-thinking.webp"
-      }
-    },
-    "avery": {
-      "role": "city recorder",
-      "department": "recorder",
-      "poses": {
-        "neutral": "/public/characters/avery-neutral.webp",
-        "talking": "/public/characters/avery-talking.webp",
-        "thinking": "/public/characters/avery-thinking.webp"
+        "neutral": "/public/characters/rosa-neutral.webp",
+        "talking": "/public/characters/rosa-talking.webp",
+        "thinking": "/public/characters/rosa-thinking.webp"
       }
     }
   }

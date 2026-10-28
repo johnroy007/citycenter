@@ -61,6 +61,11 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-10-28 (evening, later) — Claude Code on John's laptop — AI-assistant wording, Building example, Juniper's introduction
+- Consent question now reads "Would you like me to get Juniper, our AI assistant with our Planning & Zoning Department, for you?" (same shape for every desk).
+- Building Department example (framing inspection on an existing permit) added so Bob's desk appears in the routing; seeded on the live site.
+- Juniper introduces herself right after the hand-off (John's wording; `intro` on the planning department in `data/towns/hildale.json`) before the steps run. The page now types and reads a new desk line even while the desk is working, instead of waiting for the end of the turn.
+
 ### 2026-10-28 (evening) — Claude Code on John's laptop — consent before hand-offs
 - John: the front desk must ask before handing someone to a department. Built as described in the decisions list. Verified locally with the rooster question (planning), the water leak (Utility Department) and the three-turn lot split with sketch: consent asked, yes given, hand-off and the rest of the pipeline unchanged. 30 of 30 unit tests pass. Deployed.
 

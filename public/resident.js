@@ -103,14 +103,14 @@
     opts = opts || {};
     setPortrait(department, "talking");
     var last = $("chat").querySelector("li.msg.desk:last-of-type .text");
-    if (last && !opts.silent) typeInto(last, text, function () { setPortrait(department, "neutral"); $("chat").scrollTop = $("chat").scrollHeight; });
-    else setPortrait(department, "neutral");
+    if (last && !opts.silent) typeInto(last, text, function () { setPortrait(department, opts.keepWorking ? "thinking" : "neutral"); $("chat").scrollTop = $("chat").scrollHeight; });
+    else setPortrait(department, opts.keepWorking ? "thinking" : "neutral");
     if (!opts.silent) speak(text);
   }
   function think(department, text) {
-    setPortrait(department, "thinking");
-    if (state.typing) { clearInterval(state.typing); state.typing = null; }
     state.workingText = text;
+    if (state.typing) { var w0 = $("chat").querySelector("li.working .small"); if (w0) w0.textContent = characterFor(department).character + ": " + text; return; }
+    setPortrait(department, "thinking");
     var w = $("chat").querySelector("li.working .small");
     if (w) w.textContent = characterFor(department).character + ": " + text;
   }
@@ -264,7 +264,7 @@
     if (s.messages.length !== state.lastMsgCount) {
       var last = deskMsgs[deskMsgs.length - 1];
       var lastIsNewest = last && s.messages[s.messages.length - 1] === last;
-      if (last && !s.busy && lastIsNewest && state.lastMsgCount > 0) say(last.department || s.department || "front_desk", last.text);
+      if (last && lastIsNewest && state.lastMsgCount > 0) say(last.department || s.department || "front_desk", last.text, { keepWorking: s.busy });
       else if (!s.busy) setPortrait(s.department || "front_desk", "neutral");
       state.lastMsgCount = s.messages.length;
     } else if (!s.busy && $("portrait").classList.contains("thinking")) {

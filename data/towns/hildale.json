@@ -237,7 +237,8 @@
       "character": "Juniper",
       "role": "land use planner",
       "live": true,
-      "handles": "zoning questions, zoning verification letters, land use applications (lot splits, conditional uses, variances, rezones), zoning complaints"
+      "handles": "zoning questions, zoning verification letters, land use applications (lot splits, conditional uses, variances, rezones), zoning complaints",
+      "intro": "Hi, I am Juniper with the Planning & Zoning Department. I can help you get information, prepare applications, and send structured questions to the City Staff to help you get answers you can rely on. Give me one second while I review the information you provided..."
     },
     {
       "id": "building",

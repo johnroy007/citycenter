@@ -27,7 +27,7 @@ The private planning notebook (rules digest, day-by-day plan, review log) lives 
 - `docs/PROGRESS.md`: handoff log. `LOGIN-TODO.md`: why there are no user accounts during the hackathon.
 
 ## Deploys
-Render, from `render.yaml`, auto-deploy on push to `main`. Secrets are entered in Render's dashboard. Not yet created as of 2026-10-27; see `docs/PROGRESS.md`.
+Render web service `citycenter` (Starter, Oregon, 1 GB disk at `/var/data`), created 2026-10-27 through Render's API with the settings in `render.yaml`. Auto-deploys on push to `main`. Live: https://citycenter-puh5.onrender.com (staff: `/staff`). Health: `/api/health`. Secrets live only in Render's dashboard. The Render API key for deploy automation is in the git-ignored `.env.render.local` on John's laptop (names only in `.env.example`).
 
 ## Project rules
 - Core features must call Meta models (Muse Spark or Muse Wonder). Never swap in a non-Meta model for them.

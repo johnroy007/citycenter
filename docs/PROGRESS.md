@@ -3,11 +3,11 @@
 > Handoff log. Every agent (Claude or Codex, any laptop) reads this at the start of a task and updates it at the end. Newest log entries at the top. The day-by-day plan and rules digest live in the private notebook `C:\Users\John Barlow\Projects\citycenter-notes`.
 
 ## Status
-**Working locally, end to end, on the real Meta API.** Resident flow (sketch, extract, classify, draft, agentic check) and staff portal (queue, pre-review with citations, decision, drafted letter) are built, tested and pushed to the public repo `johnroy007/citycenter`. Not yet deployed. Hackathon submission due Nov 4, 2026, 9 PM ET.
+**Live on Render and working locally, end to end, on the real Meta API.** Resident flow (sketch, extract, classify, draft, agentic check) and staff portal (queue, pre-review with citations, decision, drafted letter) are built, tested and pushed to the public repo `johnroy007/citycenter`. Not yet deployed. Hackathon submission due Nov 4, 2026, 9 PM ET.
 
-- **Live link:** none yet (Render deploy is John's next click; see Waiting on John)
+- **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (staff). Deployed 2026-10-27 late evening; health check passes.
 - **Local:** `npm start` then http://localhost:3000 (resident) and http://localhost:3000/staff (staff; passcode is in `.env`)
-- **Last updated:** 2026-10-27 (afternoon) by Claude Code on John's laptop
+- **Last updated:** 2026-10-27 (late evening) by Claude Code on John's laptop
 
 ## RESUME POINT
 **Concept v2 is planned; the build of it has not started.** The brainstorm with John on Oct 27 evening produced a bigger product: a cartoon help desk that routes residents, works out the process tier against a real city code, and prepares a packet; staff review in a four-pane workspace. The rulebook is now Hildale City, Utah's real Land Use Code pulled from its official host (public naming of the town deferred until the eligibility ruling; keep it in config). Full plan, scenarios, answers and adapter notes are in the private notebook (`Projects/citycenter-notes/notes/`; `build-plan.md` is the day-by-day; read it first). Next step is Wed Oct 28 in that plan: code adapter + citation verifier + invented parcel table/map + town config + scenario fixtures. The Oct 27 lot-split build stays as the base and the offline test fixture.
@@ -15,7 +15,6 @@
 ## Waiting on John
 - **Confirm the login decision:** no user accounts during the hackathon (reference code + access key for residents; one shared staff passcode). Written up in `LOGIN-TODO.md`. Say "yes" or ask for changes.
 - **Open the app and click through it:** http://localhost:3000 (the server is running). Paste the sample text from the box, add `test/fixtures/sketch-clear.png` as the photo, submit. Then http://localhost:3000/staff with the passcode from `.env` (open `.env` in VS Code to read it; never paste it anywhere else).
-- **Render:** create an account if needed, New → Blueprint → pick `johnroy007/citycenter`, enter the two secrets, deploy. Starter plan (~$7/month, cancel after judging). Send the live link back.
 - **Review the invented town rules** in `data/sample-creek-code.json` and `data/sample-creek-checklist.json`. They are Claude's invention; edit freely (keep the `CL-xx` ids).
 - **Still open from the notebook:** delete the stray "government" Discord message; lower the Meta billing alert to ~$5; accept the Official Rules; eligibility ruling pending.
 
@@ -26,6 +25,10 @@
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-27 (late evening) — Claude Code on John's laptop — deployed to Render
+- **Done:** John created a Render API key (saved in git-ignored `.env.render.local`). Claude created the `citycenter` web service through Render's API from the GitHub repo: Starter plan, Oregon, Node 24.19.0, 1 GB disk at `/var/data`, env vars from `render.yaml`, secrets copied from the local `.env` (never printed). First deploy went live; `/api/health` returns ok, `/` and `/staff` return 200. Live DB is empty (seed deferred: the pipeline is about to be rebuilt).
+- **Workspace plan:** Hobby (free). The only charge is the Starter instance (~$7/month); cancel after judging.
 
 ### 2026-10-27 (late evening) — Claude Code on John's laptop — brainstorm complete, plan v2 written (no code changes)
 - **Done:** Eight brainstorm questions answered by John and recorded. Decisions: Hildale City, Utah's real code is the rulebook (official host exposes the whole code via a print view; 700 land use sections; adapter design recorded); product becomes a cartoon help desk with process-tier triage and a reviewer workspace; voice in via Muse Voice Transcribe, voice out via browser speech; characters via Muse Image; the demo "moment" is the prepared-application confirmation. Notebook: `build-plan.md` (rewritten), `vision-brainstorm.md`, `brainstorm-questions.md`, `scenarios.md`, `code-adapters.md`.

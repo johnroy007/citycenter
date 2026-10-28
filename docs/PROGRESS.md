@@ -18,6 +18,21 @@
 - **Review the invented town rules** in `data/sample-creek-code.json` and `data/sample-creek-checklist.json`. They are Claude's invention; edit freely (keep the `CL-xx` ids).
 - **Still open from the notebook:** delete the stray "government" Discord message; lower the Meta billing alert to ~$5; accept the Official Rules; eligibility ruling pending.
 
+## Decisions Claude made on John's behalf (change any of these; say the word)
+Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can override.
+- **Town config:** `data/towns/hildale.json`. Hildale is named in the public repo (town name, code URL, GIS URLs). Swap the config to change towns; the eligibility question is still open, so John may want the name generic in the README/video.
+- **Characters and names:** Marlowe (front desk), Juniper (Planning & Zoning), Bob (Building), Reyes (Public Works & Utilities), Dakota (Code Enforcement & Animal Control), Avery (City Recorder). Portraits generated once with Muse Image in a flat vector style (`scripts/make-characters.js`, `public/characters/`). Only Planning is "live"; the other desks hand off with a note and a contact line.
+- **Fictional owners:** deterministic invented names per parcel (`lib/owners.js`), shown with the disclosure "(fictional demo name)" and John's grader note from the town config.
+- **Process tiers:** none, building_permit, zoning_verification, administrative, commission, variance (Hearing Officer per 152-7-12), council, enforcement, other_department. Wording for each is in the town config.
+- **Fees and timing wording:** the code only says "fee established by the city's schedule of fees", so the desk says fees come from the city's fee schedule and timing depends on completeness and the notice period in 152-7-4. No invented dollar amounts or day counts.
+- **Reference codes:** `HC-2026-0101` style (prefix from the town config).
+- **Scenario fixtures:** 22 cases in `test/fixtures/scenarios.json` on real Hildale addresses (public parcel layer) with invented people; expectations are Claude's reading of the real code. John should correct any row that reads wrong to him.
+- **Demo examples:** 7 worked examples in `data/demo.json` (lot split with a drawing, casita, daycare, rooster, restaurant, bank letter, barking dogs).
+- **Ambiguous addresses:** county data lists one street address on several parcels; the desk picks the one with a dwelling (then the largest), says so, and asks the resident to confirm.
+- **Voice:** in through Muse Voice Transcribe (hold the microphone), out through the browser's own speech voice with a mute toggle (Meta has no text-to-speech model).
+- **Test drawings:** the three computer-generated sketches from Oct 27 are reused for the demo until John supplies photographed ones (`public/sketches/`).
+- **Spend guard:** `DAILY_CALL_CAP` stays at 400 calls/day on the server.
+
 ## Open questions / known issues
 - Live tests (`npm run test:live`) passed 9 of 9 on 2026-10-27 afternoon: 65 model calls, 202k input / 70k output tokens (roughly 55 cents at the unconfirmed Spark prices), 4 minutes total.
 - The browser pages were verified through the API and by reading the code, not by clicking in a browser (no browser tool in this session). John's click-through is the first human test of the UI.

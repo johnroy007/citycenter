@@ -1,0 +1,15 @@
+{
+  "generated_with": "muse-image-1.0",
+  "style": "Friendly flat vector cartoon illustration of a city hall employee, waist-up portrait, centered, facing the viewer, clean bold outlines, soft warm colors, simple shapes, plain solid light cream background (#FBF7EF) with nothing else, no text, no logos, no name tag text, no desk, consistent style for a set of characters.",
+  "characters": {
+    "juniper": {
+      "role": "land use planner",
+      "department": "planning",
+      "poses": {
+        "neutral": "/public/characters/juniper-neutral.png",
+        "talking": "/public/characters/juniper-talking.png",
+        "thinking": "/public/characters/juniper-thinking.png"
+      }
+    }
+  }
+}

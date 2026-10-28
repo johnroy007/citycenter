@@ -3,42 +3,86 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>citycenter staff portal</title>
+<title>citycenter: reviewer workspace</title>
 <link rel="stylesheet" href="/public/app.css">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 <header class="top">
-  <div class="wrap">
-    <h1>citycenter <span>· staff portal · Town of Sample Creek</span></h1>
-    <nav><a href="/">Resident</a><a href="/staff">Staff portal</a><button type="button" class="quiet hidden" id="logout" style="margin-left:16px;padding:4px 10px">Sign out</button></nav>
-  </div>
+  <div class="brand">citycenter <span id="townName">Planning & Zoning · reviewer workspace</span></div>
+  <nav>
+    <button type="button" class="quiet hidden" id="backBtn">← Queue</button>
+    <a href="/">Resident counter</a>
+    <button type="button" class="quiet hidden" id="logout">Sign out</button>
+  </nav>
 </header>
-<main class="wrap">
-  <section class="card" id="login">
-    <h2>Staff sign-in</h2>
-    <p class="lead">Enter the staff passcode. The agent prepares a completeness pre-review with code sections cited; you make every decision.</p>
-    <form id="loginForm" class="row">
-      <input type="password" id="passcode" placeholder="Passcode" style="max-width:260px" autocomplete="current-password">
-      <button type="submit">Sign in</button>
-      <span class="small" id="loginMsg"></span>
-    </form>
-  </section>
 
-  <div id="portal" class="hidden">
-    <div class="split two">
-      <section class="card" id="queueCard">
+<section class="card" id="login" style="max-width:520px;margin:40px auto">
+  <h2>Staff sign-in</h2>
+  <p class="small">Enter the staff passcode. The agent lays out what to consider and where it is written; you make every decision.</p>
+  <form id="loginForm" class="row">
+    <input type="password" id="passcode" placeholder="Passcode" style="max-width:260px" autocomplete="current-password">
+    <button type="submit">Sign in</button>
+    <span class="small" id="loginMsg"></span>
+  </form>
+</section>
+
+<div id="queueView" class="hidden">
+  <div class="queue">
+    <div>
+      <div class="card">
         <div class="row" style="justify-content:space-between"><h2 style="margin:0">Queue</h2><button type="button" class="quiet" id="refresh">Refresh</button></div>
         <p class="small" id="usage"></p>
-        <table class="queue"><thead><tr><th>Ref</th><th>Status</th></tr></thead><tbody id="queue"></tbody></table>
-      </section>
-      <section id="detail">
-        <div class="card"><p class="lead">Pick an application from the queue.</p></div>
-      </section>
+        <table><thead><tr><th>Ref</th><th>Request</th><th>Status</th></tr></thead><tbody id="queue"></tbody></table>
+      </div>
+    </div>
+    <div class="card"><p>Pick a conversation from the queue. Submitted packets are at the top. The workspace shows the considerations across the top, the document on the left, the evidence on the right, and the agent strip along the bottom.</p><p class="small">The agent describes documents and quotes the code. It never recommends a decision.</p></div>
+  </div>
+</div>
+
+<div id="workspace" class="ws hidden">
+  <div class="workspace-head">
+    <div class="row"><span class="refbox" id="wsRef"></span><span id="wsStatus"></span><span class="small" id="wsTitle"></span></div>
+    <div class="row">
+      <button type="button" class="quiet" id="buildBtn">Build considerations</button>
+      <button type="button" class="quiet" id="secondReadBtn" title="A stronger model re-reads the list against the code">Second read (Muse Wonder)</button>
+      <button type="button" class="quiet" id="letterBtn">Draft letter…</button>
+      <span class="small" id="wsMsg"></span>
     </div>
   </div>
-</main>
-<footer class="wrap">The pre-review describes documents against the Sample Creek code. It never recommends a decision. Staff and the Planning Commission decide.</footer>
+  <div class="rail" id="rail"></div>
+  <div class="panes">
+    <div class="pane doc" id="docPane"></div>
+    <div class="pane evidence" id="evidencePane"></div>
+  </div>
+  <div class="strip">
+    <div>
+      <div class="agent"><img id="agentImg" src="/public/characters/juniper-neutral.webp" alt=""><div class="text" id="agentText">Pick a consideration above.</div></div>
+      <form class="ask" id="askForm"><input type="text" id="askInput" placeholder="Ask the agent about this consideration (it answers from the code and the packet, never with a recommendation)"><button type="submit" class="secondary">Ask</button></form>
+    </div>
+    <div>
+      <div class="marks" id="marks"></div>
+      <div class="small" style="margin-top:6px">You decide. The agent only shows where it is written.</div>
+    </div>
+  </div>
+</div>
+
+<div class="demo-panel hidden" id="letterPanel">
+  <h2>Draft a letter from your decisions</h2>
+  <p class="small">The agent writes from the states you marked and your note. You edit before saving. Saving sends it to the resident's conversation.</p>
+  <label class="small">Kind of letter</label>
+  <select id="letterKind" style="width:100%;font:inherit;padding:8px">
+    <option value="request_info">Not complete: ask for the missing items</option>
+    <option value="accept_complete">Complete: forwarded to the deciding body</option>
+    <option value="answer">Answer letter (your answer in the note)</option>
+    <option value="refer">Belongs with another department</option>
+  </select>
+  <label class="small" style="margin-top:8px;display:block">Your note (your words; for an answer letter this is the answer)</label>
+  <textarea id="letterNote" style="min-height:80px"></textarea>
+  <div class="row" style="margin-top:8px"><button type="button" id="letterDraft">Draft</button><button type="button" class="quiet" id="letterClose">Close</button><span class="small" id="letterMsg"></span></div>
+  <div id="letterEditor"></div>
+</div>
+
 <script src="/public/staff.js"></script>
 </body>
 </html>

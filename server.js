@@ -253,7 +253,7 @@ async function handle(req, res) {
   }
 
   // Resident: read, message, submit, sketch (view key required unless staff)
-  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch))?$/);
+  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet))?$/);
   if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
     const ref = decodeURIComponent(m[1]);
@@ -286,6 +286,26 @@ async function handle(req, res) {
       store.addMessage(ref, { role: "resident", text: text || "(attached a drawing)", has_sketch: !!sketch });
       startTurn(ref);
       return sendJson(res, 202, { ok: true });
+    }
+    if (req.method === "POST" && action === "packet") {
+      // Resident edits their own packet directly (no model). Only field values and narratives can change.
+      if (s.busy) return sendError(res, 409, "The desk is still working. Wait for it to finish, then edit.");
+      if (!s.packet || !s.packet.documents) return sendError(res, 400, "There is no packet to edit yet.");
+      if (!["open", "ready"].includes(s.status)) return sendError(res, 409, "This packet has been submitted and can no longer be edited here.");
+      const body = await readJson(req, MAX_JSON_BYTES);
+      if (!Array.isArray(body.documents) || body.documents.length !== s.packet.documents.length) return sendError(res, 400, "Send the same documents back with your edits.");
+      const documents = s.packet.documents.map((d, i) => {
+        const edit = body.documents[i] || {};
+        const fields = (d.fields || []).map((f, j) => {
+          const ef = (edit.fields || [])[j] || {};
+          const value = typeof ef.value === "string" ? ef.value.slice(0, 2000) : f.value;
+          return value === f.value ? f : { ...f, value, source: value ? "resident" : "blank" };
+        });
+        const narrative = typeof edit.narrative === "string" ? edit.narrative.slice(0, 12000) : d.narrative;
+        return { ...d, fields, narrative };
+      });
+      store.updateSession(ref, { packet: { ...s.packet, documents, edited_by_resident_at: new Date().toISOString() } });
+      return sendJson(res, 200, { ok: true });
     }
     if (req.method === "POST" && action === "submit") {
       if (s.busy) return sendError(res, 409, "The desk is still working. Wait for the packet, then submit.");

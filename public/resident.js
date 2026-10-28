@@ -1,6 +1,6 @@
 // Resident counter: the office scene. Everything from the server is rendered with textContent (never innerHTML), so model output can't inject HTML.
 // Layout: conversation history on the left, the character in the middle, a TV on the right with a four-button remote
-// (Parcel Map, Code Review, Your Submissions, Submission Paperwork). The TV changes channel on its own as work finishes.
+// (Parcel Map, Code Review, Information You Uploaded, Submission Paperwork). The TV changes channel on its own as work finishes.
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
@@ -38,7 +38,7 @@
   var STEP_MODEL = { sketch: "Muse Spark · image", route: "Muse Spark · structured", understand: "Muse Spark · structured", locate: "county GIS (no AI)", research: "Muse Spark · tools", draft: "Muse Spark · structured" };
   var STATUS_LABEL = { open: "Talking", ready: "Paperwork ready to submit", referred: "Referred to another desk", submitted: "Submitted to planning", needs_info: "Staff asked for more", in_review: "Forwarded for decision", answered: "Staff answered", error: "Problem" };
   function statusLabel(s) { return s.changed_since_submit ? "Updated; not resubmitted yet" : (STATUS_LABEL[s.status] || s.status); }
-  var CHANNEL_LABEL = { welcome: "Welcome", map: "Parcel Map", code: "Code Review", submissions: "Your Submissions", paperwork: "Submission Paperwork" };
+  var CHANNEL_LABEL = { welcome: "Welcome", map: "Parcel Map", code: "Code Review", submissions: "Information You Uploaded", paperwork: "Submission Paperwork" };
 
   // ---------- voice out (browser) ----------
   try { state.voiceOn = localStorage.getItem("cc_voice") !== "off"; } catch (e) {}
@@ -298,7 +298,28 @@
     if (s.visit_code) $("refline").appendChild(el("div", { class: "small code", text: "Visit code " + s.visit_code, title: "Type this under Come back to an earlier visit to return here" }));
     var sc = $("statusChip"); sc.textContent = ""; sc.appendChild(chip(s.changed_since_submit ? "unclear" : s.status, statusLabel(s)));
   }
-  function chatItem(m) {
+  // Tappable replies under the newest desk message: the app's own (consent, submit) and the planner's (short answer sets).
+  function quickReplies(m, s) {
+    var row = el("div", { class: "quick" });
+    var any = false;
+    function chip(label, onClick, cls) {
+      var b = el("button", { type: "button", class: "qchip" + (cls ? " " + cls : ""), text: label });
+      b.addEventListener("click", onClick);
+      row.appendChild(b); any = true;
+    }
+    (m.quick_replies || []).forEach(function (q) { chip(q, function () { sendMessage(q); }); });
+    if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && s.parcel && !s.submitted_at) {
+      chip("Submit to planning", async function () { try { await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); poll(); } catch (e) { $("formMsg").textContent = e.message; } }, "primary");
+      chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; renderScreen(state.session); renderRemote(state.session); });
+      chip("I want to change something", function () { $("text").placeholder = "Tell " + characterFor("planning").character + " what to change…"; $("text").focus(); });
+    }
+    if (m.offers_submit && s && s.submitted_at && s.changed_since_submit) {
+      chip("Resubmit and update application", async function () { try { await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); poll(); } catch (e) { $("formMsg").textContent = e.message; } }, "primary");
+    }
+    return any ? row : null;
+  }
+  function chatItem(m, opts) {
+    opts = opts || {};
     var li = el("li", { class: "msg " + m.role + (m.letter ? " has-letter" : "") });
     var dept = m.role === "desk" ? (m.department || departmentForCharacter(m.character) || "planning") : null;
     var avatar;
@@ -313,6 +334,7 @@
       el("div", { class: "who" }, [el("b", { text: who }), d && !m.letter ? el("span", { class: "small", text: " · " + d.name }) : null, el("span", { class: "time", text: m.at ? new Date(m.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "" })]),
       m.letter ? el("div", { class: "letter", text: m.text }) : el("div", { class: "text", text: m.text }),
       m.has_sketch ? el("div", { class: "small attach", text: "📎 drawing attached" }) : null,
+      opts.newest && m.role === "desk" && opts.session && !opts.session.busy ? quickReplies(m, opts.session) : null,
     ]);
     li.appendChild(avatar); li.appendChild(body);
     return li;
@@ -328,7 +350,7 @@
     var atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
     chat.textContent = "";
     chat.appendChild(greetingItem(s.created_at));
-    (s.messages || []).forEach(function (m) { chat.appendChild(chatItem(m)); });
+    (s.messages || []).forEach(function (m, i) { chat.appendChild(chatItem(m, { newest: i === s.messages.length - 1, session: s })); });
     if (s.busy) chat.appendChild(el("li", { class: "msg working" }, [el("span", { class: "avatar dots", text: "…" }), el("div", { class: "body" }, [el("div", { class: "small", text: characterFor(s.department || "front_desk").character + ": " + (state.workingText || "working…") })])]));
     if (s.status === "error") chat.appendChild(el("li", { class: "msg system" }, [el("div", { class: "notice error", text: "The desk hit a problem: " + (s.error || "") + ". Your conversation is saved; send another message to try again." })]));
     if (atBottom || s.messages.length !== state.lastMsgCount) chat.scrollTop = chat.scrollHeight;
@@ -356,7 +378,7 @@
     else if (changed.indexOf("submissions") >= 0 && s.has_sketch && state.seen.submissions === null) target = "submissions";
     if (target && !state.editing && !state.lockOnce) { state.channel = target; state.manual = false; }
     state.lockOnce = false;
-    if (state.channel === "welcome" && s.ref) state.channel = s.packet ? "paperwork" : s.research ? "code" : s.parcel ? "map" : "submissions";
+    if (state.channel === "welcome" && s.ref) state.channel = s.packet ? "paperwork" : s.research ? "code" : s.parcel ? "map" : (s.has_sketch || s.understanding) ? "submissions" : "welcome";
     order.forEach(function (c) { if (c === state.channel) { state.seen[c] = sig[c]; state.fresh[c] = false; } else if (!sig[c]) state.seen[c] = sig[c]; });
   }
   function hasContent(s, c) {

@@ -54,6 +54,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 - **Visit code instead of reference + key (2026-10-28 evening, John's request to drop the key box):** residents now get one code, "HC-2026-0107-xzUHULux" (reference plus the access key), shown in the conversation header and in the desk's message on submission. "Come back to an earlier visit" has one box that takes that code. The bare reference still does not open a visit, because references are sequential and would let anyone read a stranger's application; Claude explained this and John's one-box wish was met by folding the key into the code. Staff keep using the short reference.
 
+- **Tappable replies in the chat (2026-10-28 evening):** under the newest desk message: Yes, please / No, something else on the consent question; Submit to planning / Edit it myself / I want to change something when the paperwork is ready (Resubmit when changed after submission); and up to four short answers the planner proposes when its first follow-up question has a fixed set of answers (`quick_replies` in the packet schema). Tapping sends the text as the resident's reply so it stays in the history.
+- **Wording (John):** remote button 3 is "Information You Uploaded"; the staff-decide line everywhere is "Only real City Officials can make decisions."
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -64,6 +67,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (evening, quick replies) — Claude Code on John's laptop — tappable replies, wording
+- Quick-reply buttons built as in the decisions list; verified: consent buttons render under Marlowe's question (screenshot) and the planner proposed four state-approval options in the daycare example. Fixed an ordering bug caught by that run (`ready` used before it was computed). Welcome screen now stays until there is something to show. 32 of 32 tests pass. Deployed.
 
 ### 2026-10-28 (evening, visit code) — Claude Code on John's laptop — one visit code; daily cap raised
 - Visit code built as in the decisions list; `GET/POST /api/sessions/<ref>-<key>...` accepted everywhere the key was; test added (32 pass).

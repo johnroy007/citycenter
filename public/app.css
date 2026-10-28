@@ -87,6 +87,10 @@ code { font-size: 13px; background: var(--grey-bg); padding: 1px 5px; border-rad
 .msg.resident .who .time { margin-left: 0; margin-right: auto; }
 .msg .letter { margin-top: 3px; font-size: 13px; }
 .msg .attach { margin-top: 2px; }
+.msg .quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.qchip { background: #fff; color: var(--blue); border: 1px solid var(--blue); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+.qchip:hover { background: #eef4ff; }
+.qchip.primary { background: var(--blue); color: #fff; }
 .msg.system { display: block; }
 .lookup-box { padding: 8px 12px; border-top: 1px solid var(--line); background: #fff; }
 .lookup-box input { max-width: 150px; }

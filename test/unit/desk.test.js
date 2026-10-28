@@ -20,7 +20,7 @@ test("no schema has a recommendation, approval, score or likelihood field", () =
 test("predictive wording is removed from replies and the staff-decide line is added", () => {
   const t = sanitizeReply("Looks fine, this will be approved next week.", town);
   assert.doesNotMatch(t, /will be approved/);
-  assert.match(t, /staff/i);
+  assert.match(t, /City Officials/i, "the staff-decide line is appended");
   assert.equal(sanitizeReply("The use table marks restaurants N in R1-8, so the code does not list the use there.", town).includes("[wording removed]"), false);
 });
 

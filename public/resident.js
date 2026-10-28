@@ -31,7 +31,9 @@
   var state = {
     ref: null, key: null, timer: null, lastMsgCount: 0, session: null, typing: null, voiceOn: true, editing: false, demo: null,
     channel: "welcome", manual: false, seen: { map: null, code: null, submissions: null, paperwork: null }, fresh: {}, lastParcelId: null,
+    zoom: { welcome: 1, map: 1, code: 1, submissions: 1, paperwork: 1 }, expanded: false, mapView: "block",
   };
+  try { var z0 = JSON.parse(localStorage.getItem("cc_zoom") || "{}"); Object.keys(z0).forEach(function (k) { if (state.zoom[k] !== undefined && z0[k] >= 0.5 && z0[k] <= 2) state.zoom[k] = z0[k]; }); } catch (e) {}
   var STEP_LABEL = { sketch: "Reading your drawing", route: "Finding the right desk", understand: "Understanding your request", locate: "Finding your parcel on the county map", research: "Reading the city code", draft: "Preparing your paperwork" };
   var STEP_MODEL = { sketch: "Muse Spark · image", route: "Muse Spark · structured", understand: "Muse Spark · structured", locate: "county GIS (no AI)", research: "Muse Spark · tools", draft: "Muse Spark · structured" };
   var STATUS_LABEL = { open: "Talking", ready: "Paperwork ready to submit", referred: "Referred to another desk", submitted: "Submitted to planning", needs_info: "Staff asked for more", in_review: "Forwarded for decision", answered: "Staff answered", error: "Problem" };
@@ -379,11 +381,36 @@
     if (map[e.key]) { var b = document.querySelector('.rbtn[data-channel="' + map[e.key] + '"]'); if (b) b.click(); }
   });
 
+  function applyZoom() {
+    var z = state.zoom[state.channel] || 1;
+    var inner = $("screenInner");
+    if (inner) inner.style.zoom = String(z);
+    $("zoomReset").textContent = Math.round(z * 100) + "%";
+  }
+  function setZoom(z) {
+    z = Math.round(Math.min(2, Math.max(0.5, z)) * 20) / 20;
+    state.zoom[state.channel] = z;
+    try { localStorage.setItem("cc_zoom", JSON.stringify(state.zoom)); } catch (e) {}
+    applyZoom();
+  }
+  $("zoomIn").addEventListener("click", function () { setZoom((state.zoom[state.channel] || 1) + 0.1); });
+  $("zoomOut").addEventListener("click", function () { setZoom((state.zoom[state.channel] || 1) - 0.1); });
+  $("zoomReset").addEventListener("click", function () { setZoom(1); });
+  function setExpanded(on) {
+    state.expanded = !!on;
+    document.body.classList.toggle("tv-expanded", state.expanded);
+    $("expandBtn").textContent = state.expanded ? "\u2715 Close" : "\u2922 Expand";
+  }
+  $("expandBtn").addEventListener("click", function () { setExpanded(!state.expanded); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && state.expanded) setExpanded(false); });
   function renderScreen(s) {
-    var screen = $("screen"); screen.textContent = "";
+    var outer = $("screen"); outer.textContent = "";
+    var screen = el("div", { class: "screen-inner", id: "screenInner" });
+    outer.appendChild(screen);
     $("tvLabel").textContent = CHANNEL_LABEL[state.channel] || "";
     $("tvModel").textContent = "";
-    screen.className = "screen ch-" + state.channel;
+    outer.className = "screen ch-" + state.channel;
+    applyZoom();
     if (state.channel === "welcome" || !s) return renderWelcome(screen);
     if (state.channel === "map") return hasContent(s, "map") ? renderParcel(screen, s) : renderEmpty(screen, "No parcel yet", "Tell " + characterFor(s.department || "front_desk").character + " the property address or tax parcel number and the county map will zoom in here.");
     if (state.channel === "code") return hasContent(s, "code") ? renderResearch(screen, s) : renderEmpty(screen, "No code review yet", "Once the planner has read the city code for your request, the review appears here with every section quoted.");
@@ -391,6 +418,7 @@
     if (state.channel === "paperwork") return hasContent(s, "paperwork") ? renderPaperwork(screen, s) : renderEmpty(screen, "No paperwork yet", "When the planner has what the code asks for, the application is drafted here, in the city's format, for you to review.");
   }
   function renderEmpty(screen, title, text) {
+    screen.classList.add("is-empty");
     screen.appendChild(el("div", { class: "empty" }, [el("div", { class: "big", text: title }), el("p", { text: text })]));
   }
   function renderWelcome(screen) {
@@ -417,12 +445,21 @@
   function renderParcel(screen, s) {
     var p = s.parcel;
     $("tvModel").textContent = "county zoning layer + state parcels · no AI";
-    var wrap = el("div", { class: "mapwrap" + (state.lastParcelId === p.id ? " zoomed" : "") });
+    var VIEWS = { parcel: 80, block: 160, area: 400, city: 0 };
+    var bar = el("div", { class: "mapviews" }, [el("span", { class: "small", text: "View" })]);
+    [["parcel", "Parcel"], ["block", "Block"], ["area", "Area"], ["city", "Whole city"]].forEach(function (v) {
+      var b = el("button", { type: "button", class: "quiet" + (state.mapView === v[0] ? " active" : ""), text: v[1] });
+      b.addEventListener("click", function () { state.mapView = v[0]; renderScreen(state.session); });
+      bar.appendChild(b);
+    });
+    screen.appendChild(bar);
+    var firstTime = state.lastParcelId !== p.id;
+    var wrap = el("div", { class: "mapwrap" + (!firstTime && state.mapView !== "city" ? " zoomed" : "") });
     var zo = el("img", { class: "zoomout", src: "/api/map/city.svg", alt: "City zoning map" });
-    var zi = el("img", { class: "zoomin", src: "/api/map/parcel/" + encodeURIComponent(p.id) + ".svg", alt: "Zoning map around the parcel" });
+    var zi = el("img", { class: "zoomin", src: "/api/map/parcel/" + encodeURIComponent(p.id) + ".svg?m=" + (VIEWS[state.mapView] || 160), alt: "Zoning map around the parcel" });
     wrap.appendChild(zo); wrap.appendChild(zi);
     screen.appendChild(wrap);
-    if (state.lastParcelId !== p.id) { state.lastParcelId = p.id; setTimeout(function () { wrap.classList.add("zoomed"); }, 400); }
+    if (firstTime) { state.lastParcelId = p.id; if (state.mapView === "city") state.mapView = "block"; setTimeout(function () { wrap.classList.add("zoomed"); }, 400); }
     var zoneColor = town && town.zones && town.zones[p.zone] ? town.zones[p.zone].color : "#eee";
     screen.appendChild(el("p", { class: "lead", text: "It looks like you are talking about this parcel located at " + (p.address || "(no address on record)") + ", with tax parcel number " + p.id + "." }));
     var facts = el("div", { class: "parcel-facts" }, [
@@ -807,6 +844,7 @@
       say("front_desk", greetingText());
     }
     if (params.get("ch") && CHANNEL_LABEL[params.get("ch")]) { state.channel = params.get("ch"); state.manual = true; state.lockOnce = true; }
+    if (params.get("expand") === "1") setExpanded(true);
     if (params.get("ref") && params.get("key")) openSession(params.get("ref"), params.get("key"));
   })();
 })();

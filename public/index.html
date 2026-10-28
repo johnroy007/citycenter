@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>citycenter: Virtual City Help Desk</title>
-<link rel="stylesheet" href="/public/app.css?v=20261028e">
+<link rel="stylesheet" href="/public/app.css?v=20261028f">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body class="resident">
@@ -82,8 +82,17 @@
 
   <section class="tvcol" aria-label="Work shown on the office screen">
     <div class="tv">
-      <div class="tv-top"><span class="tv-label" id="tvLabel">Welcome</span><span class="tv-model" id="tvModel"></span></div>
-      <div class="screen" id="screen"></div>
+      <div class="tv-top">
+        <span class="tv-label" id="tvLabel">Welcome</span>
+        <span class="tv-model" id="tvModel"></span>
+        <span class="tv-tools">
+          <button type="button" class="tbtn" id="zoomOut" title="Smaller">&minus;</button>
+          <button type="button" class="tbtn pct" id="zoomReset" title="Back to 100%">100%</button>
+          <button type="button" class="tbtn" id="zoomIn" title="Larger">+</button>
+          <button type="button" class="tbtn" id="expandBtn" title="Expand the screen (Esc closes)">&#x2922; Expand</button>
+        </span>
+      </div>
+      <div class="screen" id="screen"><div class="screen-inner" id="screenInner"></div></div>
     </div>
     <div class="remote" id="remote" role="tablist" aria-label="Choose what the screen shows">
       <button type="button" class="rbtn" data-channel="map" role="tab"><span class="rkey">1</span>Parcel Map</button>
@@ -111,6 +120,6 @@
   </div>
 </main>
 <footer class="credits" id="credits"></footer>
-<script src="/public/resident.js?v=20261028e"></script>
+<script src="/public/resident.js?v=20261028f"></script>
 </body>
 </html>

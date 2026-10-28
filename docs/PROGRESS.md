@@ -50,6 +50,8 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 - **Consent before every hand-off (2026-10-28, John's request):** Marlowe never transfers silently. She says "Based on what you've told me, I think the Utility Department can help you. Would you like me to get Reyes for you?" and waits. A yes (or more details about the same need) completes the hand-off: "Great, one moment. Reyes at the Utility Department will take it from here." A no returns to the front desk. The pending offer is stored on the session (`pending_handoff`); the route model reports `consent` yes/no/unclear and a code check catches plain yes/no words. The demo examples, the seed scripts, the journey script and the live test runner all answer "Yes, please." automatically when asked.
 
+- **TV fit and zoom (2026-10-28 evening):** the TV's top bar has zoom − / % / + (per channel, remembered in the browser), and Expand, which pops the screen out to nearly the whole window with the remote underneath (Esc closes; `&expand=1` in the link opens it). The Parcel Map channel has View buttons: Parcel (80 m), Block (160 m, default), Area (400 m), Whole city; the map is sized by the available height so the facts stay visible. The character column was narrowed a little to give the TV more width.
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -60,6 +62,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (evening, TV fit) — Claude Code on John's laptop — zoom, expand and map views on the TV
+- John: the four channels did not fit the TV well; wanted zoom options. Built the zoom bar, Expand mode and map View buttons (decisions list). Checked by screenshot: block view with the parcel outlined and facts visible; expanded paperwork and code review readable at full width.
 
 ### 2026-10-28 (evening, re-seed) — Claude Code on John's laptop — examples refreshed under the new flow
 - Staff portal gained "Clear demo conversations" (deletes every visit that came from a worked example; real visits stay; `POST /api/staff/purge-demo`, tested). `node scripts/seed-remote.js <url> --fresh` clears and re-seeds in one go.

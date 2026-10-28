@@ -37,8 +37,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     if (s.status === "live") break;
     if (/failed|canceled|deactivated/.test(s.status)) throw new Error("Deploy " + s.status);
   }
-  const h = await (await fetch(LIVE_URL + "/api/health")).json();
-  console.log(`Live: ${LIVE_URL} -> ${JSON.stringify(h)}`);
+  for (let i = 0; i < 12; i++) {
+    try {
+      const h = await (await fetch(LIVE_URL + "/api/health")).json();
+      console.log(`Live: ${LIVE_URL} -> ${JSON.stringify(h)}`);
+      return;
+    } catch {
+      await sleep(5000);
+    }
+  }
+  console.log("Deployed, but the health check did not answer with JSON yet.");
 })().catch((e) => {
   console.error("deploy failed:", e.message);
   process.exit(1);

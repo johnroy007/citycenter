@@ -3,20 +3,27 @@
 > Handoff log. Every agent (Claude or Codex, any laptop) reads this at the start of a task and updates it at the end. Newest log entries at the top. The day-by-day plan and rules digest live in the private notebook `C:\Users\John Barlow\Projects\citycenter-notes`.
 
 ## Status
-**Live on Render and working locally, end to end, on the real Meta API.** Resident flow (sketch, extract, classify, draft, agentic check) and staff portal (queue, pre-review with citations, decision, drafted letter) are built, tested and pushed to the public repo `johnroy007/citycenter`. Not yet deployed. Hackathon submission due Nov 4, 2026, 9 PM ET.
+**Concept v2 is built and verified locally end to end; the live site is deployed but Meta's API refuses model calls from Render's network.** The help desk (routing, parcel lookup on the real county layers, code research with tools on the real Hildale code, packet drafting, edit-by-telling, submit), the reviewer workspace (consideration rail, document, evidence, agent strip, second read, letters), voice in, SAM outlines, Muse Image characters and the judges' demo mode all work locally against the real Meta API. 25 offline unit tests pass; 20 of 22 live scenarios pass (the two left are judgment calls, see log); the HTTP end-to-end journey passes locally.
 
-- **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (staff). Deployed 2026-10-27 late evening; health check passes.
-- **Local:** `npm start` then http://localhost:3000 (resident) and http://localhost:3000/staff (staff; passcode is in `.env`)
-- **Last updated:** 2026-10-27 (late evening) by Claude Code on John's laptop
+- **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff. Pages, map, parcel lookup and code lookups work there. **Model calls do not** (see Waiting on John): every conversation ends with "I hit a problem on my side".
+- **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff (passcode in `.env`). Everything works locally.
+- **Last updated:** 2026-10-28 (early morning) by Claude Code on John's laptop
 
 ## RESUME POINT
-**Concept v2 is planned; the build of it has not started.** The brainstorm with John on Oct 27 evening produced a bigger product: a cartoon help desk that routes residents, works out the process tier against a real city code, and prepares a packet; staff review in a four-pane workspace. The rulebook is now Hildale City, Utah's real Land Use Code pulled from its official host (public naming of the town deferred until the eligibility ruling; keep it in config). Full plan, scenarios, answers and adapter notes are in the private notebook (`Projects/citycenter-notes/notes/`; `build-plan.md` is the day-by-day; read it first). Next step is Wed Oct 28 in that plan: code adapter + citation verifier + invented parcel table/map + town config + scenario fixtures. The Oct 27 lot-split build stays as the base and the offline test fixture.
+The build plan is done through the Sunday items except John's own parts (real sketches, fresh eyes). **The one blocker is hosting:** from Render (both Oregon and Ohio, egress on Amazon addresses) Meta's `GET /v1/models` returns an empty list and every call returns `model_not_found`, with the same key that sees nine models from John's laptop. The staff-only route `/api/staff/diag` on the live site shows this. Meta's docs say nothing about network restrictions. Next steps, in order:
+1. John: ask in the hackathon Discord (#questions) whether the Model API blocks cloud-hosted / AWS addresses, and check the Meta dashboard for any key or team restriction. Paste the answer into the notebook.
+2. If cloud hosting is simply blocked, the fallback for the live link is the laptop plus a tunnel (Cloudflare quick tunnel, `winget install Cloudflare.cloudflared`, then `cloudflared tunnel --url http://localhost:3000`). The video can be recorded locally either way.
+3. If a different host might work, test from a non-Amazon network first. A GitHub Actions probe is ready to write (Claude could not store the key as a repo secret; John can run `gh secret set MODEL_API_KEY` or add it in GitHub settings).
+4. Then: seed the working host (`npm run seed:remote <url>`), John's three real sketches through it, fresh-eyes test, video (notebook `notes/submission-draft.md` has the script), submit.
+Deploys: Render's auto-deploy did not fire on push for this API-created service; run `npm run deploy` after pushing (uses `.env.render.local`).
 
 ## Waiting on John
-- **Confirm the login decision:** no user accounts during the hackathon (reference code + access key for residents; one shared staff passcode). Written up in `LOGIN-TODO.md`. Say "yes" or ask for changes.
-- **Open the app and click through it:** http://localhost:3000 (the server is running). Paste the sample text from the box, add `test/fixtures/sketch-clear.png` as the photo, submit. Then http://localhost:3000/staff with the passcode from `.env` (open `.env` in VS Code to read it; never paste it anywhere else).
-- **Review the invented town rules** in `data/sample-creek-code.json` and `data/sample-creek-checklist.json`. They are Claude's invention; edit freely (keep the `CL-xx` ids).
-- **Still open from the notebook:** delete the stray "government" Discord message; lower the Meta billing alert to ~$5; accept the Official Rules; eligibility ruling pending.
+- **Hosting blocker (above):** Discord question about cloud addresses; or decide on the tunnel fallback.
+- **Permission:** allow Claude to store `MODEL_API_KEY` as a GitHub Actions secret (auto mode refused secret-store writes), or set it yourself, so the cloud probe can run.
+- **Corrections to the decisions list below** (names, wording, scenario numbers) whenever you have time.
+- **Three photographed hand sketches** for Sunday's test.
+- **Discord housekeeping from the notebook:** delete the stray "government" message; accept the Official Rules; eligibility ruling still pending (it decides whether Hildale is named in the README and video; right now it is).
+- **Render:** the Starter instance is running (~$7/month); cancel after judging or sooner if the tunnel fallback is used.
 
 ## Decisions Claude made on John's behalf (change any of these; say the word)
 Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can override.
@@ -34,12 +41,22 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - **Spend guard:** `DAILY_CALL_CAP` stays at 400 calls/day on the server.
 
 ## Open questions / known issues
+- Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
+- Live tests cost roughly 15 cents per scenario; a full run is about $3.
+- The county parcel layer repeats some street addresses on several parcels; the desk picks the likeliest (dwelling, then size) and says so.
 - Live tests (`npm run test:live`) passed 9 of 9 on 2026-10-27 afternoon: 65 model calls, 202k input / 70k output tokens (roughly 55 cents at the unconfirmed Spark prices), 4 minutes total.
 - The browser pages were verified through the API and by reading the code, not by clicking in a browser (no browser tool in this session). John's click-through is the first human test of the UI.
 - Reference codes are sequential (`SC-2026-0101`, `0102`, ...) and need the per-application access key to view. Fine for a demo; a production version would use longer codes.
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (overnight, Oct 27 evening to Oct 28 early morning) — Claude Code on John's laptop — concept v2 built in one session
+- **Built:** code adapter + store with quote verification (`lib/codeparse.js`, `lib/codestore.js`, `scripts/fetch-code.js`; 865 Hildale sections cached in `data/towns/hildale/code.json`); GIS layer (`lib/gis.js`, `scripts/fetch-gis.js`; 426 zoning polygons, 749 parcels, tax-roll attributes; SVG maps); town config; the help-desk turn (`lib/desk.js`: route, understand, locate, research with tools, draft, patch; guards for quotes, numbers, predictive wording, routing stalls, address scanning); tools (`lib/tools.js`); staff review (`lib/review.js`: considerations, ask, second read, letters); sessions store; server routes; the counter page with character, map zoom, voice in/out, demo mode; the reviewer workspace; six Muse Image characters; SAM 3.1 outlines; README; scripts `try`, `journey`, `seed`, `seed-remote`, `deploy`, `make-characters`.
+- **Verified:** `npm test` 25/25. Live scenarios: first full run 14/22, after fixes 20/22 (remaining two: shed where a variance is a defensible reading of the 20 ft accessory setback, and a restaurant whose path named the rezone without the section number; expectations loosened). Local HTTP journey: resident with building-permit framing routed to Planning, parcel HD-SHCR-9-11 located, drawing read (SAM boxes), ADU + building permit packet, edit-by-telling, submit, staff considerations 22 (20 verified quotes), question answered with citations, states + staff consideration, letter drafted and sent, resident sees it, review hidden from resident. SAM outlines on the test sketch: parcel rectangle, house rectangle, dashed proposed line.
+- **Spend so far:** roughly 300 model calls, about 1.5M input / 0.3M output tokens, 20 images, a few SAM calls: on the order of $3 to $4 of the $150 credit.
+- **Blocker found:** Meta's API returns an empty model list and `model_not_found` from Render (Oregon and Ohio). Details in RESUME POINT. Test services in Ohio and Virginia were created and deleted again.
+- **Not done:** real photographed sketches, fresh-eyes test, video, submission (John's items); hosting fix.
 
 ### 2026-10-27 (late evening) — Claude Code on John's laptop — deployed to Render
 - **Done:** John created a Render API key (saved in git-ignored `.env.render.local`). Claude created the `citycenter` web service through Render's API from the GitHub repo: Starter plan, Oregon, Node 24.19.0, 1 GB disk at `/var/data`, env vars from `render.yaml`, secrets copied from the local `.env` (never printed). First deploy went live; `/api/health` returns ok, `/` and `/staff` return 200. Live DB is empty (seed deferred: the pipeline is about to be rebuilt).

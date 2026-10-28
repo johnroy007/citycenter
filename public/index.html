@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/public/app.css">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
-<body>
+<body class="resident">
 <header class="top">
   <div class="brand">citycenter <span id="townName">Virtual City Help Desk</span></div>
   <nav>
@@ -25,32 +25,46 @@
   <div class="row"><button type="button" class="quiet" id="demoClose">Close</button></div>
 </div>
 
-<main class="counter">
-  <section class="stage" id="stage">
-    <div class="stage-bg" id="stageBg"></div>
-    <div class="inner" id="stageInner">
-      <div class="card welcome" id="welcome">
-        <h1>Hello, I'm the Virtual City Help Desk.</h1>
-        <p>Ask me anything, or just tell me what you're trying to do. I'll find the right desk, pull up your parcel, read the real city code, and prepare the paperwork. City staff make every decision.</p>
-        <div class="examples" id="welcomeExamples"></div>
-        <details style="margin-top:12px"><summary class="small">Already have a reference code?</summary>
-          <form id="lookup" class="row" style="margin-top:8px">
-            <input type="text" id="lookupRef" placeholder="HC-2026-0104" style="max-width:180px" aria-label="Reference code">
-            <input type="text" id="lookupKey" placeholder="access key" style="max-width:160px" aria-label="Access key">
-            <button type="submit" class="secondary">Open</button>
-          </form>
-        </details>
-        <p class="small" id="demoNote" style="margin-top:12px"></p>
+<main class="office">
+  <div class="office-bg" aria-hidden="true"></div>
+
+  <section class="chatlog" aria-label="Conversation history">
+    <div class="chatlog-head">
+      <div>
+        <div class="small">Conversation</div>
+        <div class="refline" id="refline">New visit</div>
       </div>
-      <div id="results"></div>
+      <span id="statusChip"></span>
     </div>
+    <ol class="chat" id="chat"></ol>
+    <details class="lookup-box"><summary class="small">Come back to an earlier visit</summary>
+      <form id="lookup" class="row" style="margin-top:8px">
+        <input type="text" id="lookupRef" placeholder="HC-2026-0104" aria-label="Reference code">
+        <input type="text" id="lookupKey" placeholder="access key" aria-label="Access key">
+        <button type="submit" class="secondary">Open</button>
+      </form>
+    </details>
   </section>
 
-  <aside class="character-col">
-    <div class="bubble" id="bubble"><span class="who" id="bubbleWho">Front desk</span><span id="bubbleText">Hello! Ask me anything, or tell me what you're trying to do.</span></div>
-    <div class="portrait" id="portrait"><img id="portraitImg" alt="Help desk character" src="/public/characters/marlowe-neutral.png"></div>
+  <section class="stand" aria-label="Help desk character">
+    <div class="bubble" id="bubble"><span class="who" id="bubbleWho">Front desk</span><span id="bubbleText">Hello! I'm the Virtual City Help Desk. Tell me what you're trying to do, or ask me anything.</span></div>
+    <div class="portrait" id="portrait"><img id="portraitImg" alt="Help desk character" src="/public/characters/marlowe-neutral.webp"></div>
     <div class="nametag" id="nametag">Marlowe <span>front desk</span></div>
-  </aside>
+    <div class="steps" id="steps"></div>
+  </section>
+
+  <section class="tvcol" aria-label="Work shown on the office screen">
+    <div class="tv">
+      <div class="tv-top"><span class="tv-label" id="tvLabel">Welcome</span><span class="tv-model" id="tvModel"></span></div>
+      <div class="screen" id="screen"></div>
+    </div>
+    <div class="remote" id="remote" role="tablist" aria-label="Choose what the screen shows">
+      <button type="button" class="rbtn" data-channel="map" role="tab"><span class="rkey">1</span>Parcel Map</button>
+      <button type="button" class="rbtn" data-channel="code" role="tab"><span class="rkey">2</span>Code Review</button>
+      <button type="button" class="rbtn" data-channel="submissions" role="tab"><span class="rkey">3</span>Your Submissions</button>
+      <button type="button" class="rbtn" data-channel="paperwork" role="tab"><span class="rkey">4</span>Submission Paperwork</button>
+    </div>
+  </section>
 
   <div class="inputbar">
     <div class="demo-bar hidden" id="demoBar">
@@ -62,11 +76,10 @@
     <form id="form">
       <button type="button" class="icon secondary" id="attachBtn" title="Attach a drawing or photo">📎</button>
       <input type="file" id="image" accept="image/*" class="hidden">
-      <textarea id="text" rows="1" placeholder="Type here, or press the microphone and talk…" maxlength="6000"></textarea>
+      <textarea id="text" rows="1" placeholder="Type here, or hold the microphone and talk…" maxlength="6000"></textarea>
       <button type="button" class="icon secondary mic" id="micBtn" title="Hold to talk (Muse Voice Transcribe)">🎤</button>
       <button type="submit" id="send">Send</button>
     </form>
-    <div class="steps" id="steps"></div>
     <div class="small" id="formMsg"></div>
   </div>
 </main>

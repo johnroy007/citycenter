@@ -159,3 +159,13 @@ test("staff can clear demo conversations; real visits stay", async () => {
   assert.equal((await get(`/api/sessions/${demo.ref}?key=${demo.view_key}`)).status, 404);
   assert.equal((await get(`/api/sessions/${real.ref}?key=${real.view_key}`)).status, 200);
 });
+
+test("a visit code (reference plus key in one string) opens the visit; the bare reference does not", async () => {
+  const v = await (await post("/api/sessions", { text: "Visit code test" })).json();
+  await settled(v.ref, v.view_key);
+  const s = await (await get(`/api/sessions/${v.ref}?key=${v.view_key}`)).json();
+  assert.equal(s.visit_code, `${v.ref}-${v.view_key}`);
+  assert.equal((await get(`/api/sessions/${s.visit_code}`)).status, 200, "visit code alone works");
+  assert.equal((await get(`/api/sessions/${v.ref}`)).status, 403, "reference alone is refused");
+  assert.equal((await get(`/api/sessions/${v.ref}-wrongkey1`)).status, 403, "wrong key is refused");
+});

@@ -234,7 +234,13 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
-  $("lookup").addEventListener("submit", function (ev) { ev.preventDefault(); openSession($("lookupRef").value.trim().toUpperCase(), $("lookupKey").value.trim()); });
+  $("lookup").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var code = $("lookupRef").value.trim().replace(/\s+/g, "");
+    var m = code.match(/^([A-Za-z]+-\d{4}-\d{4})-?([A-Za-z0-9_-]{6,})?$/);
+    if (!m || !m[2]) { $("formMsg").textContent = "A visit code looks like HC-2026-0107-xzUHULux: the reference plus the part after it. It was in the desk's message when you submitted, and in this page's address."; return; }
+    openSession(m[1].toUpperCase(), m[2]);
+  });
   function openSession(ref, key) {
     state.ref = ref; state.key = key; state.lastMsgCount = 0;
     history.replaceState(null, "", "/?ref=" + encodeURIComponent(ref) + "&key=" + encodeURIComponent(key));
@@ -287,7 +293,9 @@
     think(s.department || "front_desk", running ? (STEP_LABEL[running.name] || running.name) + "… (" + (STEP_MODEL[running.name] || "") + ")" : "Thinking…");
   }
   function renderHead(s) {
-    $("refline").textContent = "Reference " + s.ref;
+    $("refline").textContent = "";
+    $("refline").appendChild(document.createTextNode("Reference " + s.ref));
+    if (s.visit_code) $("refline").appendChild(el("div", { class: "small code", text: "Visit code " + s.visit_code, title: "Type this under Come back to an earlier visit to return here" }));
     var sc = $("statusChip"); sc.textContent = ""; sc.appendChild(chip(s.changed_since_submit ? "unclear" : s.status, statusLabel(s)));
   }
   function chatItem(m) {

@@ -69,6 +69,7 @@ code { font-size: 13px; background: var(--grey-bg); padding: 1px 5px; border-rad
 .chatlog { display: flex; flex-direction: column; margin: 14px 0 14px 14px; background: rgba(255,255,255,.93); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
 .chatlog-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: #fff; }
 .chatlog-head .refline { font-weight: 700; }
+.chatlog-head .refline .code { font-weight: 500; font-family: ui-monospace, Consolas, monospace; font-size: 11px; word-break: break-all; }
 .chat { list-style: none; margin: 0; padding: 10px 12px; overflow: auto; flex: 1; scroll-behavior: smooth; }
 .msg { display: flex; gap: 8px; margin: 8px 0; align-items: flex-start; }
 .msg .avatar { width: 34px; height: 34px; border-radius: 50%; flex: none; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.12); background: var(--cream); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); }

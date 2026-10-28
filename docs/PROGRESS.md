@@ -52,6 +52,8 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 - **TV fit and zoom (2026-10-28 evening):** the TV's top bar has zoom − / % / + (per channel, remembered in the browser), and Expand, which pops the screen out to nearly the whole window with the remote underneath (Esc closes; `&expand=1` in the link opens it). The Parcel Map channel has View buttons: Parcel (80 m), Block (160 m, default), Area (400 m), Whole city; the map is sized by the available height so the facts stay visible. The character column was narrowed a little to give the TV more width.
 
+- **Visit code instead of reference + key (2026-10-28 evening, John's request to drop the key box):** residents now get one code, "HC-2026-0107-xzUHULux" (reference plus the access key), shown in the conversation header and in the desk's message on submission. "Come back to an earlier visit" has one box that takes that code. The bare reference still does not open a visit, because references are sequential and would let anyone read a stranger's application; Claude explained this and John's one-box wish was met by folding the key into the code. Staff keep using the short reference.
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -62,6 +64,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (evening, visit code) — Claude Code on John's laptop — one visit code; daily cap raised
+- Visit code built as in the decisions list; `GET/POST /api/sessions/<ref>-<key>...` accepted everywhere the key was; test added (32 pass).
+- Live site's DAILY_CALL_CAP raised from 400 to 1500 (re-seeding had used 342) so demos cannot stall during judging week.
 
 ### 2026-10-28 (evening, TV fit) — Claude Code on John's laptop — zoom, expand and map views on the TV
 - John: the four channels did not fit the TV well; wanted zoom options. Built the zoom bar, Expand mode and map View buttons (decisions list). Checked by screenshot: block view with the parcel outlined and facts visible; expanded paperwork and code review readable at full width.

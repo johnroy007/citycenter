@@ -40,6 +40,8 @@ const store = openStore(null, { refPrefix: town.refPrefix });
 const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage(u), canCall: () => store.callsToday().n < DAILY_CAP });
 const ctx = { store, client, town, code, gis, tools, model: MODEL };
 const REF_RE = new RegExp(`^${town.refPrefix}-\\d{4}-\\d{4}$`);
+// A visit code is the reference plus the access key in one string, e.g. HC-2026-0107-xzUHULux. Residents type only that.
+const VISIT_CODE_RE = new RegExp(`^(${town.refPrefix}-\\d{4}-\\d{4})-([A-Za-z0-9_-]{6,})$`);
 const DEMO = fs.existsSync(path.join(__dirname, "data", "demo.json")) ? JSON.parse(fs.readFileSync(path.join(__dirname, "data", "demo.json"), "utf8")) : { examples: [] };
 
 const submitLimiter = sec.createRateLimiter({ limit: 30, windowMs: 60 * 60 * 1000 });
@@ -275,20 +277,25 @@ async function handle(req, res) {
   m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet))?$/);
   if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
-    const ref = decodeURIComponent(m[1]);
+    let ref = decodeURIComponent(m[1]).trim();
     const action = m[2];
-    if (!REF_RE.test(ref)) return sendError(res, 404, "No conversation with that reference code.");
+    let key = url.searchParams.get("key") || "";
+    const vc = ref.match(VISIT_CODE_RE);
+    if (vc) {
+      ref = vc[1];
+      key = vc[2];
+    }
+    if (!REF_RE.test(ref)) return sendError(res, 404, "No visit with that code.");
     const s = store.getSession(ref);
-    if (!s) return sendError(res, 404, "No conversation with that reference code.");
+    if (!s) return sendError(res, 404, "No visit with that code.");
     const staff = isStaff(req);
-    const key = url.searchParams.get("key") || "";
-    if (!staff && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That reference code needs its access key. Use the link you were given.");
+    if (!staff && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That visit code is not complete. It looks like HC-2026-0107-xxxxxxxx: the reference plus the part after it.");
     if (req.method === "GET" && !action) {
       if (!staff && !s.resident_id) {
         const resident = residentFromReq(req);
         if (resident && store.claimSession(ref, resident.id)) s.resident_id = resident.id;
       }
-      return sendJson(res, 200, { ...publicSession(s, { staff }), linked_to_account: !!s.resident_id });
+      return sendJson(res, 200, { ...publicSession(s, { staff }), linked_to_account: !!s.resident_id, ...(staff ? {} : { visit_code: `${s.ref}-${s.view_key}` }) });
     }
     if (req.method === "GET" && action === "sketch") {
       const img = store.getSketch(ref);
@@ -341,11 +348,11 @@ async function handle(req, res) {
         const n = (s.resubmit_count || 0) + 1;
         store.updateSession(ref, { status: "submitted", submitted_at: ts, changed_since_submit: false, resubmit_count: n });
         store.addStaffAction(ref, { action: "resubmitted", note: `Resident resubmitted with updates (update ${n}).`, payload: { previous_status: s.status, previous_submitted_at: s.submitted_at } });
-        store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Resubmitted with your updates (update ${n}). Reference ${ref}. The planning office will see the updated application and write back here.` });
+        store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Resubmitted with your updates (update ${n}). Your visit code is still ${ref}-${s.view_key}. The planning office will see the updated application and write back here.` });
         return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts, resubmit_count: n });
       }
       store.updateSession(ref, { status: "submitted", submitted_at: ts, changed_since_submit: false });
-      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted. Your reference code is ${ref}. The planning office will review it and write back here. You can keep talking to me or edit the paperwork; press Resubmit to send any updates.` });
+      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted. Your visit code is ${ref}-${s.view_key}; keep it to come back to this visit. The planning office will review it and write back here. You can keep talking to me or edit the paperwork; press Resubmit to send any updates.` });
       return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts });
     }
     return notFound(res);

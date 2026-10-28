@@ -69,8 +69,10 @@ async function consentIfAsked(ref, key, s) {
     }
     let submitted = "";
     if (s.packet && s.packet.documents && s.packet.documents.length && s.parcel && s.packet.packet_type !== "referral") {
+      const who = (s.understanding && s.understanding.applicant && s.understanding.applicant.name) || ex.persona || "Resident";
+      await api(`/api/sessions/${ref}/sign?key=${key}`, { method: "POST", body: JSON.stringify({ name: who, method: "typed", agree: true }) });
       await api(`/api/sessions/${ref}/submit?key=${key}`, { method: "POST", body: "{}" });
-      submitted = " submitted";
+      submitted = " signed+submitted";
     }
     console.log(` ${ref} ${s.status}${submitted}; tier ${s.research ? s.research.process_tier : "-"}; ${BASE}/?ref=${ref}&key=${key}`);
   }

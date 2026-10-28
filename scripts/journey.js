@@ -79,6 +79,10 @@ const ok = (cond, msg) => {
   ok(JSON.stringify(s.packet).includes("0177"), "the edit-by-telling landed in the packet");
 
   // Submit
+  const unsigned = await fetch(`${BASE}/api/sessions/${ref}/submit?key=${key}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  ok(unsigned.status === 409, "submit without a signature is refused");
+  r = await api(`/api/sessions/${ref}/sign?key=${key}`, { method: "POST", body: JSON.stringify({ name: "Ryan Castillo", method: "typed", agree: true }) });
+  ok(r.ok && r.method === "typed", "signed (typed)");
   r = await api(`/api/sessions/${ref}/submit?key=${key}`, { method: "POST", body: "{}" });
   ok(r.status === "submitted", "submitted");
 

@@ -111,6 +111,16 @@ test("after submitting, the resident can keep editing and talking; the applicati
   });
   store.close();
   r = await post(`/api/sessions/${ref}/submit?key=${view_key}`, {});
+  assert.equal(r.status, 409, "submit needs a signature");
+  assert.equal((await r.json()).code, "needs_signature");
+  r = await post(`/api/sessions/${ref}/sign?key=${view_key}`, { name: "Pat Example", method: "typed", agree: false });
+  assert.equal(r.status, 400, "consent is required");
+  r = await post(`/api/sessions/${ref}/sign?key=${view_key}`, { name: "Pat Example", method: "typed", agree: true });
+  assert.equal(r.status, 200);
+  const sigImg = await get(`/api/sessions/${ref}/signature?key=${view_key}`);
+  assert.equal(sigImg.headers.get("content-type"), "image/svg+xml");
+  assert.match(await sigImg.text(), /Pat Example/);
+  r = await post(`/api/sessions/${ref}/submit?key=${view_key}`, {});
   let j = await r.json();
   assert.equal(r.status, 200);
   assert.equal(j.status, "submitted");
@@ -121,7 +131,14 @@ test("after submitting, the resident can keep editing and talking; the applicati
   assert.equal(s.status, "submitted");
   assert.equal(s.changed_since_submit, true);
   assert.equal(s.packet.documents[0].fields[0].value, "435-555-0100");
-  // Resubmit sends the update
+  assert.equal(s.signature_current, false, "the signature no longer matches the edited application");
+  // Resubmit needs a fresh signature, then sends the update
+  r = await post(`/api/sessions/${ref}/submit?key=${view_key}`, {});
+  assert.equal(r.status, 409, "stale signature is refused");
+  const tinyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+  r = await post(`/api/sessions/${ref}/sign?key=${view_key}`, { name: "Pat Example", method: "drawn", png: tinyPng, agree: true });
+  assert.equal(r.status, 200, "a drawn PNG signature is accepted");
+  assert.equal((await get(`/api/sessions/${ref}/signature?key=${view_key}`)).headers.get("content-type"), "image/png");
   r = await post(`/api/sessions/${ref}/submit?key=${view_key}`, {});
   j = await r.json();
   assert.equal(j.resubmit_count, 1);

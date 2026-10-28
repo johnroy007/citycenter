@@ -57,6 +57,8 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - **Tappable replies in the chat (2026-10-28 evening):** under the newest desk message: Yes, please / No, something else on the consent question; Submit to planning / Edit it myself / I want to change something when the paperwork is ready (Resubmit when changed after submission); and up to four short answers the planner proposes when its first follow-up question has a fixed set of answers (`quick_replies` in the packet schema). Tapping sends the text as the resident's reply so it stays in the history.
 - **Wording (John):** remote button 3 is "Information You Uploaded"; the staff-decide line everywhere is "Only real City Officials can make decisions."
 
+- **Electronic signature before submission (2026-10-28 evening, John's request, DocuSign-style):** Submit opens a signing panel on the paperwork screen: certification statement, full name, draw (canvas) or type (script typeface) the signature, consent checkbox, "Sign and submit". The server stores the signature image (PNG for drawn, SVG for typed) with name, method, time, requester address, user agent, the consent text and a fingerprint of the application text (`lib/signature.js`). Submit and resubmit refuse an unsigned or out-of-date signature (409 `needs_signature`). The signature shows on the form's applicant line and in the staff workspace with its details. Deep link `&sign=1` opens the panel. The consent wording is Claude's; John may change it in `lib/signature.js` (server) and `resident.js` (panel text).
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -67,6 +69,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (evening, signing) — Claude Code on John's laptop — electronic signature before submit
+- Built as in the decisions list. Tests cover: submit refused without a signature, consent required, typed signature served as SVG, drawn PNG accepted, stale signature refused after an edit, resubmit after re-signing (32 pass). Screenshots: signing panel; signed form with script signature and date. Journey and seed scripts sign (typed) before submitting. Live examples re-seeded so submitted applications carry signatures.
 
 ### 2026-10-28 (evening, quick replies) — Claude Code on John's laptop — tappable replies, wording
 - Quick-reply buttons built as in the decisions list; verified: consent buttons render under Marlowe's question (screenshot) and the planner proposed four state-approval options in the daycare example. Fixed an ordering bug caught by that run (`ready` used before it was computed). Welcome screen now stays until there is something to show. 32 of 32 tests pass. Deployed.

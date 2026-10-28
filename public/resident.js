@@ -309,12 +309,12 @@
     }
     (m.quick_replies || []).forEach(function (q) { chip(q, function () { sendMessage(q); }); });
     if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && s.parcel && !s.submitted_at) {
-      chip("Submit to planning", async function () { try { await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); poll(); } catch (e) { $("formMsg").textContent = e.message; } }, "primary");
+      chip("Sign and submit", function () { openSignPanel(); }, "primary");
       chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; renderScreen(state.session); renderRemote(state.session); });
       chip("I want to change something", function () { $("text").placeholder = "Tell " + characterFor("planning").character + " what to change…"; $("text").focus(); });
     }
     if (m.offers_submit && s && s.submitted_at && s.changed_since_submit) {
-      chip("Resubmit and update application", async function () { try { await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); poll(); } catch (e) { $("formMsg").textContent = e.message; } }, "primary");
+      chip("Sign and resubmit", function () { openSignPanel(); }, "primary");
     }
     return any ? row : null;
   }
@@ -704,7 +704,7 @@
       // Certification and office use
       page.appendChild(el("div", { class: "certify" }, [
         el("p", { text: "I certify that the information in this application is true and complete to the best of my knowledge, and I authorize city staff to visit the property for the purpose of reviewing this application." }),
-        el("div", { class: "siglines" }, [el("div", { class: "sig" }, [el("span", { text: "Applicant signature" })]), el("div", { class: "sig short" }, [el("span", { text: "Date" })]), el("div", { class: "sig" }, [el("span", { text: "Owner signature (if different)" })]), el("div", { class: "sig short" }, [el("span", { text: "Date" })])]),
+        signatureLines(s),
       ]));
       var tier = s.research ? tierInfo(s.research.process_tier) : null;
       page.appendChild(el("div", { class: "office-use" }, [
@@ -720,18 +720,19 @@
     var canSubmit = ["open", "ready"].includes(s.status) && hasDocs && !s.submitted_at;
     var canResubmit = !!s.submitted_at && s.changed_since_submit && hasDocs;
     if (s.submitted_at && !s.changed_since_submit && !state.editing) actions.appendChild(el("span", { class: "small", text: "Submitted " + fmt(s.submitted_at) + (s.resubmit_count ? " (update " + s.resubmit_count + ")" : "") + ". You can keep talking or edit; any change can be resubmitted." }));
-    if ((canSubmit || canResubmit) && !state.editing) {
-      var submit = el("button", { type: "button", text: canResubmit ? "Resubmit and update application" : "Submit to the planning department" });
-      submit.addEventListener("click", async function () { submit.disabled = true; try { await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); poll(); } catch (e) { $("formMsg").textContent = e.message; submit.disabled = false; } });
+    if ((canSubmit || canResubmit) && !state.editing && !state.signing) {
+      var submit = el("button", { type: "button", text: canResubmit ? "Sign and resubmit" : "Sign and submit to the planning department" });
+      submit.addEventListener("click", function () { openSignPanel(); });
       actions.appendChild(submit);
     }
+    if (state.signing && !state.editing) screen.insertBefore(signPanel(s), screen.firstChild);
     if (hasDocs && !state.editing && !s.busy) {
       var edit = el("button", { type: "button", class: "secondary", text: "Edit it myself" });
       edit.addEventListener("click", function () { state.editing = true; renderScreen(state.session); });
       actions.appendChild(edit);
       actions.appendChild(el("span", { class: "small", text: "Or just tell " + characterFor("planning").character + " what to change." }));
     }
-    if (canResubmit && !state.editing) screen.insertBefore(el("div", { class: "notice warn", text: "You have made changes since you submitted. Press Resubmit to send the updated application to the planning office." }), screen.firstChild);
+    if (canResubmit && !state.editing && !state.signing) screen.insertBefore(el("div", { class: "notice warn", text: "You have made changes since you submitted. Sign the updated application and resubmit to send it to the planning office." }), screen.firstChild);
     if (state.editing) {
       var save = el("button", { type: "button", text: "Save my edits" });
       save.addEventListener("click", async function () {
@@ -751,6 +752,103 @@
     if (s.submitted_at && !s.changed_since_submit) screen.appendChild(el("p", { class: "small", text: "Staff will write back in this conversation." }));
     if (p.questions && p.questions.length && !s.submitted_at) screen.appendChild(el("div", { class: "notice warn" }, [el("b", { text: "Still needed: " }), p.questions.join(" ")]));
   }
+  function signatureLines(s) {
+    var sig = s.signature;
+    var current = !!s.signature_current;
+    var appl = el("div", { class: "sig" + (sig ? " signed" : "") });
+    var date = el("div", { class: "sig short" + (sig ? " signed" : "") });
+    if (sig) {
+      var img = el("img", { class: "sigimg", src: "/api/sessions/" + encodeURIComponent(state.ref) + "/signature?key=" + encodeURIComponent(state.key) + "&t=" + encodeURIComponent(sig.signed_at), alt: "Signature of " + sig.name });
+      appl.appendChild(img);
+      appl.appendChild(el("span", { text: "Applicant signature · " + sig.name + " (electronic, " + sig.method + ")" + (current ? "" : " · signed an earlier version") }));
+      date.appendChild(el("div", { class: "sigdate", text: fmtDate(sig.signed_at) }));
+      date.appendChild(el("span", { text: "Date" }));
+    } else {
+      appl.appendChild(el("span", { text: "Applicant signature" }));
+      date.appendChild(el("span", { text: "Date" }));
+    }
+    return el("div", { class: "siglines" }, [appl, date, el("div", { class: "sig" }, [el("span", { text: "Owner signature (if different)" })]), el("div", { class: "sig short" }, [el("span", { text: "Date" })])]);
+  }
+
+  // ---------- signing panel (draw or type, then submit) ----------
+  var pad = { canvas: null, ctx: null, drawing: false, strokes: 0, last: null };
+  function openSignPanel() {
+    state.signing = true; state.channel = "paperwork"; state.manual = true;
+    renderScreen(state.session); renderRemote(state.session);
+    var sp = document.querySelector(".signpanel"); if (sp) sp.scrollIntoView({ block: "start" });
+  }
+  function signPanel(s) {
+    var u = s.understanding || {};
+    var suggested = (u.applicant && u.applicant.name) || "";
+    var panel = el("div", { class: "signpanel" });
+    panel.appendChild(el("h2", { text: s.submitted_at ? "Sign the updated application" : "Sign your application" }));
+    panel.appendChild(el("p", { class: "consent", text: CONSENT_TEXT }));
+    var name = el("input", { type: "text", id: "sigName", placeholder: "Your full name", autocomplete: "name", maxlength: "120" });
+    name.value = suggested;
+    panel.appendChild(el("label", { class: "small", text: "Full name" }));
+    panel.appendChild(name);
+    var tabs = el("div", { class: "row tabs" });
+    var drawTab = el("button", { type: "button", class: "quiet active", text: "Draw it" });
+    var typeTab = el("button", { type: "button", class: "quiet", text: "Type it" });
+    tabs.appendChild(drawTab); tabs.appendChild(typeTab);
+    panel.appendChild(tabs);
+    var method = "drawn";
+    var drawBox = el("div", { class: "drawbox" });
+    var canvas = el("canvas", { width: "640", height: "180", class: "sigpad", "aria-label": "Draw your signature here" });
+    drawBox.appendChild(canvas);
+    var clear = el("button", { type: "button", class: "quiet", text: "Clear" });
+    drawBox.appendChild(el("div", { class: "row", style: "justify-content:space-between;margin-top:6px" }, [el("span", { class: "small", text: "Sign with your mouse or finger" }), clear]));
+    panel.appendChild(drawBox);
+    var typeBox = el("div", { class: "typebox hidden" });
+    var preview = el("div", { class: "sigpreview", text: suggested || "Your name" });
+    typeBox.appendChild(preview);
+    typeBox.appendChild(el("div", { class: "small", text: "Your typed name becomes your signature." }));
+    panel.appendChild(typeBox);
+    setupPad(canvas);
+    clear.addEventListener("click", function () { clearPad(); });
+    drawTab.addEventListener("click", function () { method = "drawn"; drawTab.classList.add("active"); typeTab.classList.remove("active"); drawBox.classList.remove("hidden"); typeBox.classList.add("hidden"); });
+    typeTab.addEventListener("click", function () { method = "typed"; typeTab.classList.add("active"); drawTab.classList.remove("active"); typeBox.classList.remove("hidden"); drawBox.classList.add("hidden"); preview.textContent = name.value || "Your name"; });
+    name.addEventListener("input", function () { preview.textContent = name.value || "Your name"; });
+    var agree = el("input", { type: "checkbox", id: "sigAgree" });
+    panel.appendChild(el("label", { class: "agree" }, [agree, el("span", { text: " I agree to sign this application electronically. My signature will be recorded with the date, time and the exact text of the application." })]));
+    var msg = el("div", { class: "small notice error hidden" });
+    var go = el("button", { type: "button", text: s.submitted_at ? "Sign and resubmit" : "Sign and submit" });
+    var cancel = el("button", { type: "button", class: "quiet", text: "Cancel" });
+    cancel.addEventListener("click", function () { state.signing = false; renderScreen(state.session); });
+    go.addEventListener("click", async function () {
+      msg.classList.add("hidden");
+      var n = name.value.trim();
+      if (n.length < 2) { msg.textContent = "Please type your full name."; msg.classList.remove("hidden"); return; }
+      if (!agree.checked) { msg.textContent = "Please tick the box to agree to sign electronically."; msg.classList.remove("hidden"); return; }
+      if (method === "drawn" && pad.strokes === 0) { msg.textContent = "Draw your signature in the box, or choose Type it."; msg.classList.remove("hidden"); return; }
+      go.disabled = true;
+      try {
+        var body = { name: n, method: method, agree: true };
+        if (method === "drawn") body.png = canvas.toDataURL("image/png").split(",")[1];
+        await api("/api/sessions/" + state.ref + "/sign?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify(body) });
+        await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" });
+        state.signing = false;
+        poll();
+      } catch (e) { msg.textContent = e.message; msg.classList.remove("hidden"); go.disabled = false; }
+    });
+    panel.appendChild(msg);
+    panel.appendChild(el("div", { class: "actions" }, [go, cancel]));
+    return panel;
+  }
+  var CONSENT_TEXT = "I certify that the information in this application is true and complete to the best of my knowledge, I authorize city staff to visit the property for the purpose of reviewing this application, and I agree that my electronic signature has the same effect as my handwritten signature.";
+  function setupPad(canvas) {
+    pad.canvas = canvas; pad.ctx = canvas.getContext("2d"); pad.strokes = 0; pad.last = null;
+    var ctx = pad.ctx;
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#9aa4b2"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(24, 140); ctx.lineTo(616, 140); ctx.stroke();
+    ctx.strokeStyle = "#1a237e"; ctx.lineWidth = 2.6; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    function pos(e) { var r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) }; }
+    canvas.addEventListener("pointerdown", function (e) { e.preventDefault(); canvas.setPointerCapture(e.pointerId); pad.drawing = true; pad.last = pos(e); ctx.beginPath(); ctx.moveTo(pad.last.x, pad.last.y); });
+    canvas.addEventListener("pointermove", function (e) { if (!pad.drawing) return; e.preventDefault(); var p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); pad.last = p; pad.strokes++; });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) { canvas.addEventListener(ev, function () { pad.drawing = false; }); });
+  }
+  function clearPad() { if (pad.canvas) setupPad(pad.canvas); }
+
   function firstField(d, re) {
     var f = (d.fields || []).find(function (x) { return re.test(x.label) && x.value; });
     return f ? f.value : "";
@@ -875,6 +973,7 @@
     }
     if (params.get("ch") && CHANNEL_LABEL[params.get("ch")]) { state.channel = params.get("ch"); state.manual = true; state.lockOnce = true; }
     if (params.get("expand") === "1") setExpanded(true);
+    if (params.get("sign") === "1") { state.signing = true; state.channel = "paperwork"; state.manual = true; state.lockOnce = true; }
     if (params.get("ref") && params.get("key")) openSession(params.get("ref"), params.get("key"));
   })();
 })();

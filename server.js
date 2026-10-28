@@ -15,6 +15,7 @@ const { createClient, MetaError } = require("./lib/meta");
 const { runTurn } = require("./lib/desk");
 const review = require("./lib/review");
 const { validateImage } = require("./lib/sketch");
+const signature = require("./lib/signature");
 const sec = require("./lib/security");
 
 const PORT = Number(process.env.PORT || 3000);
@@ -274,7 +275,7 @@ async function handle(req, res) {
   }
 
   // Resident: read, message, submit, sketch (view key required unless staff)
-  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet))?$/);
+  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature))?$/);
   if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
     let ref = decodeURIComponent(m[1]).trim();
@@ -295,7 +296,45 @@ async function handle(req, res) {
         const resident = residentFromReq(req);
         if (resident && store.claimSession(ref, resident.id)) s.resident_id = resident.id;
       }
-      return sendJson(res, 200, { ...publicSession(s, { staff }), linked_to_account: !!s.resident_id, ...(staff ? {} : { visit_code: `${s.ref}-${s.view_key}` }) });
+      const sigCurrent = !!(s.signature && s.packet && s.signature.doc_hash === signature.docHash(s.packet));
+      return sendJson(res, 200, { ...publicSession(s, { staff }), linked_to_account: !!s.resident_id, signature_current: sigCurrent, ...(staff ? {} : { visit_code: `${s.ref}-${s.view_key}` }) });
+    }
+    if (req.method === "GET" && action === "signature") {
+      const img = store.getSignature(ref);
+      if (!img) return notFound(res);
+      res.writeHead(200, { "Content-Type": img.mime, "Cache-Control": "private, max-age=60", "Content-Length": img.data.length });
+      return res.end(img.data);
+    }
+    if (req.method === "POST" && action === "sign") {
+      // Electronic signature, bound to the documents as they stand right now.
+      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many requests. Please slow down.");
+      if (s.busy) return sendError(res, 409, "The desk is still working. Wait for the paperwork, then sign.");
+      if (!s.packet || !s.packet.documents || !s.packet.documents.length || s.packet.packet_type === "referral") return sendError(res, 400, "There is no application to sign yet.");
+      const body = await readJson(req, MAX_SUBMIT_BYTES);
+      const name = typeof body.name === "string" ? body.name.trim().replace(/\s+/g, " ").slice(0, 120) : "";
+      const method = body.method === "drawn" ? "drawn" : body.method === "typed" ? "typed" : "";
+      if (name.length < 2) return sendError(res, 400, "Please type your full name.");
+      if (!method) return sendError(res, 400, "Choose to draw or type your signature.");
+      if (body.agree !== true) return sendError(res, 400, "Please tick the box to agree to sign electronically.");
+      let data;
+      let mime;
+      if (method === "drawn") {
+        let png;
+        try {
+          png = Buffer.from(String(body.png || "").replace(/^data:image\/png;base64,/, ""), "base64");
+        } catch {
+          return sendError(res, 400, "The drawn signature could not be read.");
+        }
+        if (!signature.isPng(png) || png.length > 300 * 1024) return sendError(res, 400, "The drawn signature must be a PNG under 300 KB.");
+        data = png;
+        mime = "image/png";
+      } else {
+        data = Buffer.from(signature.typedSignatureSvg(name), "utf8");
+        mime = "image/svg+xml";
+      }
+      const meta = { name, method, signed_at: new Date().toISOString(), ip, user_agent: String(req.headers["user-agent"] || "").slice(0, 200), consent: signature.CONSENT_TEXT, doc_hash: signature.docHash(s.packet), documents: s.packet.documents.map((d) => d.name) };
+      store.setSignature(ref, { data, mime, meta });
+      return sendJson(res, 200, { ok: true, signed_at: meta.signed_at, name, method });
     }
     if (req.method === "GET" && action === "sketch") {
       const img = store.getSketch(ref);
@@ -341,6 +380,10 @@ async function handle(req, res) {
     if (req.method === "POST" && action === "submit") {
       if (s.busy) return sendError(res, 409, "The desk is still working. Wait for the packet, then submit.");
       if (!s.packet || !s.packet.documents || !s.packet.documents.length) return sendError(res, 400, "There is no prepared packet to submit yet.");
+      if (!s.signature || s.signature.doc_hash !== signature.docHash(s.packet)) {
+        res.writeHead(409, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+        return res.end(JSON.stringify({ error: s.signature ? "The application changed since you signed it. Please sign the current version, then submit." : "Please sign the application first.", code: "needs_signature" }));
+      }
       const ts = new Date().toISOString();
       if (s.submitted_at) {
         // Resubmit: the resident kept working after submitting and is sending the updated application.
@@ -352,7 +395,7 @@ async function handle(req, res) {
         return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts, resubmit_count: n });
       }
       store.updateSession(ref, { status: "submitted", submitted_at: ts, changed_since_submit: false });
-      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted. Your visit code is ${ref}-${s.view_key}; keep it to come back to this visit. The planning office will review it and write back here. You can keep talking to me or edit the paperwork; press Resubmit to send any updates.` });
+      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted and signed by ${s.signature.name}. Your visit code is ${ref}-${s.view_key}; keep it to come back to this visit. The planning office will review it and write back here. You can keep talking to me or edit the paperwork; press Resubmit to send any updates.` });
       return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts });
     }
     return notFound(res);

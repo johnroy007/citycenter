@@ -215,6 +215,19 @@ footer.credits { font-size: 12px; color: var(--muted); padding: 10px 18px; }
 .certify { margin-top: 16px; font-size: 13px; }
 .siglines { display: grid; grid-template-columns: 2fr 1fr 2fr 1fr; gap: 14px; margin-top: 18px; }
 .sig { border-top: 1px solid #333; padding-top: 3px; font-family: system-ui, sans-serif; font-size: 10.5px; color: #555; text-transform: uppercase; letter-spacing: .05em; }
+.sig.signed { position: relative; }
+.sig .sigimg { display: block; max-height: 64px; max-width: 100%; margin-bottom: 2px; }
+.sig .sigdate { font-family: Georgia, serif; font-size: 14px; color: #111; text-transform: none; letter-spacing: 0; }
+.signpanel { background: #fff; border: 2px solid var(--blue); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+.signpanel h2 { margin-top: 0; }
+.signpanel .consent { font-size: 14px; background: #f5f8ff; border: 1px solid #d6e0f5; border-radius: 10px; padding: 10px 12px; }
+.signpanel input[type=text] { max-width: 420px; margin-bottom: 10px; }
+.signpanel .tabs { margin-bottom: 8px; }
+.signpanel .tabs button.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.sigpad { width: 100%; max-width: 640px; height: auto; aspect-ratio: 640 / 180; border: 1px dashed #9aa4b2; border-radius: 10px; background: #fff; touch-action: none; cursor: crosshair; display: block; }
+.sigpreview { font-family: "Segoe Script", "Brush Script MT", "Snell Roundhand", cursive; font-size: 44px; color: #1a237e; padding: 18px 24px; border-bottom: 1px solid #9aa4b2; max-width: 640px; min-height: 90px; }
+.signpanel .agree { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 6px; font-size: 14px; }
+.signpanel .agree input { margin-top: 4px; }
 .office-use { margin-top: 18px; border: 2px solid #333; padding: 8px 12px 10px; background: #f7f7f7; }
 .office-use .ou-title { font-family: system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
 .office-use .fgrid { grid-template-columns: repeat(3, 1fr); }

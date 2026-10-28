@@ -162,6 +162,12 @@
       var pz = el("div", { class: "docsec" + (hl ? " hl" : "") }, [el("h3", { text: "Parcel" }), el("div", { text: (s.parcel.address || "") + " · " + (s.parcel.id || "") + " · zone " + (s.parcel.zone || "?") + (s.parcel.zoneName ? " (" + s.parcel.zoneName + ")" : "") + " · " + (s.parcel.areaAcres || "?") + " acres" + (s.parcel.straddlesZones ? " · touches " + s.parcel.zonesTouched.join(", ") : "") + (s.parcel.assumed ? " · ASSUMED among several parcels at this address" : "") }), el("div", { class: "small", text: "Owner of record: " + (s.owner ? s.owner.name : "?") + " (fictional demo name)" })]);
       pane.appendChild(pz);
     }
+    if (s.signature) {
+      var sigBox = el("div", { class: "docsec" + (c && c.kind === "completeness" ? " hl" : "") }, [el("h3", { text: "Electronic signature" })]);
+      sigBox.appendChild(el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/signature?t=" + encodeURIComponent(s.signature.signed_at), alt: "Signature", style: "max-width:320px;display:block;border:1px solid var(--line);border-radius:8px;background:#fff" }));
+      sigBox.appendChild(el("div", { class: "small", text: "Signed by " + s.signature.name + " (" + s.signature.method + ") on " + fmt(s.signature.signed_at) + " from " + (s.signature.ip || "?") + (s.signature_current ? " · matches the application as it stands" : " · the application changed after signing; a resubmit needs a new signature") }));
+      pane.appendChild(sigBox);
+    }
     (s.packet ? s.packet.documents : []).forEach(function (d) {
       var hlDoc = c && (sectionMatches(c, d.section) || (c.kind === "completeness"));
       var box = el("div", { class: "docsec" + (hlDoc ? " hl" : "") }, [el("h3", { text: d.name + (d.section ? " · section " + d.section : "") })]);

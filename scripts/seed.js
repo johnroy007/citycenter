@@ -11,6 +11,7 @@ const { createTools } = require("../lib/tools");
 const { openStore } = require("../lib/store");
 const { createClient } = require("../lib/meta");
 const { runTurn } = require("../lib/desk");
+const signature = require("../lib/signature");
 
 const demo = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "demo.json"), "utf8"));
 const PICK = ["lot-split-son", "casita", "rooster"];
@@ -53,6 +54,8 @@ const PICK = ["lot-split-son", "casita", "rooster"];
     }
     const s = store.getSession(ref);
     if (s.packet && s.packet.documents.length && s.parcel) {
+      const who = (s.understanding && s.understanding.applicant && s.understanding.applicant.name) || ex.persona || "Resident";
+      store.setSignature(ref, { data: Buffer.from(signature.typedSignatureSvg(who), "utf8"), mime: "image/svg+xml", meta: { name: who, method: "typed", signed_at: new Date().toISOString(), ip: "seed", consent: signature.CONSENT_TEXT, doc_hash: signature.docHash(s.packet), documents: s.packet.documents.map((d) => d.name) } });
       store.updateSession(ref, { status: "submitted", submitted_at: new Date().toISOString() });
       store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted. Your reference code is ${ref}.` });
     }

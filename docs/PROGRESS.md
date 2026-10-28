@@ -61,6 +61,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-10-28 (evening, re-seed) — Claude Code on John's laptop — examples refreshed under the new flow
+- Staff portal gained "Clear demo conversations" (deletes every visit that came from a worked example; real visits stay; `POST /api/staff/purge-demo`, tested). `node scripts/seed-remote.js <url> --fresh` clears and re-seeds in one go.
+- Live site: 16 stale demo conversations removed, all 13 examples re-run with consent, introductions and the AI-assistant wording (6 submitted to planning, 7 referred to stub desks). Same done locally. 31 of 31 tests pass.
+
 ### 2026-10-28 (evening, later) — Claude Code on John's laptop — AI-assistant wording, Building example, Juniper's introduction
 - Consent question now reads "Would you like me to get Juniper, our AI assistant with our Planning & Zoning Department, for you?" (same shape for every desk).
 - Building Department example (framing inspection on an existing permit) added so Bob's desk appears in the routing; seeded on the live site.

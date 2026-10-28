@@ -419,6 +419,13 @@ async function handle(req, res) {
       // What can this host reach? Never echoes the key (prefix and length only).
       return sendJson(res, 200, { ...(await client.diagnose()), env_model: process.env.META_MODEL || null, node: process.version, data_dir: store.dir });
     }
+    if (req.method === "POST" && p === "/api/staff/purge-demo") {
+      // Removes conversations that were started from the worked examples (demo_id set), so the queue can be re-seeded.
+      const victims = store.listSessions().filter((x) => x.demo_id && !x.busy);
+      let n = 0;
+      for (const v of victims) if (store.deleteSession(v.ref)) n++;
+      return sendJson(res, 200, { ok: true, deleted: n });
+    }
     if (req.method === "GET" && p === "/api/staff/queue") {
       return sendJson(res, 200, { sessions: store.listSessions(), usage_today: store.callsToday(), daily_cap: DAILY_CAP });
     }

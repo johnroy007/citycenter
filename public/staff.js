@@ -69,6 +69,11 @@
     loadQueue();
   }
   $("refresh").addEventListener("click", loadQueue);
+  $("purgeDemo").addEventListener("click", async function () {
+    if (!confirm("Delete every conversation that was started from the worked examples? Real visits are kept.")) return;
+    try { var r = await api("/api/staff/purge-demo", { method: "POST", body: "{}" }); $("usage").textContent = "Removed " + r.deleted + " demo conversation(s)."; loadQueue(); }
+    catch (e) { $("usage").textContent = e.message; }
+  });
   async function loadQueue() {
     try {
       var data = await api("/api/staff/queue");

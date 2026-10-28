@@ -1,12 +1,16 @@
 // Seeds a running server (local or the live site) with the worked examples by driving the public HTTP API,
 // exactly as the demo mode does. Costs roughly 20 to 40 cents per example.
-// Usage: node scripts/seed-remote.js https://citycenter-puh5.onrender.com [example-id,example-id]
+// Usage: node scripts/seed-remote.js https://citycenter-puh5.onrender.com [example-id,example-id] [--fresh]
+// --fresh first deletes every earlier demo conversation on that server (staff passcode from .env STAFF_PASSCODE).
 "use strict";
 const fs = require("fs");
 const path = require("path");
+require("../lib/env").loadEnv();
 
-const BASE = process.argv[2] || "http://localhost:3000";
-const only = (process.argv[3] || "").split(",").filter(Boolean);
+const argv = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const fresh = process.argv.includes("--fresh");
+const BASE = argv[0] || "http://localhost:3000";
+const only = (argv[1] || "").split(",").filter(Boolean);
 const demo = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "demo.json"), "utf8"));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -39,6 +43,16 @@ async function consentIfAsked(ref, key, s) {
 }
 
 (async () => {
+  if (fresh) {
+    const pass = process.env.STAFF_PASSCODE || "";
+    if (!pass) throw new Error("--fresh needs STAFF_PASSCODE in .env");
+    const login = await fetch(BASE + "/api/staff/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ passcode: pass }) });
+    if (!login.ok) throw new Error("staff login failed: " + login.status);
+    const cookie = (login.headers.get("set-cookie") || "").split(";")[0];
+    const r = await fetch(BASE + "/api/staff/purge-demo", { method: "POST", headers: { "Content-Type": "application/json", cookie }, body: "{}" });
+    const j = await r.json();
+    console.log(`Removed ${j.deleted} earlier demo conversation(s).`);
+  }
   for (const ex of demo.examples) {
     if (only.length && !only.includes(ex.id)) continue;
     process.stdout.write(`${ex.title} ... `);

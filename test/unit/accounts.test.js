@@ -146,3 +146,16 @@ test("after submitting, the resident can keep editing and talking; the applicati
   assert.equal(row.resubmit_count, 1);
   assert.equal(row.changed_since_submit, true);
 });
+
+test("staff can clear demo conversations; real visits stay", async () => {
+  const demo = await (await post("/api/sessions", { text: "Demo visit", demo_id: "rooster" })).json();
+  const real = await (await post("/api/sessions", { text: "Real visit" })).json();
+  await settled(demo.ref, demo.view_key);
+  await settled(real.ref, real.view_key);
+  assert.equal((await post("/api/staff/purge-demo", {})).status, 401, "needs staff");
+  const login = await post("/api/staff/login", { passcode: "test-passcode-123" });
+  const j = await (await post("/api/staff/purge-demo", {}, cookieOf(login))).json();
+  assert.ok(j.deleted >= 1);
+  assert.equal((await get(`/api/sessions/${demo.ref}?key=${demo.view_key}`)).status, 404);
+  assert.equal((await get(`/api/sessions/${real.ref}?key=${real.view_key}`)).status, 200);
+});

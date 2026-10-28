@@ -124,7 +124,7 @@ function publicSession(s, { staff }) {
 function startTurn(ref) {
   runningTurns++;
   runTurn(ref, ctx)
-    .catch((e) => console.error(`[${ref}] turn failed: ${e.message}`))
+    .catch((e) => console.error(`[${ref}] turn failed: ${e.message}${e.body ? " | " + JSON.stringify(e.body).slice(0, 400) : ""}`))
     .finally(() => {
       runningTurns--;
     });

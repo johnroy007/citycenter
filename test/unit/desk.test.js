@@ -2,7 +2,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const prompts = require("../../lib/prompts");
-const { sanitizeReply, verifyCited, numbersIn, conversationText, parcelAsText } = require("../../lib/desk");
+const { sanitizeReply, verifyCited, numbersIn, conversationText, parcelAsText, addressCandidates } = require("../../lib/desk");
 const { createCodeStore } = require("../../lib/codestore");
 const { zoneStandardsFromText, parseArea, createTools } = require("../../lib/tools");
 const { ownerFor } = require("../../lib/owners");
@@ -44,6 +44,15 @@ test("numbersIn, conversationText and parcelAsText", () => {
   assert.match(t, /RESIDENT: hi\nJUNIPER \(planning\): hello/);
   assert.match(parcelAsText(null), /not located/);
   assert.match(parcelAsText({ id: "HD-1", address: "1 Main", zone: "R1-8", zoneName: "Single", areaSqft: 10000, areaAcres: 0.23, zonesTouched: ["R1-8"], straddlesZones: false }, { name: "Jane Alder" }), /FICTIONAL/);
+});
+
+test("addressCandidates finds street addresses written mid-sentence and skips measurements", () => {
+  const c = addressCandidates("Ryan Castillo here, 385 W Utah Ave. I'd like a 900 square foot guest house. Priya at 595 E 1400 N has 10 hens. Call 435-555-0101.");
+  assert.ok(c.includes("385 W Utah Ave"), JSON.stringify(c));
+  assert.ok(c.includes("595 E 1400 N"), JSON.stringify(c));
+  assert.ok(!c.some((x) => /^900 square/.test(x)), JSON.stringify(c));
+  const g = loadGis(town);
+  assert.equal(g.locate({ address: c[0] }).parcel.zone, "R1-8");
 });
 
 test("fictional owners are deterministic and flagged", () => {

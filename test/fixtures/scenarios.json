@@ -86,7 +86,9 @@
         "department": "planning",
         "tiers": [
           "none",
-          "building_permit"
+          "building_permit",
+          "variance",
+          "administrative"
         ],
         "sections_any": [
           "152-13-4",
@@ -277,7 +279,10 @@
           "152-15-3"
         ],
         "path_if_blocked_mentions": [
-          "152-7-7"
+          "152-7-7",
+          "map amendment",
+          "rezone",
+          "152-7-18"
         ]
       }
     },

@@ -23,6 +23,29 @@
     return data;
   }
   var STATUS_LABEL = { open: "Talking", ready: "Ready (not submitted)", referred: "Referred", submitted: "Submitted", needs_info: "Needs info", in_review: "Forwarded", answered: "Answered", error: "Error" };
+  function drawingWithOutline(src, reading) {
+    var wrap = el("div", { style: "position:relative;display:inline-block;max-width:100%" });
+    wrap.appendChild(el("img", { src: src, alt: "Resident's drawing", style: "max-width:100%;display:block;border-radius:10px;border:1px solid var(--line)" }));
+    var o = reading && reading.outline;
+    if (o && o.width && o.height && o.objects && o.objects.length) {
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 " + o.width + " " + o.height);
+      svg.setAttribute("style", "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none");
+      var colors = { rectangle: "#1f5fbf", "dashed line": "#a02020", building: "#1d6b35", house: "#1d6b35", road: "#8a5a00" };
+      o.objects.forEach(function (b) {
+        var r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        r.setAttribute("x", b.x1); r.setAttribute("y", b.y1); r.setAttribute("width", Math.max(2, b.x2 - b.x1)); r.setAttribute("height", Math.max(2, b.y2 - b.y1));
+        r.setAttribute("fill", "none"); r.setAttribute("stroke", colors[b.label] || "#1f5fbf"); r.setAttribute("stroke-width", Math.max(2, o.width / 250)); r.setAttribute("stroke-dasharray", b.label === "dashed line" ? "8 6" : "");
+        svg.appendChild(r);
+        var t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t.setAttribute("x", b.x1 + 4); t.setAttribute("y", Math.max(14, b.y1 - 4)); t.setAttribute("fill", colors[b.label] || "#1f5fbf"); t.setAttribute("font-size", Math.max(12, o.width / 60)); t.setAttribute("font-family", "system-ui, sans-serif");
+        t.textContent = b.label + (b.confidence ? " " + Math.round(b.confidence * 100) + "%" : "");
+        svg.appendChild(t);
+      });
+      wrap.appendChild(svg);
+    }
+    return wrap;
+  }
   var STATE_LABEL = { not_started: "Not started", met: "Met", not_met: "Not met", cannot_verify: "Cannot verify", not_applicable: "N/A", staff_note: "Note" };
   var town = null, current = null, activeId = null;
 
@@ -145,7 +168,8 @@
     });
     if (s.has_sketch) {
       var hlS = c && /drawing|plot plan|site plan|sketch|dimension|setback|frontage|width/i.test((c.title || "") + (c.how_to_verify || ""));
-      pane.appendChild(el("div", { class: "docsec" + (hlS ? " hl" : "") }, [el("h3", { text: "Resident's drawing" }), el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/sketch", alt: "Resident's drawing", style: "max-width:100%;border-radius:10px;border:1px solid var(--line)" })]));
+      var skStep = (s.steps || []).find(function (x) { return x.name === "sketch" && x.status === "done"; });
+      pane.appendChild(el("div", { class: "docsec" + (hlS ? " hl" : "") }, [el("h3", { text: "Resident's drawing (Muse Spark reading, SAM 3.1 outlines)" }), drawingWithOutline("/api/sessions/" + encodeURIComponent(s.ref) + "/sketch", skStep ? skStep.output : null)]));
     }
     var tl = el("ul", { class: "transcript" });
     (s.messages || []).forEach(function (m) { tl.appendChild(el("li", { class: m.role }, [el("strong", { text: (m.role === "resident" ? "Resident" : (m.character || "Desk")) + ": " }), m.text])); });

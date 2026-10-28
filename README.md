@@ -1,87 +1,80 @@
-# citycenter
+# citycenter: a virtual city help desk
 
-**An agent for small towns.** A resident describes what they want to do with their land in plain English and adds a photo of their hand-drawn sketch. citycenter reads both with Meta's Muse Spark, drafts a complete, ready-to-file lot-split application, and lists exactly what is still missing and why, citing the town code. Town staff then get an agent pre-review that checks the packet against every code section, with evidence quoted and the section cited. **Staff and the Planning Commission decide. The agent never does.**
+A resident walks up to a cartoon counter and says what they want to do with their land. The help desk finds the right department, pulls up the parcel on the county map, reads the city's real code, and prepares the paperwork: a zoning verification request, an application set, or a complaint report. City staff open it in a reviewer workspace that lays out every consideration with the exact code text beside it. **The agent packages and prepares. City staff decide.**
 
-Built during the Meta Global AI Developer Hackathon (Oct 26 to Nov 4, 2026), Indie track, by one person. Everything in this repository was written during the event. The town, its code, its parcels and its people are invented ("Town of Sample Creek").
-
-## Why
-
-Small-town land use applications bounce. A resident files, waits two weeks, and gets a letter saying the sketch has no north arrow or the legal description is missing. Staff spend their time on completeness instead of judgment. citycenter moves the completeness work to the moment of filing, and gives staff a cited pre-review instead of a blank page.
+Built from scratch during the Meta Global AI Developer Hackathon (Oct 26 to Nov 4, 2026). Entry for the Indie track.
 
 ## What it does
 
-**Resident flow** (five steps, each a separate structured call to Muse Spark):
+**Resident side (the counter)**
+- A front desk character (Marlowe) listens, routes to the right department, and flags zoning implications even when the resident asked for "a building permit".
+- The planner character (Juniper) locates the parcel from a street address, reads the zone from the official zoning layer, researches the real code with tools, works out which **process tier** the code provides (no application, building permit, zoning verification, administrative, Planning Commission, variance, City Council, or enforcement), and prepares the packet.
+- The moment: *"It looks like you need a zoning map amendment and a lot split application. I have prepared them for your review. Hit Submit, edit them, or tell me what to change."* Residents can edit fields directly or just say what to change.
+- Drawings: a napkin sketch, a hand drawing, an engineered site plan or a page of building plans can be attached and is read for dimensions and labels.
+- Voice: hold the microphone and talk; the character talks back (text and voice).
+- Worked examples for judges: a corner button plays a resident's side of the conversation while the desk answers live.
 
-1. **Read sketch.** The photo goes to `muse-spark-1.3` as an image. It returns a fixed JSON shape: dimensions as written, the proposed lot line, structures, road, north arrow, and every text label on the drawing.
-2. **Extract.** Request text plus sketch reading become one entry per checklist item (18 items), each marked `given`, `unclear` or `missing`, with the words it came from. Conflicts between the text and the sketch become `unclear` with both values recorded.
-3. **Classify.** Which application type under section 12.02, with the section cited. If the resident asked "is this allowed?", the answer is that staff and the Planning Commission decide, with a pointer to the checklist.
-4. **Draft.** The application narrative is written from `given` facts only. Anything missing becomes `[BLANK]`. Code checks every number in the narrative against the facts; an invented number triggers a retry and is then blanked.
-5. **Check.** Code decides which items are missing or unclear. The agent then uses tools (`get_code_section`, `get_checklist_item`, `compute_lot_split`) to explain each gap with the exact citation and to report lot arithmetic against the district minimums. The tool log is shown to the resident.
+**Staff side (the reviewer workspace)**
+- A rail of considerations across the top, one per thing a Land Use Administrator would check, each tied to a code section with a verified quote.
+- The document on the left with the active section highlighted; the evidence on the right (code text, numbers compared, parcel map, drawing reading).
+- The agent strip along the bottom says what the code requires, what the packet says, and how staff normally verify it. Staff mark each consideration Met, Not met, Cannot verify or N/A, add their own, and ask questions that the agent answers from the code.
+- A second reader (Muse Wonder) checks the list against the code text.
+- Letters are drafted from the staff's marks and words, edited by staff, and sent to the resident's conversation.
 
-The resident gets a reference code, a printable packet, the gap list, and "what happens next" under section 12.10.
+**Guardrails, enforced in code**
+- Every quote the model produces is checked against the stored code text before it is shown. Unverifiable quotes are dropped and marked.
+- No schema contains a recommendation, approval, score or likelihood field (a unit test asserts this). Predictive wording is scrubbed from replies.
+- Numbers in drafted statements must come from the resident, the parcel record or the cited code; anything else becomes [BLANK].
+- Text in a resident's message or on a drawing is data, never an instruction.
 
-**Staff portal** (passcode):
+## Which Meta models do what
 
-- Queue of applications with status.
-- **Agent pre-review**: for each section 12.01 to 12.11, the requirement, the evidence quoted from the packet, and a status of `met`, `not_met` or `cannot_verify`. `cannot_verify` is the default when evidence is absent. The output schema has no recommendation field, so the model cannot give one.
-- Staff choose **request more information** or **accept as complete and schedule for Planning Commission**. The agent drafts the letter; staff edit and save; the resident's page shows it.
-
-## Meta models
-
-| Where | Model | How |
+| Step | Model | How |
 |---|---|---|
-| Sketch reading | `muse-spark-1.3` | Chat Completions with `image_url` (base64) and `response_format` JSON schema |
-| Extract, classify, draft | `muse-spark-1.3` | Chat Completions with `response_format` JSON schema |
-| Completeness agent | `muse-spark-1.3` | Tool calling loop (max 8 rounds) then a final structured answer |
-| Staff pre-review and letters | `META_MODEL_REVIEW` (default `muse-spark-1.3`; `muse-wonder-1.0` can be tried) | Tool calling loop plus structured answer |
+| Routing, understanding, drafting, replies, letters | `muse-spark-1.3` | Chat Completions with structured output (JSON schema) |
+| Code research, staff considerations, staff questions | `muse-spark-1.3` | Tool calling: `search_code`, `get_section`, `zone_info`, `lookup_parcel`, `lot_math`, `animal_points`, `process_info` |
+| Reading drawings | `muse-spark-1.3` | Image input |
+| Outlining the drawing | `sam-3.1` | Responses API, text-prompted boxes |
+| Resident speaks | `muse-voice-transcribe-1.0` | `POST /v1/asr/transcribe` (WAV built in the browser) |
+| Second read of the considerations | `muse-wonder-1.0` | Chat Completions |
+| Characters | `muse-image-1.0` | Generated once during the event (`scripts/make-characters.js`) |
 
-Endpoint: `https://api.meta.ai/v1/chat/completions`. Only the server talks to it. The key never reaches the browser.
+Not Meta, on purpose: the spoken reply uses the browser's own voice (Meta lists no text-to-speech model); quote verification, lot arithmetic and map geometry are plain code so they cannot hallucinate.
 
-## Run it locally
+## Real data, invented people
 
-Needs Node 22.5 or newer (24 recommended). No packages to install.
+- **Code:** Hildale City, Utah's code, pulled from the city's official code host (865 sections, 349 in the Land Use title) and stored verbatim with a link to every section.
+- **Zoning map:** Washington County's official zoning layer for Hildale (426 polygons).
+- **Parcels:** the State of Utah's parcel layer (749 Hildale parcels with boundaries, parcel numbers and addresses). This dataset contains no owner names by state law, and the program never requests any.
+- **People:** every resident, applicant and intention is invented. Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.
 
-1. Copy `.env.example` to `.env`.
-2. Fill in `MODEL_API_KEY` (from dev.meta.ai). For the staff portal, also set `STAFF_PASSCODE` (8+ characters) and `COOKIE_SECRET` (16+ random characters).
-3. `npm start`, then open http://localhost:3000. The staff portal is at http://localhost:3000/staff.
+The design is generic: `data/towns/<town>.json` names the code host, zoning layer and parcel layer, and `scripts/fetch-code.js` and `scripts/fetch-gis.js` cache them. Another city is a new config plus a reader for its code host (Municipal Code Online is the first; Municode, American Legal and others are planned).
 
-Optional: `npm run seed` runs the pipeline on three invented requests so the staff queue is not empty (about 25 cents of API credit).
+## Run it
 
-## Tests
-
-- `npm test`: offline tests. Town rules and arithmetic, facts normalization, gap detection, storage, security helpers, and the real server booted without an API key (routes, limits, auth, headers).
-- `npm run test:live`: the five fixture requests and four generated sketches through the real pipeline, plus a staff pre-review and two letters. Checks that nothing is invented, that legality questions get the staff-decide answer, that prompt injection in the text or on the sketch changes nothing, and that a text/sketch conflict is flagged. Costs about a dollar.
-- `npm run make-sketches` regenerates the test sketches (a tiny PNG encoder and bitmap font, no libraries).
-
-## Deploy
-
-`render.yaml` describes a Render web service with a 1 GB persistent disk for the SQLite file. Create a Blueprint from this repo, then enter `MODEL_API_KEY` and `STAFF_PASSCODE` in Render's dashboard. The free tier sleeps and would make a live demo wait a minute, so the blueprint uses the Starter plan.
-
-## Safety and limits
-
-- The app describes what an application needs. It never says whether a split is allowed, legal, or likely to be approved, and it never rates a person. These rules are in `lib/prompts.js` and enforced again in code (`lib/agent.js`, `lib/review.js`).
-- Request and sketch text are treated as data, never instructions.
-- Request body capped at 64 KB (8 MB with an image, which the browser shrinks to 1600 px first), 20 submissions per hour per IP, 10 staff sign-in attempts per 15 minutes, and a daily model-call cap (`DAILY_CALL_CAP`) so a public demo cannot burn the credits.
-- Resident pages need the reference code and an access key. Staff routes need a signed, HttpOnly cookie. Model output is rendered with `textContent` only. Content Security Policy is `default-src 'self'`.
-- No real personal data: the demo says so on the page and all fixtures are invented.
-
-## Layout
+Requires Node 22.5 or newer (24 in use). No npm packages: the app uses only Node's built-in `http`, `fetch`, `node:sqlite`, `crypto`.
 
 ```
-server.js            routes, static files, limits, auth
-lib/meta.js          Meta API client: structured output, tool loop, retries, usage log
-lib/prompts.js       the rules and every JSON schema
-lib/pipeline.js      resident steps and orchestration
-lib/sketch.js        image validation and sketch reading
-lib/agent.js         gap detection (code) + tool-using explainer (model)
-lib/review.js        staff pre-review and letters
-lib/town.js          Sample Creek code/checklist loader and lot arithmetic
-lib/store.js         SQLite (node:sqlite)
-lib/security.js      cookie signing, rate limits, body caps, headers
-data/                the invented code and checklist (JSON)
-public/              resident page, staff page, styles
-test/                unit tests, live tests, fixtures
-scripts/             seed and sketch generator
+cp .env.example .env      # then set MODEL_API_KEY, STAFF_PASSCODE, COOKIE_SECRET
+npm start                 # http://localhost:3000 (resident), /staff (staff)
+npm test                  # offline unit tests
+npm run try -- lot-split-ok     # one scenario through the desk, printed (a few cents)
+npm run test:live         # 22 scenarios on the real code (a few dollars)
+node scripts/journey.js http://localhost:3000 <staff passcode>   # end-to-end over HTTP
 ```
 
-Built with Claude Code; the app runs on Meta's Muse models. MIT license.
+Refresh the cached public data: `npm run fetch:code` and `npm run fetch:gis`.
+
+## Where things are
+
+- `server.js` routes; `lib/desk.js` the resident turn; `lib/review.js` the staff side; `lib/tools.js` the agents' tools; `lib/prompts.js` rules and schemas.
+- `lib/codestore.js`, `lib/codeparse.js`, `scripts/fetch-code.js` the code adapter; `lib/gis.js`, `scripts/fetch-gis.js` the map layers.
+- `public/` the counter and the workspace (plain HTML, CSS and JS, rendered with `textContent` only).
+- `data/towns/hildale.json` the town config; `data/towns/hildale/` the cached code and map layers; `data/demo.json` the worked examples.
+- `test/fixtures/scenarios.json` the 22 scenario cases; `docs/PROGRESS.md` the build log and the list of placeholder decisions.
+
+## Live
+
+https://citycenter-puh5.onrender.com (staff portal at `/staff`).
+
+MIT licensed. Built by John Barlow with Claude Code; the app runs on Meta's Muse models.

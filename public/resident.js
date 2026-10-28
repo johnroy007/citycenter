@@ -261,6 +261,8 @@
 
     // Parcel + map
     if (s.parcel) renderParcel(out, s);
+    // Drawing
+    if (s.has_sketch) renderDrawing(out, s);
     // Research
     if (s.research && s.department === "planning") renderResearch(out, s);
     // Packet
@@ -300,6 +302,42 @@
     out.appendChild(card);
   }
 
+  function drawingWithOutline(src, reading) {
+    var wrap = el("div", { style: "position:relative;display:inline-block;max-width:100%" });
+    var img = el("img", { src: src, alt: "Resident's drawing", style: "max-width:100%;max-height:420px;display:block;border-radius:10px;border:1px solid var(--line)" });
+    wrap.appendChild(img);
+    var o = reading && reading.outline;
+    if (o && o.width && o.height && o.objects && o.objects.length) {
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 " + o.width + " " + o.height);
+      svg.setAttribute("style", "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none");
+      var colors = { rectangle: "#1f5fbf", "dashed line": "#a02020", building: "#1d6b35", house: "#1d6b35", road: "#8a5a00" };
+      o.objects.forEach(function (b) {
+        var r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        r.setAttribute("x", b.x1); r.setAttribute("y", b.y1); r.setAttribute("width", Math.max(2, b.x2 - b.x1)); r.setAttribute("height", Math.max(2, b.y2 - b.y1));
+        r.setAttribute("fill", "none"); r.setAttribute("stroke", colors[b.label] || "#1f5fbf"); r.setAttribute("stroke-width", Math.max(2, o.width / 250)); r.setAttribute("stroke-dasharray", b.label === "dashed line" ? "8 6" : "");
+        svg.appendChild(r);
+        var t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t.setAttribute("x", b.x1 + 4); t.setAttribute("y", Math.max(14, b.y1 - 4)); t.setAttribute("fill", colors[b.label] || "#1f5fbf"); t.setAttribute("font-size", Math.max(12, o.width / 60)); t.setAttribute("font-family", "system-ui, sans-serif");
+        t.textContent = b.label + (b.confidence ? " " + Math.round(b.confidence * 100) + "%" : "");
+        svg.appendChild(t);
+      });
+      wrap.appendChild(svg);
+    }
+    return wrap;
+  }
+  function renderDrawing(out, s) {
+    var st = (s.steps || []).find(function (x) { return x.name === "sketch"; });
+    var reading = st && st.status === "done" ? st.output : null;
+    var card = el("div", { class: "card" }, [el("div", { class: "row", style: "justify-content:space-between" }, [el("h2", { text: "Your drawing" }), el("span", null, [modelChip("Muse Spark · image"), " ", modelChip("SAM 3.1 · outlines")])])]);
+    card.appendChild(drawingWithOutline("/api/sessions/" + encodeURIComponent(s.ref) + "/sketch?key=" + encodeURIComponent(state.key), reading));
+    if (reading) {
+      card.appendChild(el("p", { class: "small", text: "Read as: " + reading.drawing_type.replace(/_/g, " ") + ", " + reading.readability + "." + (reading.building_code_site_plan_note ? " " + reading.building_code_site_plan_note : "") }));
+      if (reading.dimensions && reading.dimensions.length) card.appendChild(el("ul", null, reading.dimensions.map(function (d) { return el("li", { text: d.what + ": " + d.value_text }); })));
+      if (reading.outline && reading.outline.objects) card.appendChild(el("p", { class: "small", text: "SAM 3.1 outlined " + reading.outline.objects.length + " shape(s) for staff to check against your words." }));
+    } else if (st && st.status === "running") card.appendChild(el("p", { class: "small", text: "Reading the drawing…" }));
+    out.appendChild(card);
+  }
   function tierInfo(id) { return (town && town.processTiers || []).find(function (t) { return t.id === id; }); }
   function renderResearch(out, s) {
     var r = s.research;

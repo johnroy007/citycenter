@@ -12,6 +12,8 @@
     "test": "node --test \"test/unit/*.test.js\"",
     "test:live": "node --test --test-timeout=900000 --test-concurrency=1 \"test/live/*.test.js\"",
     "try": "node scripts/try.js",
+    "deploy": "node scripts/deploy.js",
+    "seed:remote": "node scripts/seed-remote.js",
     "seed": "node scripts/seed.js",
     "fetch:code": "node scripts/fetch-code.js",
     "fetch:gis": "node scripts/fetch-gis.js",

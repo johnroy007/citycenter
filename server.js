@@ -340,6 +340,10 @@ async function handle(req, res) {
 
   if (p.startsWith("/api/staff/")) {
     if (!requireStaff(req, res)) return;
+    if (req.method === "GET" && p === "/api/staff/diag") {
+      // What can this host reach? Never echoes the key (prefix and length only).
+      return sendJson(res, 200, { ...(await client.diagnose()), env_model: process.env.META_MODEL || null, node: process.version, data_dir: store.dir });
+    }
     if (req.method === "GET" && p === "/api/staff/queue") {
       return sendJson(res, 200, { sessions: store.listSessions(), usage_today: store.callsToday(), daily_cap: DAILY_CAP });
     }

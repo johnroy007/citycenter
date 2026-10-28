@@ -72,6 +72,7 @@ Refresh the cached public data: `npm run fetch:code` and `npm run fetch:gis`.
 - `public/` the counter and the workspace (plain HTML, CSS and JS, rendered with `textContent` only).
 - `data/towns/hildale.json` the town config; `data/towns/hildale/` the cached code and map layers; `data/demo.json` the worked examples.
 - `test/fixtures/scenarios.json` the 22 scenario cases; `docs/PROGRESS.md` the build log and the list of placeholder decisions.
+- `relay/` a tiny forwarding script (Cloudflare Worker) the hosted copy uses to reach Meta's API, because Meta's service refused most calls from the host's own network. It carries the same calls unchanged; see `relay/README.md`.
 
 ## Live
 

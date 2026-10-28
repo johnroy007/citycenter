@@ -48,6 +48,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - **Application form layout:** letterhead "HILDALE CITY / Planning & Zoning Department / 320 E Newel Ave, Hildale, UT 84784" (address from memory of the public city office; correct it in `data/towns/hildale.json` under `office` if wrong; phone left blank), seal shows the reference prefix "HC". Sections: 1 Applicant, 2 Property, 3 Type of request (checkboxes over every application type in the town config), 4 Application details (the code's own fields), 5 Project description and statement, 6 Code sections, Attachments, certification with signature lines, and a "For office use only" box. Fonts: Georgia for the form. The real Hildale form was not copied; this is a conventional municipal layout.
 - **Deep links:** `/?ref=...&key=...&ch=paperwork` (or map, code, submissions) opens a visit on a chosen channel; handy for the video.
 
+- **Resident accounts (2026-10-28 afternoon, John's request "log back in and keep working"):** email + password only, built with Node built-ins (scrypt hashes, signed HttpOnly cookie for 30 days). No Google/Apple sign-in and no password reset by email in this build; `LOGIN-TODO.md` lists them with reasons. Visits started while signed in, or opened by reference + key while signed in, attach to the account and appear under "My visits" (header button and welcome screen). The reference + access key keep working without an account.
+- **Working after submission:** residents can keep talking and editing after they submit. The staff-facing status stays as staff last set it (submitted, needs info, forwarded, answered) and the visit is flagged "Updated; not resubmitted yet" until they press **Resubmit and update application**, which bumps a resubmit counter, logs a staff action and posts a desk message. Staff queue and workspace show "resident is updating" and "resubmitted Nx".
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -58,6 +61,14 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (afternoon) — Claude Code on John's laptop — resident accounts; keep working after submission
+- John: let a user log back in and keep working; allow work after submission with the button becoming "Resubmit and update application".
+- Store: `residents` table; `sessions` gained `resident_id`, `changed_since_submit`, `resubmit_count` (added to existing databases on open). Security helpers: generic signed token, scrypt password hashing.
+- Server: `/api/resident/signup|login|logout|me`; sessions attach to the signed-in account on creation or on first open by key; messages and packet edits allowed after submission; `/submit` resubmits when there are changes (no-op otherwise); staff queue carries the flags.
+- Desk: after a submission the turn keeps the staff-facing status and flags the change (`endStatus` in `lib/desk.js`); an error after submission no longer flips the status to error.
+- UI: Sign in / My visits panel (two password boxes on sign-up), "Your visits" on the welcome screen, resubmit button and notice on the paperwork channel, status chip "Updated; not resubmitted yet"; staff queue and head show the flags. `LOGIN-TODO.md` updated.
+- Tests: `test/unit/accounts.test.js` (account flow; submit, edit, resubmit, talk after submission, staff flags). 30 of 30 pass.
 
 ### 2026-10-28 (late morning, second pass) — Claude Code on John's laptop — speech bubble removed
 - John: the text box above the character should go; the character's words belong in the conversation on the left. Done: bubble removed, the newest desk line types itself out in the conversation panel while the portrait animates, the "working" row in the panel shows which step is running, portrait enlarged. Screenshots checked at 1440x900 and 800 wide. Deployed.

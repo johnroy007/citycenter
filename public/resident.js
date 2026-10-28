@@ -35,6 +35,7 @@
   var STEP_LABEL = { sketch: "Reading your drawing", route: "Finding the right desk", understand: "Understanding your request", locate: "Finding your parcel on the county map", research: "Reading the city code", draft: "Preparing your paperwork" };
   var STEP_MODEL = { sketch: "Muse Spark · image", route: "Muse Spark · structured", understand: "Muse Spark · structured", locate: "county GIS (no AI)", research: "Muse Spark · tools", draft: "Muse Spark · structured" };
   var STATUS_LABEL = { open: "Talking", ready: "Paperwork ready to submit", referred: "Referred to another desk", submitted: "Submitted to planning", needs_info: "Staff asked for more", in_review: "Forwarded for decision", answered: "Staff answered", error: "Problem" };
+  function statusLabel(s) { return s.changed_since_submit ? "Updated; not resubmitted yet" : (STATUS_LABEL[s.status] || s.status); }
   var CHANNEL_LABEL = { welcome: "Welcome", map: "Parcel Map", code: "Code Review", submissions: "Your Submissions", paperwork: "Submission Paperwork" };
 
   // ---------- voice out (browser) ----------
@@ -242,6 +243,7 @@
     clearTimeout(state.timer);
     try {
       var s = await api("/api/sessions/" + encodeURIComponent(state.ref) + "?key=" + encodeURIComponent(state.key));
+      if (!state.session || state.session.status !== s.status || (!!state.session.changed_since_submit) !== (!!s.changed_since_submit)) { if (account.signed_in) loadAccount(); }
       state.session = s;
       render(s);
       if (s.busy) state.timer = setTimeout(poll, 1500);
@@ -284,7 +286,7 @@
   }
   function renderHead(s) {
     $("refline").textContent = "Reference " + s.ref;
-    var sc = $("statusChip"); sc.textContent = ""; sc.appendChild(chip(s.status, STATUS_LABEL[s.status] || s.status));
+    var sc = $("statusChip"); sc.textContent = ""; sc.appendChild(chip(s.changed_since_submit ? "unclear" : s.status, statusLabel(s)));
   }
   function chatItem(m) {
     var li = el("li", { class: "msg " + m.role + (m.letter ? " has-letter" : "") });
@@ -393,6 +395,11 @@
       el("p", { class: "small", id: "demoNote", text: "" }),
     ]);
     screen.appendChild(w);
+    if (account.signed_in && account.visits && account.visits.length) {
+      var box = el("div", { class: "visits" }, [el("h2", { text: "Your visits" })]);
+      account.visits.slice(0, 8).forEach(function (v) { box.appendChild(visitRow(v)); });
+      w.insertBefore(box, w.children[2]);
+    }
     [["I want to split my lot and sell the back half to my son.", "lot split"], ["Can I keep a rooster at my house?", "rooster"], ["I need a building permit for a mother-in-law suite.", "casita"], ["My bank needs a zoning verification letter.", "bank letter"]].forEach(function (x) {
       var b = el("button", { type: "button", class: "quiet", text: x[0] });
       b.addEventListener("click", function () { $("text").value = x[0]; $("text").focus(); });
@@ -635,16 +642,22 @@
     });
     screen.appendChild(pages);
     var actions = el("div", { class: "actions" });
-    var canSubmit = ["open", "ready"].includes(s.status) && s.parcel && p.documents && p.documents.length && p.packet_type !== "referral";
-    if (canSubmit && !state.editing) {
-      var submit = el("button", { type: "button", text: "Submit to the planning department" });
+    var hasDocs = s.parcel && p.documents && p.documents.length && p.packet_type !== "referral";
+    var canSubmit = ["open", "ready"].includes(s.status) && hasDocs && !s.submitted_at;
+    var canResubmit = !!s.submitted_at && s.changed_since_submit && hasDocs;
+    if (s.submitted_at && !s.changed_since_submit && !state.editing) actions.appendChild(el("span", { class: "small", text: "Submitted " + fmt(s.submitted_at) + (s.resubmit_count ? " (update " + s.resubmit_count + ")" : "") + ". You can keep talking or edit; any change can be resubmitted." }));
+    if ((canSubmit || canResubmit) && !state.editing) {
+      var submit = el("button", { type: "button", text: canResubmit ? "Resubmit and update application" : "Submit to the planning department" });
       submit.addEventListener("click", async function () { submit.disabled = true; try { await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); poll(); } catch (e) { $("formMsg").textContent = e.message; submit.disabled = false; } });
       actions.appendChild(submit);
+    }
+    if (hasDocs && !state.editing && !s.busy) {
       var edit = el("button", { type: "button", class: "secondary", text: "Edit it myself" });
       edit.addEventListener("click", function () { state.editing = true; renderScreen(state.session); });
       actions.appendChild(edit);
       actions.appendChild(el("span", { class: "small", text: "Or just tell " + characterFor("planning").character + " what to change." }));
     }
+    if (canResubmit && !state.editing) screen.insertBefore(el("div", { class: "notice warn", text: "You have made changes since you submitted. Press Resubmit to send the updated application to the planning office." }), screen.firstChild);
     if (state.editing) {
       var save = el("button", { type: "button", text: "Save my edits" });
       save.addEventListener("click", async function () {
@@ -661,13 +674,54 @@
     print.addEventListener("click", function () { window.print(); });
     actions.appendChild(print);
     screen.appendChild(actions);
-    if (s.submitted_at) screen.appendChild(el("p", { class: "small", text: "Submitted " + fmt(s.submitted_at) + ". Staff will write back in this conversation." }));
+    if (s.submitted_at && !s.changed_since_submit) screen.appendChild(el("p", { class: "small", text: "Staff will write back in this conversation." }));
     if (p.questions && p.questions.length && !s.submitted_at) screen.appendChild(el("div", { class: "notice warn" }, [el("b", { text: "Still needed: " }), p.questions.join(" ")]));
   }
   function firstField(d, re) {
     var f = (d.fields || []).find(function (x) { return re.test(x.label) && x.value; });
     return f ? f.value : "";
   }
+
+  // ---------- resident account ----------
+  var account = { signed_in: false, visits: [] };
+  function visitRow(v) {
+    var row = el("div", { class: "v" }, [
+      el("div", null, [el("div", { class: "vt", text: v.title || v.preview || v.ref }), el("div", { class: "small", text: v.ref + " · " + fmt(v.updated_at) })]),
+      chip(v.changed_since_submit ? "unclear" : v.status, v.changed_since_submit ? "Updated; not resubmitted" : (STATUS_LABEL[v.status] || v.status)),
+    ]);
+    row.addEventListener("click", function () { $("accountPanel").classList.add("hidden"); if (state.ref !== v.ref) { resetVisit(); openSession(v.ref, v.view_key); } });
+    return row;
+  }
+  async function loadAccount() {
+    try { account = await api("/api/resident/me"); } catch (e) { account = { signed_in: false, visits: [] }; }
+    $("accountBtn").textContent = account.signed_in ? "My visits" : "Sign in";
+    $("accountOut").classList.toggle("hidden", !account.signed_in);
+    $("accountIn").classList.toggle("hidden", !!account.signed_in);
+    if (account.signed_in) {
+      $("accountWho").textContent = (account.name ? account.name + " · " : "") + account.email;
+      var ul = $("visitList"); ul.textContent = "";
+      (account.visits || []).forEach(function (v) { ul.appendChild(el("li", null, [visitRow(v)])); });
+      if (!(account.visits || []).length) ul.appendChild(el("li", { class: "small", text: "No visits yet. Start one below and it will be saved to your account." }));
+    }
+    if (state.channel === "welcome") renderScreen(null);
+  }
+  function accountMsg(text) { var m = $("accountMsg"); m.textContent = text || ""; m.classList.toggle("hidden", !text); }
+  $("accountBtn").addEventListener("click", function () { $("demoPanel").classList.add("hidden"); $("accountPanel").classList.toggle("hidden"); accountMsg(""); });
+  ["accountClose", "accountClose2", "accountClose3"].forEach(function (id) { $(id).addEventListener("click", function () { $("accountPanel").classList.add("hidden"); }); });
+  $("tabSignIn").addEventListener("click", function () { $("signInForm").classList.remove("hidden"); $("signUpForm").classList.add("hidden"); $("tabSignIn").classList.add("active"); $("tabSignUp").classList.remove("active"); accountMsg(""); });
+  $("tabSignUp").addEventListener("click", function () { $("signUpForm").classList.remove("hidden"); $("signInForm").classList.add("hidden"); $("tabSignUp").classList.add("active"); $("tabSignIn").classList.remove("active"); accountMsg(""); });
+  $("signInForm").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    try { await api("/api/resident/login", { method: "POST", body: JSON.stringify({ email: $("siEmail").value, password: $("siPass").value }) }); $("siPass").value = ""; await loadAccount(); if (state.ref) poll(); }
+    catch (e) { accountMsg(e.message); }
+  });
+  $("signUpForm").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    if ($("suPass").value !== $("suPass2").value) return accountMsg("The two passwords do not match.");
+    try { await api("/api/resident/signup", { method: "POST", body: JSON.stringify({ name: $("suName").value, email: $("suEmail").value, password: $("suPass").value, password2: $("suPass2").value }) }); $("suPass").value = ""; $("suPass2").value = ""; await loadAccount(); if (state.ref) poll(); }
+    catch (e) { accountMsg(e.message); }
+  });
+  $("signOut").addEventListener("click", async function () { try { await api("/api/resident/logout", { method: "POST", body: "{}" }); } catch (e) {} $("accountPanel").classList.add("hidden"); await loadAccount(); });
 
   // ---------- demo mode ----------
   $("demoBtn").addEventListener("click", async function () {
@@ -727,6 +781,7 @@
       if (window.speechSynthesis) speechSynthesis.getVoices();
     } catch (e) { $("formMsg").textContent = "Could not load the town: " + e.message; }
     renderScreen(null); renderRemote(null);
+    await loadAccount();
     var params = new URLSearchParams(location.search);
     if (params.get("ch") && CHANNEL_LABEL[params.get("ch")]) { state.channel = params.get("ch"); state.manual = true; state.lockOnce = true; }
     if (params.get("ref") && params.get("key")) openSession(params.get("ref"), params.get("key"));

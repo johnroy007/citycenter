@@ -108,9 +108,25 @@ function requireStaff(req, res) {
   return true;
 }
 
+// Resident accounts: optional. A signed-in resident's visits are listed under "My visits"; the reference
+// code + access key still work on their own, so nothing requires an account.
+const RESIDENT_COOKIE = "cc_resident";
+function residentFromReq(req) {
+  if (COOKIE_SECRET.length < 16) return null;
+  const sub = sec.verifyToken(sec.parseCookies(req.headers.cookie)[RESIDENT_COOKIE], COOKIE_SECRET);
+  const m = sub && sub.match(/^resident:(\d+)$/);
+  if (!m) return null;
+  return store.getResident(Number(m[1]));
+}
+function setResidentCookie(res, id, https) {
+  res.setHeader("Set-Cookie", `${RESIDENT_COOKIE}=${sec.signToken(COOKIE_SECRET, "resident:" + id)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${30 * 24 * 3600}${https ? "; Secure" : ""}`);
+}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function publicSession(s, { staff }) {
   const out = { ...s };
   delete out.view_key;
+  delete out.resident_id;
   if (!staff) {
     delete out.review;
     out.staff_actions = (s.staff_actions || []).filter((a) => a.action === "letter_saved").map((a) => ({ action: a.action, created_at: a.created_at, payload: a.payload }));
@@ -249,7 +265,8 @@ async function handle(req, res) {
     const sketch = parseImage(body, res);
     if (sketch === false) return;
     const demoId = typeof body.demo_id === "string" ? body.demo_id.slice(0, 60) : null;
-    const { ref, viewKey } = store.createSession({ town: town.id, text, sketch, demoId });
+    const resident = residentFromReq(req);
+    const { ref, viewKey } = store.createSession({ town: town.id, text, sketch, demoId, residentId: resident ? resident.id : null });
     startTurn(ref);
     return sendJson(res, 202, { ref, view_key: viewKey });
   }
@@ -266,7 +283,13 @@ async function handle(req, res) {
     const staff = isStaff(req);
     const key = url.searchParams.get("key") || "";
     if (!staff && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That reference code needs its access key. Use the link you were given.");
-    if (req.method === "GET" && !action) return sendJson(res, 200, publicSession(s, { staff }));
+    if (req.method === "GET" && !action) {
+      if (!staff && !s.resident_id) {
+        const resident = residentFromReq(req);
+        if (resident && store.claimSession(ref, resident.id)) s.resident_id = resident.id;
+      }
+      return sendJson(res, 200, { ...publicSession(s, { staff }), linked_to_account: !!s.resident_id });
+    }
     if (req.method === "GET" && action === "sketch") {
       const img = store.getSketch(ref);
       if (!img) return notFound(res);
@@ -276,7 +299,6 @@ async function handle(req, res) {
     if (req.method === "POST" && action === "messages") {
       if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many messages. Please slow down.");
       if (s.busy) return sendError(res, 409, "The desk is still working on your last message.");
-      if (["submitted", "needs_info", "in_review", "answered"].includes(s.status) && !staff) return sendError(res, 409, "This conversation has been submitted. Start a new one for a new request.");
       if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
       const body = await readJson(req, MAX_SUBMIT_BYTES);
       const text = typeof body.text === "string" ? body.text.trim() : "";
@@ -293,7 +315,7 @@ async function handle(req, res) {
       // Resident edits their own packet directly (no model). Only field values and narratives can change.
       if (s.busy) return sendError(res, 409, "The desk is still working. Wait for it to finish, then edit.");
       if (!s.packet || !s.packet.documents) return sendError(res, 400, "There is no packet to edit yet.");
-      if (!["open", "ready"].includes(s.status)) return sendError(res, 409, "This packet has been submitted and can no longer be edited here.");
+      if (s.packet.packet_type === "referral") return sendError(res, 409, "A referral has nothing to edit.");
       const body = await readJson(req, MAX_JSON_BYTES);
       if (!Array.isArray(body.documents) || body.documents.length !== s.packet.documents.length) return sendError(res, 400, "Send the same documents back with your edits.");
       const documents = s.packet.documents.map((d, i) => {
@@ -306,17 +328,68 @@ async function handle(req, res) {
         const narrative = typeof edit.narrative === "string" ? edit.narrative.slice(0, 12000) : d.narrative;
         return { ...d, fields, narrative };
       });
-      store.updateSession(ref, { packet: { ...s.packet, documents, edited_by_resident_at: new Date().toISOString() } });
-      return sendJson(res, 200, { ok: true });
+      store.updateSession(ref, { packet: { ...s.packet, documents, edited_by_resident_at: new Date().toISOString() }, ...(s.submitted_at ? { changed_since_submit: true } : {}) });
+      return sendJson(res, 200, { ok: true, changed_since_submit: !!s.submitted_at });
     }
     if (req.method === "POST" && action === "submit") {
       if (s.busy) return sendError(res, 409, "The desk is still working. Wait for the packet, then submit.");
       if (!s.packet || !s.packet.documents || !s.packet.documents.length) return sendError(res, 400, "There is no prepared packet to submit yet.");
-      if (["submitted", "needs_info", "in_review", "answered"].includes(s.status)) return sendJson(res, 200, { ok: true, status: s.status });
       const ts = new Date().toISOString();
-      store.updateSession(ref, { status: "submitted", submitted_at: ts });
-      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted. Your reference code is ${ref}. The planning office will review it and write back here. Keep this page's address to check on it.` });
+      if (s.submitted_at) {
+        // Resubmit: the resident kept working after submitting and is sending the updated application.
+        if (!s.changed_since_submit) return sendJson(res, 200, { ok: true, status: s.status, submitted_at: s.submitted_at, unchanged: true });
+        const n = (s.resubmit_count || 0) + 1;
+        store.updateSession(ref, { status: "submitted", submitted_at: ts, changed_since_submit: false, resubmit_count: n });
+        store.addStaffAction(ref, { action: "resubmitted", note: `Resident resubmitted with updates (update ${n}).`, payload: { previous_status: s.status, previous_submitted_at: s.submitted_at } });
+        store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Resubmitted with your updates (update ${n}). Reference ${ref}. The planning office will see the updated application and write back here.` });
+        return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts, resubmit_count: n });
+      }
+      store.updateSession(ref, { status: "submitted", submitted_at: ts, changed_since_submit: false });
+      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted. Your reference code is ${ref}. The planning office will review it and write back here. You can keep talking to me or edit the paperwork; press Resubmit to send any updates.` });
       return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts });
+    }
+    return notFound(res);
+  }
+
+  // Resident accounts (email + password). Google/Apple sign-in and password reset are listed in LOGIN-TODO.md.
+  if (p.startsWith("/api/resident/")) {
+    if (COOKIE_SECRET.length < 16) return sendError(res, 503, "Accounts are not set up on this server (COOKIE_SECRET is needed).");
+    if (req.method === "POST" && p === "/api/resident/signup") {
+      if (!loginLimiter.check(ip)) return sendError(res, 429, "Too many attempts. Please wait 15 minutes.");
+      const body = await readJson(req, MAX_JSON_BYTES);
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+      const name = typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
+      const password = typeof body.password === "string" ? body.password : "";
+      const password2 = typeof body.password2 === "string" ? body.password2 : "";
+      if (!EMAIL_RE.test(email) || email.length > 200) return sendError(res, 400, "Please enter a valid email address.");
+      if (password.length < 8) return sendError(res, 400, "Use a password of at least 8 characters.");
+      if (password !== password2) return sendError(res, 400, "The two passwords do not match.");
+      if (store.getResidentByEmail(email)) return sendError(res, 409, "There is already an account with that email. Sign in instead.");
+      const { salt, hash } = sec.hashPassword(password);
+      const id = store.createResident({ email, name, passHash: hash, passSalt: salt });
+      setResidentCookie(res, id, https);
+      return sendJson(res, 201, { ok: true, email, name });
+    }
+    if (req.method === "POST" && p === "/api/resident/login") {
+      if (!loginLimiter.check(ip)) return sendError(res, 429, "Too many sign-in attempts. Please wait 15 minutes.");
+      const body = await readJson(req, MAX_JSON_BYTES);
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+      const password = typeof body.password === "string" ? body.password : "";
+      const r = store.getResidentByEmail(email);
+      // Same answer whether the email or the password is wrong.
+      if (!r || !sec.verifyPassword(password, r.pass_salt, r.pass_hash)) return sendError(res, 401, "That email and password do not match an account.");
+      store.touchResident(r.id);
+      setResidentCookie(res, r.id, https);
+      return sendJson(res, 200, { ok: true, email: r.email, name: r.name });
+    }
+    if (req.method === "POST" && p === "/api/resident/logout") {
+      res.setHeader("Set-Cookie", `${RESIDENT_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`);
+      return sendJson(res, 200, { ok: true });
+    }
+    if (req.method === "GET" && p === "/api/resident/me") {
+      const r = residentFromReq(req);
+      if (!r) return sendJson(res, 200, { signed_in: false });
+      return sendJson(res, 200, { signed_in: true, email: r.email, name: r.name, visits: store.listResidentSessions(r.id) });
     }
     return notFound(res);
   }

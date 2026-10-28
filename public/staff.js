@@ -79,7 +79,7 @@
         var tr = el("tr", null, [
           el("td", null, [el("div", null, [el("strong", { text: s.ref })]), el("div", { class: "small", text: fmt(s.created_at) + (s.has_sketch ? " · drawing" : "") + (s.demo_id ? " · example" : "") })]),
           el("td", null, [el("div", { text: s.title || s.preview }), el("div", { class: "small", text: (s.packet_type || "").replace(/_/g, " ") })]),
-          el("td", null, [chip(s.status, STATUS_LABEL[s.status] || s.status)]),
+          el("td", null, [chip(s.status, STATUS_LABEL[s.status] || s.status), s.resubmit_count ? el("div", { class: "small", text: "resubmitted " + s.resubmit_count + "x" }) : null, s.changed_since_submit ? el("div", { class: "small", text: "resident is updating" }) : null, s.has_account ? el("div", { class: "small", text: "has account" }) : null]),
         ]);
         tr.addEventListener("click", function () { openSession(s.ref); });
         tb.appendChild(tr);
@@ -108,6 +108,8 @@
     var s = current;
     $("wsRef").textContent = s.ref;
     $("wsStatus").textContent = ""; $("wsStatus").appendChild(chip(s.status, STATUS_LABEL[s.status] || s.status));
+    if (s.resubmit_count) $("wsStatus").appendChild(el("span", { class: "chip in_review", text: "resubmitted " + s.resubmit_count + "x" }));
+    if (s.changed_since_submit) $("wsStatus").appendChild(el("span", { class: "chip unclear", text: "resident is updating; not resubmitted yet" }));
     $("wsTitle").textContent = (s.packet ? s.packet.title : (s.understanding ? s.understanding.summary : "")) + " · resident link: " + location.origin + s.resident_link;
     $("buildBtn").textContent = s.review ? "Rebuild considerations" : "Build considerations";
     renderRail(); renderDoc(); renderEvidence(); renderStrip();

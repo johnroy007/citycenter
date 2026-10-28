@@ -13,6 +13,7 @@
   <nav>
     <button type="button" class="quiet" id="muteBtn" title="Read replies aloud (browser voice)">🔊 Voice on</button>
     <button type="button" class="quiet" id="demoBtn" title="Worked examples for judges">▶ Examples</button>
+    <button type="button" class="quiet" id="accountBtn" title="Sign in to keep your visits together">Sign in</button>
     <a href="/staff">Staff</a>
     <a href="https://github.com/johnroy007/citycenter" rel="noopener">Source</a>
   </nav>
@@ -23,6 +24,33 @@
   <p class="small">Pick one and the resident's side plays itself. The help desk answers live through Meta's models. People are invented; addresses are real public parcels.</p>
   <ul id="demoList"></ul>
   <div class="row"><button type="button" class="quiet" id="demoClose">Close</button></div>
+</div>
+
+<div class="demo-panel hidden" id="accountPanel">
+  <div id="accountOut" class="hidden">
+    <h2>My visits</h2>
+    <p class="small" id="accountWho"></p>
+    <ul id="visitList"></ul>
+    <div class="row"><button type="button" class="quiet" id="signOut">Sign out</button><button type="button" class="quiet" id="accountClose2">Close</button></div>
+  </div>
+  <div id="accountIn">
+    <div class="row tabs"><button type="button" class="quiet active" id="tabSignIn">Sign in</button><button type="button" class="quiet" id="tabSignUp">Create account</button></div>
+    <p class="small">An account keeps your visits together so you can come back on any device. Your reference code and access key still work without one.</p>
+    <form id="signInForm">
+      <input type="email" id="siEmail" placeholder="Email" autocomplete="email" required>
+      <input type="password" id="siPass" placeholder="Password" autocomplete="current-password" required>
+      <div class="row"><button type="submit">Sign in</button><button type="button" class="quiet" id="accountClose">Close</button></div>
+    </form>
+    <form id="signUpForm" class="hidden">
+      <input type="text" id="suName" placeholder="Your name (optional)" autocomplete="name">
+      <input type="email" id="suEmail" placeholder="Email" autocomplete="email" required>
+      <input type="password" id="suPass" placeholder="Password (8 or more characters)" autocomplete="new-password" required minlength="8">
+      <input type="password" id="suPass2" placeholder="Type the password again" autocomplete="new-password" required minlength="8">
+      <div class="row"><button type="submit">Create account</button><button type="button" class="quiet" id="accountClose3">Close</button></div>
+    </form>
+    <p class="small">Forgot your password? Password reset by email is not available in this demo build; start a new account or use your reference code and access key.</p>
+  </div>
+  <p class="small notice error hidden" id="accountMsg"></p>
 </div>
 
 <main class="office">

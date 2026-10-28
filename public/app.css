@@ -90,11 +90,8 @@ code { font-size: 13px; background: var(--grey-bg); padding: 1px 5px; border-rad
 .lookup-box { padding: 8px 12px; border-top: 1px solid var(--line); background: #fff; }
 .lookup-box input { max-width: 150px; }
 .stand { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 14px 12px 0; }
-.bubble { position: relative; background: var(--bubble); border: 1px solid var(--line); border-radius: 16px; padding: 12px 15px; width: 100%; box-shadow: var(--shadow); min-height: 84px; max-height: 38vh; overflow: auto; font-size: 15px; white-space: pre-wrap; }
-.bubble::after { content: ""; position: absolute; bottom: -12px; left: 50%; width: 0; height: 0; border: 12px solid transparent; border-top-color: #fff; border-bottom: 0; transform: translateX(-50%); }
-.bubble .who { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-.bubble .thinking { color: var(--muted); font-style: italic; }
-.portrait { width: min(300px, 32vh); max-width: 100%; aspect-ratio: 1; margin-top: 16px; border-radius: 50% 50% 18px 18px; overflow: hidden; border: 3px solid #fff; box-shadow: var(--shadow); background: var(--cream); position: relative; }
+.msg.working .small { font-style: italic; }
+.portrait { width: min(340px, 44vh); max-width: 100%; aspect-ratio: 1; margin-top: 0; border-radius: 50% 50% 18px 18px; overflow: hidden; border: 3px solid #fff; box-shadow: var(--shadow); background: var(--cream); position: relative; }
 .portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .portrait.talking { animation: bob 1.1s ease-in-out infinite; }
 .portrait.thinking { animation: sway 2.2s ease-in-out infinite; }
@@ -199,11 +196,10 @@ footer.credits { font-size: 12px; color: var(--muted); padding: 10px 18px; }
 }
 @media (max-width: 900px) {
   .office { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; height: auto; }
-  .stand { order: 1; flex-direction: row; align-items: flex-start; gap: 12px; padding: 12px 14px 0; justify-content: flex-start; }
-  .stand .bubble { min-height: 70px; font-size: 14px; max-height: none; }
-  .bubble::after { display: none; }
+  .stand { order: 1; flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px 0; justify-content: flex-start; }
   .portrait { width: 96px; margin-top: 0; flex: none; }
-  .nametag, .stand .steps { display: none; }
+  .nametag { margin-top: 0; }
+  .stand .steps { margin: 0; justify-content: flex-start; }
   .tvcol { order: 2; padding: 12px 14px; grid-template-rows: minmax(360px, 60vh) auto; }
   .chatlog { order: 3; margin: 0 14px 14px; max-height: 50vh; }
   .inputbar { order: 4; position: sticky; bottom: 0; }

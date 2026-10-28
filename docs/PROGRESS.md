@@ -59,6 +59,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-10-28 (late morning, second pass) — Claude Code on John's laptop — speech bubble removed
+- John: the text box above the character should go; the character's words belong in the conversation on the left. Done: bubble removed, the newest desk line types itself out in the conversation panel while the portrait animates, the "working" row in the panel shows which step is running, portrait enlarged. Screenshots checked at 1440x900 and 800 wide. Deployed.
+
 ### 2026-10-28 (late morning) — Claude Code on John's laptop — resident counter redesigned as the office scene
 - John asked for: full history in the chat (including Marlowe's turns), a city-office background, a TV on the right showing the work, a remote with Parcel Map / Code Review / Your Submissions / Submission Paperwork, and paperwork that looks like a real city application.
 - Done: `public/index.html`, `public/resident.js`, `public/app.css` rewritten for the three-column scene; `scripts/make-office.js` generated the background with Muse Image ($0.02); `office` block added to `data/towns/hildale.json` and exposed (with `packetTypes`) by `/api/town`; channel deep link `&ch=`; cache-busting `?v=` on the script and stylesheet links.

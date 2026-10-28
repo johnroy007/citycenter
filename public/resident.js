@@ -85,7 +85,6 @@
     $("nametag").textContent = "";
     $("nametag").appendChild(document.createTextNode(d.character));
     $("nametag").appendChild(el("span", { text: d.role || d.name }));
-    $("bubbleWho").textContent = d.character + " · " + d.name;
   }
   function typeInto(node, text, done) {
     if (state.typing) clearInterval(state.typing);
@@ -98,18 +97,21 @@
       if (i >= text.length) { clearInterval(state.typing); state.typing = null; if (done) done(); }
     }, 18);
   }
+  // The character's newest line types itself out in the conversation panel while the portrait "talks".
   function say(department, text, opts) {
     opts = opts || {};
     setPortrait(department, "talking");
-    $("bubble").classList.remove("thinking");
-    typeInto($("bubbleText"), text, function () { setPortrait(department, "neutral"); });
+    var last = $("chat").querySelector("li.msg.desk:last-of-type .text");
+    if (last && !opts.silent) typeInto(last, text, function () { setPortrait(department, "neutral"); $("chat").scrollTop = $("chat").scrollHeight; });
+    else setPortrait(department, "neutral");
     if (!opts.silent) speak(text);
   }
   function think(department, text) {
     setPortrait(department, "thinking");
     if (state.typing) { clearInterval(state.typing); state.typing = null; }
-    $("bubbleText").textContent = "";
-    $("bubbleText").appendChild(el("span", { class: "thinking", text: text }));
+    state.workingText = text;
+    var w = $("chat").querySelector("li.working .small");
+    if (w) w.textContent = characterFor(department).character + ": " + text;
   }
 
   // ---------- image shrink ----------
@@ -255,14 +257,16 @@
     renderSteps(s);
     renderHead(s);
     renderChat(s);
-    // Latest desk line in the bubble
+    // Newest desk line: animate it in the conversation panel and read it aloud
     var deskMsgs = (s.messages || []).filter(function (m) { return m.role === "desk"; });
     if (s.messages.length !== state.lastMsgCount) {
       var last = deskMsgs[deskMsgs.length - 1];
-      if (last && !s.busy) say(last.department || s.department || "front_desk", last.text);
+      var lastIsNewest = last && s.messages[s.messages.length - 1] === last;
+      if (last && !s.busy && lastIsNewest && state.lastMsgCount > 0) say(last.department || s.department || "front_desk", last.text);
+      else if (!s.busy) setPortrait(s.department || "front_desk", "neutral");
       state.lastMsgCount = s.messages.length;
-    } else if (!s.busy && deskMsgs.length && $("bubbleText").querySelector(".thinking")) {
-      say(s.department || "front_desk", deskMsgs[deskMsgs.length - 1].text, { silent: true });
+    } else if (!s.busy && $("portrait").classList.contains("thinking")) {
+      setPortrait(s.department || "front_desk", "neutral");
     }
     autoChannel(s);
     renderScreen(s);
@@ -306,7 +310,7 @@
     var atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
     chat.textContent = "";
     (s.messages || []).forEach(function (m) { chat.appendChild(chatItem(m)); });
-    if (s.busy) chat.appendChild(el("li", { class: "msg desk working" }, [el("span", { class: "avatar dots", text: "…" }), el("div", { class: "body" }, [el("div", { class: "small", text: characterFor(s.department || "front_desk").character + " is working…" })])]));
+    if (s.busy) chat.appendChild(el("li", { class: "msg working" }, [el("span", { class: "avatar dots", text: "…" }), el("div", { class: "body" }, [el("div", { class: "small", text: characterFor(s.department || "front_desk").character + ": " + (state.workingText || "working…") })])]));
     if (s.status === "error") chat.appendChild(el("li", { class: "msg system" }, [el("div", { class: "notice error", text: "The desk hit a problem: " + (s.error || "") + ". Your conversation is saved; send another message to try again." })]));
     if (atBottom || s.messages.length !== state.lastMsgCount) chat.scrollTop = chat.scrollHeight;
   }

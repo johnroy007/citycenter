@@ -95,6 +95,7 @@ const ok = (cond, msg) => {
   ok(!/\bapproved\b/i.test(r.letter.body), "letter does not claim an approval");
   r = await api(`/api/staff/sessions/${ref}/letter`, { method: "POST", body: JSON.stringify({ subject: r.letter.subject, body: r.letter.body, decision: "request_info" }) });
   ok(r.status === "needs_info", "letter saved; status needs_info");
+  cookie = ""; // back to being the resident
   s = await api(`/api/sessions/${ref}?key=${key}`);
   ok(s.messages.some((m) => m.letter), "resident sees the letter in the conversation");
   ok(!s.review, "resident cannot see the staff review");

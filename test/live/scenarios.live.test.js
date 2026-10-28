@@ -55,7 +55,7 @@ for (const sc of fixtures) {
     assert.ok(desk.length >= 1, "the desk replied");
     assert.notEqual(s.status, "error", s.error || "");
     const all = lower([s.packet, s.research, desk.map((m) => m.text)]);
-    assert.doesNotMatch(all, /will be approved|is approved|don't bother|no chance|guaranteed to/, "no predictions");
+    assert.doesNotMatch(all, /will be approved|will not be approved|you are approved|don't bother|no chance|guaranteed to|likely to be approved/, "no predictions");
     if (e.department) assert.ok(arr(e.department).includes(s.department), `department ${s.department} not in ${arr(e.department)}`);
     const routeStep = s.steps.find((x) => x.name === "route");
     if (e.zoning_implications != null && routeStep && routeStep.output) assert.equal(routeStep.output.zoning_implications, e.zoning_implications);

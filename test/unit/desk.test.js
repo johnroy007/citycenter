@@ -8,7 +8,7 @@ const { zoneStandardsFromText, parseArea, createTools } = require("../../lib/too
 const { ownerFor } = require("../../lib/owners");
 const { loadTown } = require("../../lib/townconfig");
 const { loadCode } = require("../../lib/codestore");
-const { loadGis } = require("../../lib/gis");
+const { loadGis, createGis } = require("../../lib/gis");
 
 const town = loadTown("hildale");
 
@@ -75,6 +75,15 @@ test("zone standards are read from the real standards tables and lot math compar
   const lp = tools.find((t) => t.name === "lookup_parcel").handler({ address: "595 E 1400 N" });
   assert.equal(lp.parcel.zone, "RA-1");
   assert.equal(Object.keys(lp.parcel).some((k) => /owner/i.test(k)), false);
+  // Same house number on another street must not count as a match.
+  assert.equal(gis.locate({ address: "345 E Jessop Ave" }).match, "address");
+  assert.equal(gis.locate({ address: "345 East Jessop Avenue, Hildale UT 84784" }).parcel.id, "HD-SHCR-9-1");
+  assert.equal(gis.locate({ address: "1280 W Field Ave" }).parcel.zone, "M-1");
+  assert.equal(gis.locate({ address: "865 N Redwood St" }).parcel.zone, "RA-.5");
+  assert.equal(gis.locate({ address: "345 Jessop" }).match, "address", "direction and suffix are optional");
+  assert.equal(gis.locate({ address: "999 Nowhere Rd" }).match, "none");
+  const dup = createGis({ zoning: { features: [] }, parcels: { features: [1, 2].map((i) => ({ type: "Feature", properties: { id: "X-" + i, address: "10 MAIN ST" }, geometry: { type: "Polygon", coordinates: [[[-113 + i * 0.001, 37], [-113 + i * 0.001 + 0.0005, 37], [-113 + i * 0.001 + 0.0005, 37.0005], [-113 + i * 0.001, 37]]] } })) }, town });
+  assert.equal(dup.locate({ address: "10 Main St" }).match, "ambiguous", "true duplicates stay ambiguous");
 });
 
 test("zoneStandardsFromText handles a header row that names the zones", () => {

@@ -10,11 +10,7 @@
 - **Last updated:** 2026-10-27 (afternoon) by Claude Code on John's laptop
 
 ## RESUME POINT
-Everything in the Oct 28 to Oct 31 plan is built ahead of schedule and verified locally (see the log entry below for exactly what was tested). Next steps, in order:
-1. John deploys to Render from `render.yaml` and enters `MODEL_API_KEY` + `STAFF_PASSCODE` in Render's dashboard. Then run `npm run seed` once against the live database (Render shell) or submit three applications by hand so the staff queue is not empty.
-2. John draws and photographs 3 real hand sketches (the current test sketches are computer-generated) and runs them through the live site. Fix anything the real photos break.
-3. Fresh-eyes test, polish, then README final pass, video (Nov 3), submit (Nov 4). Details in the notebook's `notes/build-plan.md`.
-If anything model-related misbehaves, change `lib/prompts.js` first; the schemas and rules live there.
+**Concept v2 is planned; the build of it has not started.** The brainstorm with John on Oct 27 evening produced a bigger product: a cartoon help desk that routes residents, works out the process tier against a real city code, and prepares a packet; staff review in a four-pane workspace. The rulebook is now Hildale City, Utah's real Land Use Code pulled from its official host (public naming of the town deferred until the eligibility ruling; keep it in config). Full plan, scenarios, answers and adapter notes are in the private notebook (`Projects/citycenter-notes/notes/`; `build-plan.md` is the day-by-day; read it first). Next step is Wed Oct 28 in that plan: code adapter + citation verifier + invented parcel table/map + town config + scenario fixtures. The Oct 27 lot-split build stays as the base and the offline test fixture.
 
 ## Waiting on John
 - **Confirm the login decision:** no user accounts during the hackathon (reference code + access key for residents; one shared staff passcode). Written up in `LOGIN-TODO.md`. Say "yes" or ask for changes.
@@ -30,6 +26,10 @@ If anything model-related misbehaves, change `lib/prompts.js` first; the schemas
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-27 (late evening) — Claude Code on John's laptop — brainstorm complete, plan v2 written (no code changes)
+- **Done:** Eight brainstorm questions answered by John and recorded. Decisions: Hildale City, Utah's real code is the rulebook (official host exposes the whole code via a print view; 700 land use sections; adapter design recorded); product becomes a cartoon help desk with process-tier triage and a reviewer workspace; voice in via Muse Voice Transcribe, voice out via browser speech; characters via Muse Image; the demo "moment" is the prepared-application confirmation. Notebook: `build-plan.md` (rewritten), `vision-brainstorm.md`, `brainstorm-questions.md`, `scenarios.md`, `code-adapters.md`.
+- **Open:** help desk character name; John's corrections to the scenario matrix; eligibility ruling.
 
 ### 2026-10-27 (evening) — Claude Code on John's laptop — rules check and vision brainstorm (no code changes)
 - **Done:** Checked the Official Rules for anything blocking a real city as a case study (nothing does; ownership/privacy clauses and the Meta marketing licence are the cautions). Brainstormed the ground-up product with John: front-desk router, Planning desk with two outcomes (Zoning Verification Request or application), four-pane reviewer workspace (consideration rail, document, evidence, agent strip), Meta tool map, and hackathon priorities. Both written to the private notebook: `notes/hackathon-rules.md` (real-city section) and `notes/vision-brainstorm.md`.

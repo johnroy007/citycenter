@@ -12,18 +12,19 @@
 ## RESUME POINT
 **What we now know about the Meta failure (2026-10-28 midday).** It is not a block and not a key problem. Meta's servers are inconsistent about which models this key may use, and which server answers depends on where the request comes from and changes by the minute. Evidence: from the laptop, 80 of 80 chat calls succeeded (one isolated `model_not_found` earlier in the day). From temporary Render copies (`node scripts/probe-region.js <region>`, deleted afterwards): Singapore saw the full model list every time but chat succeeded 1 in 4; Oregon and Frankfurt saw an empty list and 404 almost always. Steering Render's calls to the Meta addresses that work from the laptop (`pinned` block in `/api/staff/diag`) succeeded 16 of 18 at 16:50 UTC and 0 of 9 at 17:05 UTC. The client now retries `model_not_found` up to six times, each retry on a fresh connection to a different Meta address (`lib/meta.js`); that fixes the rare laptop failure but does not rescue Render in a bad stretch. A live end-to-end journey against Render at 17:03 UTC still failed on the first call.
 
-**Plan for the live link: serve from the laptop.** `npm start` in one window, `npm run tunnel` in another; the tunnel script prints `PUBLIC LINK: https://....trycloudflare.com` and writes it to `data/runtime/tunnel-url.txt`. cloudflared is installed as a portable file at `%LOCALAPPDATA%\cloudflared\cloudflared.exe` (the winget installer never completed). Claude cannot open the tunnel itself (auto mode refuses to open public tunnels), so John starts it. The link changes each time the tunnel restarts; for a stable address John would need a free Cloudflare account and a named tunnel.
+**Plan for the live link: a relay on a network Meta serves (2026-10-28 afternoon).** John ruled out hosting the demo from the laptop (not reliable for judging). The app can now send every Meta call through a relay: `META_API_BASE` and `META_RELAY_SECRET` in the environment (`lib/meta.js`). The relay is `relay/worker.js`, a Cloudflare Worker that forwards `/v1/*` to `api.meta.ai` with the app's own key header and checks a shared secret; `relay/README.md` has the five-minute dashboard steps, `relay/deno.js` is the same for Deno Deploy if Cloudflare's network is refused too. `scripts/probe-relay.js <url>` proves a relay from the laptop; `scripts/render-env.js --file .env.render-vars.local` pushes the settings to Render and redeploys. `.env.render-vars.local` (git-ignored) holds the generated secret and blanks for the relay address and an optional second Meta key. Tested: the worker code runs in a local Node harness and answered all five chat calls through it (that proves the code, not Cloudflare's network).
 
 Next steps, in order:
-1. John: start the tunnel, open the printed link, run one Examples case to confirm the laptop-hosted link works end to end. The local database already holds the seeded cases, so no remote seeding is needed.
-2. John: in the hackathon Discord, ask whether others see `model_not_found` / empty `/v1/models` from cloud hosts, and whether Meta can fix the key's propagation. Also try creating a **second API key** in the Meta dashboard and putting it on Render (`MODEL_API_KEY` in the Render dashboard, then `npm run deploy`); a fresh key may be provisioned consistently.
-3. If Render becomes reliable (check `/api/staff/diag` a few times: `models` full and `chat` 200), switch the submission link back to Render and run `node scripts/journey.js https://citycenter-puh5.onrender.com`.
-4. Then: John's three real sketches, fresh-eyes test, video (`notes/submission-draft.md` in the notebook has the script), submit.
+1. John: create the free Cloudflare Worker per `relay/README.md`, paste the worker address into `.env.render-vars.local`, tell Claude. Claude runs the probe; if it answers, `node scripts/render-env.js --file .env.render-vars.local`, then `node scripts/journey.js https://citycenter-puh5.onrender.com` and `npm run seed:remote https://citycenter-puh5.onrender.com`.
+2. If Cloudflare is refused too: Deno Deploy with `relay/deno.js`, then any other host. Also try a second Meta API key (paste into the same file as `MODEL_API_KEY`).
+3. Discord question to Meta about `model_not_found` from cloud networks, in parallel.
+4. Then: John's three real sketches, fresh-eyes test, video (`notes/submission-draft.md`), submit.
 Deploys: Render's auto-deploy does not fire on push; run `npm run deploy` after pushing (uses `.env.render.local`).
 
 ## Waiting on John
-- **Start the tunnel** (`npm start`, then `npm run tunnel` in a second window) and confirm the printed public link works; decide whether that link or Render goes on the submission form.
-- **Meta:** Discord question about inconsistent `model_not_found` from cloud hosts; try a second API key on Render.
+- **Create the Cloudflare Worker relay** (`relay/README.md`, five minutes, free) and paste its address into `.env.render-vars.local`. This is the planned fix for the live site.
+- **Meta:** Discord question about inconsistent `model_not_found` from cloud hosts; optionally a second API key (paste into `.env.render-vars.local`).
+- The laptop tunnel (`npm run tunnel`) remains only as a last-resort backup.
 - **Corrections to the decisions list below** (names, wording, scenario numbers) whenever you have time.
 - **Three photographed hand sketches** for Sunday's test.
 - **Discord housekeeping from the notebook:** delete the stray "government" message; accept the Official Rules; eligibility ruling still pending (it decides whether Hildale is named in the README and video; right now it is).
@@ -61,6 +62,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (afternoon, later) — Claude Code on John's laptop — relay plan for the live site
+- John: laptop hosting is not reliable enough for judging; find a real solution. Built relay support (`META_API_BASE`, `META_RELAY_SECRET`), the Cloudflare Worker relay with dashboard instructions, a Deno Deploy variant, `scripts/probe-relay.js`, `scripts/render-env.js`, and the git-ignored `.env.render-vars.local` with a generated secret (opened in VS Code for John). Worker logic verified in a local Node harness. Waiting on John to create the worker (see Waiting on John).
 
 ### 2026-10-28 (afternoon) — Claude Code on John's laptop — resident accounts; keep working after submission
 - John: let a user log back in and keep working; allow work after submission with the button becoming "Resubmit and update application".

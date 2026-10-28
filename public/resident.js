@@ -9,6 +9,7 @@
     if (attrs) Object.keys(attrs).forEach(function (k) {
       if (k === "class") n.className = attrs[k];
       else if (k === "text") n.textContent = attrs[k];
+      else if (k === "style") n.style.cssText = attrs[k];
       else n.setAttribute(k, attrs[k]);
     });
     (children || []).forEach(function (c) { if (c != null) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
@@ -428,7 +429,7 @@
     if (o && o.width && o.height && o.objects && o.objects.length) {
       var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("viewBox", "0 0 " + o.width + " " + o.height);
-      svg.setAttribute("style", "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none");
+      svg.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none";
       var colors = { rectangle: "#1f5fbf", "dashed line": "#a02020", building: "#1d6b35", house: "#1d6b35", road: "#8a5a00" };
       o.objects.forEach(function (b) {
         var r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -527,7 +528,7 @@
   // ---------- paperwork, in the city's application format ----------
   function formField(label, value, opts) {
     opts = opts || {};
-    var box = el("div", { class: "ff" + (opts.wide ? " wide" : "") }, [el("label", { text: label })]);
+    var box = el("div", { class: "ff" + (opts.wide ? " wide" : "") }, [el("label", null, [el("span", { text: label }), opts.src ? el("span", { class: "src", text: "from " + opts.src.replace("_", " ") }) : null])]);
     if (opts.input) box.appendChild(opts.input);
     else box.appendChild(el("div", { class: "fv" + (value ? "" : " blank"), text: value || "" }));
     return box;
@@ -591,9 +592,7 @@
           var inp = el("input", { class: "field", type: "text", value: f.value || "", "data-doc": String(di), "data-field": String(fi) });
           grid4.appendChild(formField(f.label, "", { input: inp, wide: wide }));
         } else {
-          var box = formField(f.label, f.value, { wide: wide });
-          if (f.source && f.source !== "blank") box.appendChild(el("span", { class: "src", text: "from " + f.source.replace("_", " ") }));
-          grid4.appendChild(box);
+          grid4.appendChild(formField(f.label, f.value, { wide: wide, src: f.source && f.source !== "blank" ? f.source : null }));
         }
       });
       page.appendChild(grid4);

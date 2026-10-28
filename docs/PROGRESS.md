@@ -3,7 +3,7 @@
 > Handoff log. Every agent (Claude or Codex, any laptop) reads this at the start of a task and updates it at the end. Newest log entries at the top. The day-by-day plan and rules digest live in the private notebook `C:\Users\John Barlow\Projects\citycenter-notes`.
 
 ## Status
-**Concept v2 is built and verified end to end on John's laptop. The live Render site serves pages, maps and code lookups, but Meta's API answers "model not found" for most calls that come from Render, so conversations there fail most of the time.** Verified 2026-10-28 midday: the help desk (routing, parcel lookup on the real county layers, code research with tools on the real Hildale code, packet drafting, edit-by-telling, submit), the reviewer workspace, voice in, SAM outlines, Muse Image characters and the demo mode all work locally against the real Meta API. 28 offline unit tests pass; 20 of 22 live scenarios pass; the HTTP end-to-end journey passes locally.
+**Concept v2 is built and verified end to end on John's laptop; the resident counter is now the office scene John asked for (history, character, TV with remote, city-format application). The live Render site serves pages, maps and code lookups, but Meta's API answers "model not found" for most calls that come from Render, so conversations there fail most of the time.** Verified 2026-10-28 midday: the help desk (routing, parcel lookup on the real county layers, code research with tools on the real Hildale code, packet drafting, edit-by-telling, submit), the reviewer workspace, voice in, SAM outlines, Muse Image characters and the demo mode all work locally against the real Meta API. 28 offline unit tests pass; 20 of 22 live scenarios pass; the HTTP end-to-end journey passes locally.
 
 - **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff. Pages, map, parcel lookup and code lookups work there. **Model calls fail most of the time** (see RESUME POINT); when they fail the desk says "I hit a problem on my side".
 - **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff (passcode in `.env`). Everything works locally.
@@ -44,6 +44,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - **Test drawings:** the three computer-generated sketches from Oct 27 are reused for the demo until John supplies photographed ones (`public/sketches/`).
 - **Spend guard:** `DAILY_CALL_CAP` stays at 400 calls/day on the server.
 
+- **Office scene (2026-10-28 midday, John's redesign request):** background is a Muse Image illustration (`public/office/office-bg.webp`, prompt in `public/office/manifest.json`; regenerate with `node scripts/make-office.js`). Layout: conversation history left, character at the counter, TV right with a four-button remote labelled Parcel Map / Code Review / Your Submissions / Submission Paperwork (keys 1 to 4 also work). The TV changes channel by itself when new work appears (parcel found, code read, paperwork drafted); the remote overrides it.
+- **Application form layout:** letterhead "HILDALE CITY / Planning & Zoning Department / 320 E Newel Ave, Hildale, UT 84784" (address from memory of the public city office; correct it in `data/towns/hildale.json` under `office` if wrong; phone left blank), seal shows the reference prefix "HC". Sections: 1 Applicant, 2 Property, 3 Type of request (checkboxes over every application type in the town config), 4 Application details (the code's own fields), 5 Project description and statement, 6 Code sections, Attachments, certification with signature lines, and a "For office use only" box. Fonts: Georgia for the form. The real Hildale form was not copied; this is a conventional municipal layout.
+- **Deep links:** `/?ref=...&key=...&ch=paperwork` (or map, code, submissions) opens a visit on a chosen channel; handy for the video.
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -54,6 +58,12 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (late morning) — Claude Code on John's laptop — resident counter redesigned as the office scene
+- John asked for: full history in the chat (including Marlowe's turns), a city-office background, a TV on the right showing the work, a remote with Parcel Map / Code Review / Your Submissions / Submission Paperwork, and paperwork that looks like a real city application.
+- Done: `public/index.html`, `public/resident.js`, `public/app.css` rewritten for the three-column scene; `scripts/make-office.js` generated the background with Muse Image ($0.02); `office` block added to `data/towns/hildale.json` and exposed (with `packetTypes`) by `/api/town`; channel deep link `&ch=`; cache-busting `?v=` on the script and stylesheet links.
+- Bug found by screenshot: the page's Content-Security-Policy (`style-src 'self'`) blocks inline `style` attributes, so the SAM overlay, zone colours and a few spacings never applied before. Both scripts now set styles through `element.style` instead. Checked with headless Edge screenshots of every channel at 1440x900 and a tall 1440x2300 view of the form.
+- Unit tests 28/28. Deployed to Render (pages work there; model calls still subject to the Meta issue above).
 
 ### 2026-10-28 (midday) — Claude Code on John's laptop — stale local server, retry fix, hosting investigation
 - John reported chat and Examples failing. Cause on the laptop: a `node server.js` from Oct 27 13:03 (the v1 app) still held port 3000, so the browser got the old app. Stopped it; current build runs; a fence conversation at 455 E Jessop Ave completes (zone R1-10, zoning verification request).

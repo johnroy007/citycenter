@@ -162,6 +162,7 @@ function townPublic() {
     wording: town.wording,
     notes: town.notes,
     office: town.office || {},
+    packetTypes: town.packetTypes || {},
     code: { citation: town.code.citation, bookUrl: town.code.bookUrl, sections: code.count, fetchedAt: code.meta.fetchedAt },
     gis: { counts: gis.counts, credits: gis.credits, fetchedAt: gis.fetchedAt },
     models: { desk: MODEL, review: REVIEW_MODEL, second_read: SECOND_READ_MODEL, voice: "muse-voice-transcribe-1.0", image: "muse-image-1.0" },

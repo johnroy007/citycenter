@@ -173,10 +173,10 @@ footer.credits { font-size: 12px; color: var(--muted); padding: 10px 18px; }
 .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
 .ff { border-bottom: 1px solid #555; padding: 2px 0 3px; min-height: 42px; position: relative; }
 .ff.wide { grid-column: 1 / -1; }
-.ff label { display: block; font-family: system-ui, sans-serif; font-size: 10.5px; color: #555; text-transform: uppercase; letter-spacing: .05em; }
+.ff label { display: flex; justify-content: space-between; gap: 8px; font-family: system-ui, sans-serif; font-size: 10.5px; color: #555; text-transform: uppercase; letter-spacing: .05em; }
 .ff .fv { font-size: 14px; white-space: pre-wrap; }
 .ff .fv.blank::before { content: "\00a0"; }
-.ff .src { position: absolute; right: 0; top: 2px; font-family: system-ui, sans-serif; font-size: 10px; color: #8a8a8a; }
+.ff .src { font-size: 10px; color: #8a8a8a; text-transform: none; letter-spacing: 0; white-space: nowrap; }
 .ff input.field { width: 100%; font: inherit; font-size: 14px; padding: 3px 6px; border: 1px solid #bbb; border-radius: 4px; background: #fffdf0; }
 .cbgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; }
 .cb { display: flex; gap: 8px; align-items: center; font-size: 13px; }

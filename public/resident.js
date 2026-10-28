@@ -307,10 +307,17 @@
     li.appendChild(avatar); li.appendChild(body);
     return li;
   }
+  // Every visit starts at the front desk, so Marlowe's greeting is always the first line.
+  function greetingText() {
+    var d = characterFor("front_desk");
+    return "Hello, I'm " + d.character + " at the " + (town ? town.name + " " : "") + "Virtual City Help Desk. Tell me what you're trying to do with your property, or ask me anything. I'll find the right desk, pull up your parcel, read the city code, and prepare the paperwork. City staff make every decision.";
+  }
+  function greetingItem(at) { return chatItem({ role: "desk", department: "front_desk", character: characterFor("front_desk").character, text: greetingText(), at: at }); }
   function renderChat(s) {
     var chat = $("chat");
     var atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
     chat.textContent = "";
+    chat.appendChild(greetingItem(s.created_at));
     (s.messages || []).forEach(function (m) { chat.appendChild(chatItem(m)); });
     if (s.busy) chat.appendChild(el("li", { class: "msg working" }, [el("span", { class: "avatar dots", text: "…" }), el("div", { class: "body" }, [el("div", { class: "small", text: characterFor(s.department || "front_desk").character + ": " + (state.workingText || "working…") })])]));
     if (s.status === "error") chat.appendChild(el("li", { class: "msg system" }, [el("div", { class: "notice error", text: "The desk hit a problem: " + (s.error || "") + ". Your conversation is saved; send another message to try again." })]));
@@ -749,7 +756,7 @@
   }
   function resetVisit() {
     state.ref = null; state.key = null; state.session = null; state.lastMsgCount = 0; state.lastParcelId = null; state.channel = "welcome"; state.seen = { map: null, code: null, submissions: null, paperwork: null }; state.fresh = {};
-    $("chat").textContent = ""; $("refline").textContent = "New visit"; $("statusChip").textContent = "";
+    $("chat").textContent = ""; $("chat").appendChild(greetingItem(new Date().toISOString())); $("refline").textContent = "New visit"; $("statusChip").textContent = "";
     history.replaceState(null, "", "/");
     renderScreen(null); renderRemote(null);
     setPortrait("front_desk", "neutral");
@@ -783,6 +790,10 @@
     renderScreen(null); renderRemote(null);
     await loadAccount();
     var params = new URLSearchParams(location.search);
+    if (!(params.get("ref") && params.get("key"))) {
+      $("chat").appendChild(greetingItem(new Date().toISOString()));
+      say("front_desk", greetingText());
+    }
     if (params.get("ch") && CHANNEL_LABEL[params.get("ch")]) { state.channel = params.get("ch"); state.manual = true; state.lockOnce = true; }
     if (params.get("ref") && params.get("key")) openSession(params.get("ref"), params.get("key"));
   })();

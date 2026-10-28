@@ -48,6 +48,8 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 - **Stub departments (2026-10-28, John's request):** Utility Department (Reyes), Public Works (Sol), Police Department (Harper), Fire Department (Mateo), Parks and Recreation (Rosa), plus the existing Building (Bob), Code Enforcement (Dakota) and City Recorder (Avery). Each new character was generated with Muse Image (`scripts/make-characters.js --only sol,harper,mateo,rosa`; looks are in that script). When the front desk routes to one of them, the character replies: "Hi, I'm <name> at <department>. I can't help you yet because this area of the program is not built out yet. For now, please reach <contact>." The wording lives in `data/towns/hildale.json` under `wording.stub`. Five one-line demo examples (water leak, pothole, bike theft, brush burning, park pavilion) show the routing.
 
+- **Consent before every hand-off (2026-10-28, John's request):** Marlowe never transfers silently. She says "Based on what you've told me, I think the Utility Department can help you. Would you like me to get Reyes for you?" and waits. A yes (or more details about the same need) completes the hand-off: "Great, one moment. Reyes at the Utility Department will take it from here." A no returns to the front desk. The pending offer is stored on the session (`pending_handoff`); the route model reports `consent` yes/no/unclear and a code check catches plain yes/no words. The demo examples, the seed scripts, the journey script and the live test runner all answer "Yes, please." automatically when asked.
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -58,6 +60,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-28 (evening) — Claude Code on John's laptop — consent before hand-offs
+- John: the front desk must ask before handing someone to a department. Built as described in the decisions list. Verified locally with the rooster question (planning), the water leak (Utility Department) and the three-turn lot split with sketch: consent asked, yes given, hand-off and the rest of the pipeline unchanged. 30 of 30 unit tests pass. Deployed.
 
 ### 2026-10-28 (late afternoon, later) — Claude Code on John's laptop — Marlowe greets; five stub departments with their own characters
 - Greeting: Marlowe's opening line now appears in the conversation panel at the start of every visit (it had lived in the removed bubble).

@@ -763,6 +763,18 @@
   }
   function demoNextTurn() {
     var d = state.demo; if (!d || d.paused) return;
+    var lastMsg = state.session && state.session.messages && state.session.messages[state.session.messages.length - 1];
+    var consentTurn = !!(lastMsg && lastMsg.role === "desk" && lastMsg.asks_consent);
+    if (consentTurn) {
+      $("demoStatus").textContent = d.example.persona + " says yes…";
+      var yesBox = $("text"); yesBox.value = ""; var yi = 0; var yesText = "Yes, please.";
+      var yiv = setInterval(function () {
+        if (!state.demo || state.demo.paused) { clearInterval(yiv); return; }
+        yi += 1; yesBox.value = yesText.slice(0, yi);
+        if (yi >= yesText.length) { clearInterval(yiv); setTimeout(function () { if (!state.demo) return; d.waiting = true; sendMessage(yesText, null); $("demoStatus").textContent = "Waiting for the desk…"; }, 500); }
+      }, 40);
+      return;
+    }
     if (d.turn >= d.example.turns.length) { $("demoStatus").textContent = "Example finished. If " + characterFor("planning").character + " still has questions, answer them yourself in the box below, edit the paperwork, or press Submit."; return; }
     var text = d.example.turns[d.turn];
     $("demoStatus").textContent = d.example.persona + " is typing (turn " + (d.turn + 1) + " of " + d.example.turns.length + ")…";

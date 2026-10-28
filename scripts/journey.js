@@ -27,6 +27,16 @@ async function waitIdle(ref, key) {
   }
   throw new Error("timed out waiting for the desk");
 }
+// The front desk asks for consent before a hand-off; answer yes like a resident would.
+async function consentIfAsked(ref, key, s) {
+  const last = s.messages[s.messages.length - 1];
+  if (last && last.role === "desk" && last.asks_consent) {
+    console.log(`  front desk: ${last.text.slice(0, 140)} -> resident: Yes, please.`);
+    await api(`/api/sessions/${ref}/messages?key=${key}`, { method: "POST", body: JSON.stringify({ text: "Yes, please." }) });
+    return waitIdle(ref, key);
+  }
+  return s;
+}
 const ok = (cond, msg) => {
   if (!cond) throw new Error("CHECK FAILED: " + msg);
   console.log("  ✓ " + msg);
@@ -50,7 +60,7 @@ const ok = (cond, msg) => {
   // Resident gives the details plus a drawing
   const sketch = fs.readFileSync(path.join(__dirname, "..", "test", "fixtures", "sketch-clear.png")).toString("base64");
   await api(`/api/sessions/${ref}/messages?key=${key}`, { method: "POST", body: JSON.stringify({ text: "Sure. I'm Ryan Castillo at 455 E Jessop Ave, 435-555-0102. It would be attached to the house, about 650 square feet, with its own entrance. My mom would live there; we own the house and live in it. Here is a sketch of the lot.", image: { mime: "image/png", base64: sketch } }) });
-  s = await waitIdle(ref, key);
+  s = await consentIfAsked(ref, key, await waitIdle(ref, key));
   ok(s.department === "planning", `routed to planning (department ${s.department})`);
   ok(s.parcel && s.parcel.id, `parcel located: ${s.parcel && s.parcel.id} ${s.parcel && s.parcel.address} zone ${s.parcel && s.parcel.zone}`);
   ok(s.owner && s.owner.fictional, `fictional owner: ${s.owner && s.owner.name}`);

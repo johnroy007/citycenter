@@ -34,7 +34,13 @@ const review = require("../lib/review");
   console.log(`RESIDENT: ${text}\n`);
   const t0 = Date.now();
   const { ref } = store.createSession({ town: town.id, text });
-  const s = await runTurn(ref, ctx);
+  let s = await runTurn(ref, ctx);
+  const last = s.messages[s.messages.length - 1];
+  if (last && last.role === "desk" && last.asks_consent) {
+    console.log(`\n${last.character}: ${last.text}\nRESIDENT: Yes, please.`);
+    store.addMessage(ref, { role: "resident", text: "Yes, please." });
+    s = await runTurn(ref, ctx);
+  }
   console.log(`\n[${ref}] ${((Date.now() - t0) / 1000).toFixed(0)}s, ${calls} calls, status ${s.status}, department ${s.department}`);
   for (const m of s.messages.filter((x) => x.role === "desk")) console.log(`\n${m.character} (${m.department}): ${m.text}`);
   if (s.parcel) console.log(`\nPARCEL: ${s.parcel.id} ${s.parcel.address} zone ${s.parcel.zone} ${s.parcel.areaAcres} ac; owner (fictional) ${s.owner && s.owner.name}`);

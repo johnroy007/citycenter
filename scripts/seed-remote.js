@@ -19,7 +19,20 @@ async function api(p, opts = {}) {
 async function waitIdle(ref, key) {
   for (let i = 0; i < 240; i++) {
     const s = await api(`/api/sessions/${ref}?key=${key}`);
-    if (!s.busy) return s;
+    if (!s.busy) return consentIfAsked(ref, key, s);
+    await sleep(1500);
+  }
+  throw new Error("timed out");
+}
+// The front desk asks for consent before a hand-off; the demo resident says yes.
+async function consentIfAsked(ref, key, s) {
+  const last = s.messages[s.messages.length - 1];
+  if (!(last && last.role === "desk" && last.asks_consent)) return s;
+  await api(`/api/sessions/${ref}/messages?key=${key}`, { method: "POST", body: JSON.stringify({ text: "Yes, please." }) });
+  process.stdout.write("y");
+  for (let i = 0; i < 240; i++) {
+    const t = await api(`/api/sessions/${ref}?key=${key}`);
+    if (!t.busy) return t;
     await sleep(1500);
   }
   throw new Error("timed out");

@@ -33,11 +33,22 @@ const PICK = ["lot-split-son", "casita", "rooster"];
     const sketch = ex.sketch ? { mime: "image/png", data: fs.readFileSync(path.join(__dirname, "..", "test", "fixtures", ex.sketch)) } : null;
     const { ref, viewKey } = store.createSession({ town: town.id, text: ex.turns[0], sketch: ex.turns.length === 1 ? sketch : null, demoId: ex.id });
     process.stdout.write(`${ex.title} -> ${ref}: `);
+    const yesIfAsked = async () => {
+      const t = store.getSession(ref);
+      const last = t.messages[t.messages.length - 1];
+      if (last && last.role === "desk" && last.asks_consent) {
+        store.addMessage(ref, { role: "resident", text: "Yes, please." });
+        await runTurn(ref, ctx);
+        process.stdout.write("y");
+      }
+    };
     await runTurn(ref, ctx);
+    await yesIfAsked();
     for (let i = 1; i < ex.turns.length; i++) {
       if (i === ex.turns.length - 1 && /change/i.test(ex.turns[i]) === false && sketch) store.setSketch(ref, sketch);
       store.addMessage(ref, { role: "resident", text: ex.turns[i] });
       await runTurn(ref, ctx);
+      await yesIfAsked();
       process.stdout.write(".");
     }
     const s = store.getSession(ref);

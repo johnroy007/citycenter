@@ -49,7 +49,13 @@ const lower = (o) => JSON.stringify(o).toLowerCase();
 for (const sc of fixtures) {
   test(`${sc.id}: ${sc.title}`, { skip: !HAVE_KEY }, async () => {
     const { ref } = ctx.store.createSession({ town: "hildale", text: sc.text });
-    const s = await runTurn(ref, ctx);
+    let s = await runTurn(ref, ctx);
+    const last = s.messages[s.messages.length - 1];
+    if (last && last.role === "desk" && last.asks_consent) {
+      // The front desk asks for consent before a hand-off; the resident says yes.
+      ctx.store.addMessage(ref, { role: "resident", text: "Yes, please." });
+      s = await runTurn(ref, ctx);
+    }
     const e = sc.expect || {};
     const desk = s.messages.filter((m) => m.role === "desk");
     assert.ok(desk.length >= 1, "the desk replied");

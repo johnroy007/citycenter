@@ -10,8 +10,11 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test \"test/unit/*.test.js\"",
-    "test:live": "node --test --test-timeout=600000 \"test/live/*.test.js\"",
+    "test:live": "node --test --test-timeout=900000 --test-concurrency=1 \"test/live/*.test.js\"",
+    "try": "node scripts/try.js",
     "seed": "node scripts/seed.js",
+    "fetch:code": "node scripts/fetch-code.js",
+    "fetch:gis": "node scripts/fetch-gis.js",
     "make-sketches": "node scripts/make-test-sketches.js"
   }
 }

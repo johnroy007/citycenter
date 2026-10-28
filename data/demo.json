@@ -1,0 +1,64 @@
+{
+  "note": "Worked examples for the judges' demo mode. The resident side plays these lines; the help desk answers live through Meta's models. People and owner names are invented; addresses are real Hildale parcels from the public parcel layer.",
+  "examples": [
+    {
+      "id": "lot-split-son",
+      "title": "Devon wants to split his lot and sell the back half to his son",
+      "persona": "Devon",
+      "sketch": "sketch-clear.png",
+      "turns": [
+        "Hi. I want to split my lot and sell the back half to my son so he can build a house.",
+        "I'm Devon Dunmore, 345 E Jessop Ave, 435-555-0104. The lot is just under an acre. The back half would be about 20,000 square feet with 100 feet of width and the front half keeps my house. Both halves can reach the road, and water and sewer are in the street. Here is my sketch.",
+        "Please change the contact phone to 435-555-0199."
+      ]
+    },
+    {
+      "id": "casita",
+      "title": "Ryan wants to build a casita for his mother",
+      "persona": "Ryan",
+      "turns": [
+        "I need a building permit for a mother-in-law suite.",
+        "Sure. I'm Ryan Castillo at 455 E Jessop Ave. It would be attached to the house, about 650 square feet, with its own entrance. My mom would live there; we own the house and live in it."
+      ]
+    },
+    {
+      "id": "daycare",
+      "title": "Tomas wants to start a home daycare",
+      "persona": "Tomas",
+      "turns": [
+        "My wife wants to start a small daycare in our house. What do we need from the city?",
+        "Tomas Ibarra, 865 N Redwood St, 435-555-0105. Up to 6 kids to start, we live here, no employees."
+      ]
+    },
+    {
+      "id": "rooster",
+      "title": "Priya asks whether she can keep a rooster",
+      "persona": "Priya",
+      "turns": [
+        "Can I keep 10 hens and a rooster at my place? Priya Sato, 595 E 1400 N. We have about an acre and the coop would go in the back corner, 30 feet from the neighbor's house."
+      ]
+    },
+    {
+      "id": "restaurant",
+      "title": "Elena wants to open a restaurant in an industrial building",
+      "persona": "Elena",
+      "turns": [
+        "I'm leasing the building at 1280 W Field Ave and want to open a 60 seat restaurant with a drive-through. What approvals do I need? Elena Farrow, 435-555-0106."
+      ]
+    },
+    {
+      "id": "bank-letter",
+      "title": "Noor's bank needs a zoning verification letter",
+      "persona": "Noor",
+      "turns": [
+        "My bank is refinancing my property at 740 N Pinion St and needs a zoning verification letter saying what the zoning is and that the current use is allowed. How do I get that? Noor Okafor, 435-555-0107."
+      ]
+    },
+    {
+      "id": "barking-dogs",
+      "title": "Marcus complains about barking dogs",
+      "persona": "Marcus",
+      "turns": ["My neighbor's three dogs bark all day and all night. Who do I talk to?"]
+    }
+  ]
+}

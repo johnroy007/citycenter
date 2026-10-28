@@ -1,0 +1,137 @@
+{
+  "note": "Scenario fixtures for Hildale City. Addresses and parcel ids are real public records; the people, their intentions and owner names are invented. Expectations are what the pipeline should find in the real code; 'tiers' lists acceptable process tiers.",
+  "scenarios": [
+    {
+      "id": "fence-ok",
+      "title": "Jane wants a six-foot side fence",
+      "text": "Hi, I'm Jane Alder at 880 W Uzona Ave. I want to put up a 6 foot wood privacy fence along the side and back of my yard. Do I need anything from the city?",
+      "expect": { "department": "planning", "request_kind": ["question", "action"], "tiers": ["none", "building_permit"], "sections_any": ["152-37-9"] }
+    },
+    {
+      "id": "fence-front",
+      "title": "Jane wants a six-foot fence across the front yard",
+      "text": "I'm Jane Alder, 880 W Uzona Ave, phone 435-555-0101. I want a 6 foot solid vinyl fence across the whole front of my yard along the street. What do I need to do?",
+      "expect": { "department": "planning", "tiers": ["commission", "administrative"], "sections_any": ["152-37-9"], "path_if_blocked_mentions": ["Planning Commission", "152-37-9"] }
+    },
+    {
+      "id": "casita-ok",
+      "title": "Ryan wants an attached casita for his mother",
+      "text": "My name is Ryan Castillo, I live at 455 E Jessop Ave. I want to build a mother-in-law suite attached to my house, about 650 square feet, with its own entrance. My mom would live there. We own the house and live in it. Phone 435-555-0102.",
+      "expect": { "department": "planning", "use_status": ["permitted", "accessory_use"], "tiers": ["building_permit", "administrative"], "sections_any": ["152-41-4", "152-13-3"] }
+    },
+    {
+      "id": "casita-detached-large",
+      "title": "Ryan wants a big detached casita on an R1-8 lot",
+      "text": "Ryan Castillo here, 385 W Utah Ave. I'd like to build a detached guest house in the back yard, 900 square feet, to rent out on Airbnb. It would have its own door and no connection to the main house.",
+      "expect": { "department": "planning", "tiers": ["commission", "administrative", "variance"], "sections_any": ["152-13-3", "152-41-4", "152-13-4"], "standards_not_met_any": true }
+    },
+    {
+      "id": "shed-ok",
+      "title": "Maria wants a small shed",
+      "text": "Hello, Maria Moreno at 445 E Newel Ave. I want to put a 10 by 12 storage shed in my back yard, about 5 feet from the back fence and 5 feet from the side fence. Do I need a permit from zoning?",
+      "expect": { "department": "planning", "tiers": ["none", "building_permit"], "sections_any": ["152-13-4", "152-37-5"] }
+    },
+    {
+      "id": "shed-large-setback",
+      "title": "Maria wants a big shop building right on the property line",
+      "text": "Maria Moreno, 445 E Newel Ave, 435-555-0103. I want to build a 1,500 square foot metal shop building in the back, right up against the back property line, 24 feet tall.",
+      "expect": { "department": "planning", "tiers": ["commission", "variance", "building_permit"], "sections_any": ["152-13-4"], "standards_not_met_any": true }
+    },
+    {
+      "id": "lot-split-ok",
+      "title": "Devon wants to split a lot and sell the back half to his son",
+      "text": "I'm Devon Dunmore, 345 E Jessop Ave, 435-555-0104, devon@example.com. My lot is just under an acre. I want to split off the back half, about 20,000 square feet with 100 feet of width, and sell it to my son so he can build a house. The front half keeps my house. Both halves would be about the same size and both have access to the road. Water and sewer are in the street.",
+      "expect": { "department": "planning", "request_kind": ["action"], "tiers": ["administrative"], "applications_any": ["lot_split"], "sections_any": ["152-39-4"] }
+    },
+    {
+      "id": "lot-split-small",
+      "title": "Devon wants to carve three small lots out of a half-acre",
+      "text": "Devon Dunmore, 885 N Memorial St. I want to divide my half acre lot into three lots of about 7,000 square feet each with 50 feet of frontage each, to sell.",
+      "expect": { "department": "planning", "tiers": ["commission", "variance", "council"], "applications_any": ["subdivision", "variance"], "sections_any": ["152-39-4", "152-13-4"], "standards_not_met_any": true }
+    },
+    {
+      "id": "rooster-ok",
+      "title": "Priya wants chickens and a rooster on a one-acre RA lot",
+      "text": "Priya Sato at 595 E 1400 N. We have an acre. Can we keep 10 hens and 1 rooster? The coop would be in the back corner about 30 feet from the neighbor's house.",
+      "expect": { "department": "planning", "tiers": ["none", "zoning_verification", "administrative"], "sections_any": ["152-37-15", "152-14-3"] }
+    },
+    {
+      "id": "rooster-wrong-zone",
+      "title": "Priya wants a rooster on a multi-family lot",
+      "text": "Priya Sato, 150 W Field Ave. I'd like to keep three roosters and some hens in my yard. Is that allowed here?",
+      "expect": { "department": "planning", "use_status": ["not_permitted", "not_listed", "unclear"], "tiers": ["zoning_verification", "council", "none"], "sections_any": ["152-13-3", "152-37-15"] }
+    },
+    {
+      "id": "daycare-small",
+      "title": "Tomas wants to care for six children at home",
+      "text": "Tomas Ibarra, 865 N Redwood St, 435-555-0105. My wife wants to start a small daycare in our home for up to 6 kids. We live here. What do we need from the city?",
+      "expect": { "department": "planning", "use_status": ["permitted", "accessory_use"], "tiers": ["administrative"], "applications_any": ["home_based_business"], "sections_any": ["152-42-4", "152-13-3", "152-14-3"] }
+    },
+    {
+      "id": "daycare-large",
+      "title": "Tomas wants a licensed family child care for 14 children",
+      "text": "Tomas Ibarra, 865 N Redwood St. We want to run a licensed family child care for up to 14 children in our house, with one employee who does not live here.",
+      "expect": { "department": "planning", "use_status": ["conditional"], "tiers": ["commission"], "applications_any": ["conditional_use_permit"], "sections_any": ["152-7-9", "152-42-4"] }
+    },
+    {
+      "id": "restaurant-residential",
+      "title": "Elena wants to open a cafe in her house",
+      "text": "Elena Farrow, 455 E Newel Ave. I want to open a small sit-down cafe in the front room of my house, maybe 12 seats, open to the public. How do I get that approved?",
+      "expect": { "department": "planning", "use_status": ["not_permitted", "not_listed"], "tiers": ["council", "zoning_verification"], "path_if_blocked_mentions": ["152-7-7"], "sections_any": ["152-13-3", "152-42-4"] }
+    },
+    {
+      "id": "restaurant-industrial",
+      "title": "Elena wants to open a restaurant in a light-industrial building",
+      "text": "Elena Farrow, 435-555-0106. I'm leasing the building at 1280 W Field Ave and want to open a 60 seat restaurant with a drive-through window. What approvals do I need?",
+      "expect": { "department": "planning", "tiers": ["council", "commission", "administrative", "zoning_verification"], "sections_any": ["152-16-3"], "path_if_blocked_mentions": ["152-7-7"] }
+    },
+    {
+      "id": "restaurant-commercial-ok",
+      "title": "Elena wants a restaurant in a general commercial building",
+      "text": "Elena Farrow. I want to open a 40 seat restaurant at 1065 W Utah Ave in the existing commercial building. No drive-through. What's the process?",
+      "expect": { "department": "planning", "use_status": ["permitted"], "tiers": ["administrative", "commission", "building_permit"], "applications_any": ["permitted_use_review", "site_plan_review", "building_permit"], "sections_any": ["152-15-3"] }
+    },
+    {
+      "id": "complaint-dogs",
+      "title": "Marcus complains about three barking dogs next door",
+      "text": "My neighbor on Jessop Ave has three dogs that bark all day and all night. I can't sleep. Who do I talk to?",
+      "expect": { "department": ["enforcement", "planning"], "request_kind": ["complaint"], "tiers": ["enforcement", "other_department"], "sections_any": ["90-123", "90-"] }
+    },
+    {
+      "id": "complaint-rooster",
+      "title": "Marcus complains about a neighbor's rooster in an RM-1 area",
+      "text": "There's a rooster crowing at 5 am every morning at the house next to mine at 385 E Utah Ave. I'm at 395 E Utah Ave. Is that even allowed in this zone? What can the city do?",
+      "expect": { "department": "planning", "request_kind": ["complaint"], "tiers": ["enforcement"], "sections_any": ["152-13-3", "152-9-5", "152-37-15"] }
+    },
+    {
+      "id": "zv-letter-bank",
+      "title": "Noor's bank wants a zoning verification letter",
+      "text": "Noor Okafor, 435-555-0107. My bank is refinancing the property at 740 N Pinion St and they need a zoning verification letter from the city saying what the zoning is and that the current use is allowed. How do I get that?",
+      "expect": { "department": "planning", "request_kind": ["verification_letter"], "tiers": ["zoning_verification"], "sections_any": ["152-15-3", "152-6-8", "152-7-18", "152-8-"] }
+    },
+    {
+      "id": "horses",
+      "title": "Caleb asks about keeping two horses",
+      "text": "Caleb Granger at 570 E Government Ave. Can I keep two horses on my property? It's about an acre.",
+      "expect": { "department": "planning", "request_kind": ["question"], "tiers": ["none", "zoning_verification", "administrative"], "sections_any": ["152-37-15", "152-14-3"] }
+    },
+    {
+      "id": "building-permit-but-zoning",
+      "title": "Rosa asks for a building permit for a second house on her lot",
+      "text": "I need a building permit. I want to put a second house on my lot at 860 N Maple St for my parents.",
+      "expect": { "department": ["planning", "building"], "zoning_implications": true, "offer_tell_me_more": true }
+    },
+    {
+      "id": "utility-wrong-desk",
+      "title": "Ethan asks utilities about a water line on his own lot",
+      "text": "My water line between the meter and my house is leaking under my driveway. Who at the city fixes that?",
+      "expect": { "department": ["building", "utilities", "front_desk"], "tiers": ["other_department"] }
+    },
+    {
+      "id": "general-hours",
+      "title": "Lila asks a general question",
+      "text": "Hi! Where do I go to pay a fee and what are your hours?",
+      "expect": { "department": ["recorder", "front_desk"] }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-// citycenter server: resident flow + staff portal. Plain Node, no packages.
+// citycenter server: the virtual city help desk (resident side) and the reviewer workspace (staff side). Plain Node, no packages.
 // The Meta API key and the staff passcode live only in the server's environment. They never reach the browser.
 "use strict";
 const http = require("http");
@@ -6,49 +6,56 @@ const fs = require("fs");
 const path = require("path");
 require("./lib/env").loadEnv();
 
+const { loadTown } = require("./lib/townconfig");
+const { loadCode } = require("./lib/codestore");
+const { loadGis } = require("./lib/gis");
+const { createTools } = require("./lib/tools");
 const { openStore } = require("./lib/store");
 const { createClient, MetaError } = require("./lib/meta");
-const { runResidentFlow } = require("./lib/pipeline");
-const { preReview, draftLetter } = require("./lib/review");
+const { runTurn } = require("./lib/desk");
+const review = require("./lib/review");
 const { validateImage } = require("./lib/sketch");
-const town = require("./lib/town");
 const sec = require("./lib/security");
 
 const PORT = Number(process.env.PORT || 3000);
 const MODEL = process.env.META_MODEL || "muse-spark-1.3";
 const REVIEW_MODEL = process.env.META_MODEL_REVIEW || MODEL;
+const SECOND_READ_MODEL = process.env.META_MODEL_SECOND_READ || "muse-wonder-1.0";
 const DAILY_CAP = Number(process.env.DAILY_CALL_CAP || 400);
 const STAFF_PASSCODE = process.env.STAFF_PASSCODE || "";
 const COOKIE_SECRET = process.env.COOKIE_SECRET || "";
 const PUBLIC_DIR = path.join(__dirname, "public");
 
-const MAX_JSON_BYTES = 64 * 1024; // ordinary JSON requests
-const MAX_SUBMIT_BYTES = 8 * 1024 * 1024; // submission with a base64 image
+const MAX_JSON_BYTES = 64 * 1024;
+const MAX_SUBMIT_BYTES = 8 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 6 * 1024 * 1024;
 const MAX_TEXT_CHARS = 6000;
 const MAX_CONCURRENT_RUNS = 4;
-const REF_RE = /^SC-\d{4}-\d{4}$/;
 
-const store = openStore();
-const client = createClient({
-  model: MODEL,
-  onUsage: (u) => store.logUsage(u),
-  canCall: () => store.callsToday().n < DAILY_CAP,
-});
+const town = loadTown();
+const code = loadCode(town);
+const gis = loadGis(town);
+const { tools } = createTools({ code, gis, town });
+const store = openStore(null, { refPrefix: town.refPrefix });
+const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage(u), canCall: () => store.callsToday().n < DAILY_CAP });
+const ctx = { store, client, town, code, gis, tools, model: MODEL };
+const REF_RE = new RegExp(`^${town.refPrefix}-\\d{4}-\\d{4}$`);
+const DEMO = fs.existsSync(path.join(__dirname, "data", "demo.json")) ? JSON.parse(fs.readFileSync(path.join(__dirname, "data", "demo.json"), "utf8")) : { examples: [] };
 
-const submitLimiter = sec.createRateLimiter({ limit: 20, windowMs: 60 * 60 * 1000 });
+const submitLimiter = sec.createRateLimiter({ limit: 30, windowMs: 60 * 60 * 1000 });
+const messageLimiter = sec.createRateLimiter({ limit: 120, windowMs: 60 * 60 * 1000 });
+const voiceLimiter = sec.createRateLimiter({ limit: 60, windowMs: 60 * 60 * 1000 });
 const loginLimiter = sec.createRateLimiter({ limit: 10, windowMs: 15 * 60 * 1000 });
-const readLimiter = sec.createRateLimiter({ limit: 600, windowMs: 60 * 1000 });
-let runningFlows = 0;
+const readLimiter = sec.createRateLimiter({ limit: 900, windowMs: 60 * 1000 });
+let runningTurns = 0;
+let citySvgCache = null;
 
 // ---------- helpers ----------
 function sendJson(res, status, obj) {
-  const body = JSON.stringify(obj);
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
-  res.end(body);
+  res.end(JSON.stringify(obj));
 }
-function sendError(res, status, message, extra) {
-  sendJson(res, status, { error: message, ...(extra || {}) });
-}
+const sendError = (res, status, message, extra) => sendJson(res, status, { error: message, ...(extra || {}) });
 function errorFrom(e) {
   if (e instanceof MetaError) {
     if (e.code === "daily_cap") return [429, e.message];
@@ -56,9 +63,9 @@ function errorFrom(e) {
     return [502, e.message];
   }
   if (e && e.status === 413) return [413, "That upload is too large."];
+  if (e && e.status === 400) return [400, e.message || "Bad request."];
   return [500, "Something went wrong on the server."];
 }
-
 async function readJson(req, maxBytes) {
   const buf = await sec.readBody(req, maxBytes);
   if (!buf.length) return {};
@@ -70,16 +77,7 @@ async function readJson(req, maxBytes) {
     throw e;
   }
 }
-
-const STATIC_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".png": "image/png",
-  ".svg": "image/svg+xml",
-  ".ico": "image/x-icon",
-  ".txt": "text/plain; charset=utf-8",
-};
+const STATIC_TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".json": "application/json; charset=utf-8", ".mp3": "audio/mpeg" };
 function serveStatic(res, rel) {
   const full = path.normalize(path.join(PUBLIC_DIR, rel));
   if (!full.startsWith(PUBLIC_DIR + path.sep) && full !== PUBLIC_DIR) return notFound(res);
@@ -93,14 +91,10 @@ function notFound(res) {
   res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
   res.end("Not found");
 }
-
-function staffConfigured() {
-  return STAFF_PASSCODE.length >= 8 && COOKIE_SECRET.length >= 16;
-}
+const staffConfigured = () => STAFF_PASSCODE.length >= 8 && COOKIE_SECRET.length >= 16;
 function isStaff(req) {
   if (!staffConfigured()) return false;
-  const cookies = sec.parseCookies(req.headers.cookie);
-  return sec.verifyStaffToken(cookies.cc_staff, COOKIE_SECRET);
+  return sec.verifyStaffToken(sec.parseCookies(req.headers.cookie).cc_staff, COOKIE_SECRET);
 }
 function requireStaff(req, res) {
   if (!staffConfigured()) {
@@ -114,26 +108,63 @@ function requireStaff(req, res) {
   return true;
 }
 
-function publicApp(app, { staff }) {
-  const out = { ...app };
+function publicSession(s, { staff }) {
+  const out = { ...s };
   delete out.view_key;
   if (!staff) {
-    // Residents see only saved letters, not staff notes or draft letters.
-    out.staff_actions = (app.staff_actions || []).filter((a) => a.action === "letter_saved").map((a) => ({ action: a.action, created_at: a.created_at, payload: a.payload }));
-    delete out.prereview;
+    delete out.review;
+    out.staff_actions = (s.staff_actions || []).filter((a) => a.action === "letter_saved").map((a) => ({ action: a.action, created_at: a.created_at, payload: a.payload }));
+    if (out.research) out.research = { ...out.research, tool_log: (out.research.tool_log || []).map((t) => ({ tool: t.tool, summary: t.summary })) };
   } else {
-    out.resident_link = `/?ref=${encodeURIComponent(app.ref)}&key=${encodeURIComponent(app.view_key)}`;
+    out.resident_link = `/?ref=${encodeURIComponent(s.ref)}&key=${encodeURIComponent(s.view_key)}`;
   }
   return out;
 }
 
-function startFlow(ref) {
-  runningFlows++;
-  runResidentFlow(ref, { store, client, model: MODEL })
-    .catch((e) => console.error(`[${ref}] pipeline failed: ${e.message}`))
+function startTurn(ref) {
+  runningTurns++;
+  runTurn(ref, ctx)
+    .catch((e) => console.error(`[${ref}] turn failed: ${e.message}`))
     .finally(() => {
-      runningFlows--;
+      runningTurns--;
     });
+}
+
+function parseImage(body, res) {
+  if (!body.image || typeof body.image !== "object") return null;
+  const mime = String(body.image.mime || "");
+  let data;
+  try {
+    data = Buffer.from(String(body.image.base64 || ""), "base64");
+  } catch {
+    sendError(res, 400, "The image could not be read.");
+    return false;
+  }
+  const problem = validateImage(mime, data);
+  if (problem) {
+    sendError(res, 400, problem);
+    return false;
+  }
+  return { mime, data };
+}
+
+function townPublic() {
+  return {
+    name: town.name,
+    shortName: town.shortName,
+    state: town.state,
+    county: town.county,
+    refPrefix: town.refPrefix,
+    departments: town.departments,
+    processTiers: town.processTiers.map((t) => ({ id: t.id, label: t.label, decider: t.decider, resident: t.resident, sections: t.sections })),
+    applicationTypes: town.applicationTypes,
+    zones: Object.fromEntries(Object.entries(town.zones).map(([k, v]) => [k, { name: v.name, chapter: v.chapter, usesSection: v.usesSection, standardsSection: v.standardsSection, color: gis.zoneColor(k) }])),
+    wording: town.wording,
+    notes: town.notes,
+    code: { citation: town.code.citation, bookUrl: town.code.bookUrl, sections: code.count, fetchedAt: code.meta.fetchedAt },
+    gis: { counts: gis.counts, credits: gis.credits, fetchedAt: gis.fetchedAt },
+    models: { desk: MODEL, review: REVIEW_MODEL, second_read: SECOND_READ_MODEL, voice: "muse-voice-transcribe-1.0", image: "muse-image-1.0" },
+  };
 }
 
 // ---------- routes ----------
@@ -143,8 +174,8 @@ async function handle(req, res) {
   const https = sec.isHttps(req);
   sec.securityHeaders(res, https);
   const p = url.pathname;
+  let m;
 
-  // Pages and static files
   if (req.method === "GET" && p === "/") return serveStatic(res, "index.html");
   if (req.method === "GET" && p === "/staff") return serveStatic(res, "staff.html");
   if (req.method === "GET" && p === "/favicon.ico") return serveStatic(res, "favicon.svg");
@@ -152,56 +183,120 @@ async function handle(req, res) {
 
   if (req.method === "GET" && p === "/api/health") {
     const u = store.callsToday();
-    return sendJson(res, 200, { ok: true, model: MODEL, review_model: REVIEW_MODEL, calls_today: u.n, daily_cap: DAILY_CAP, staff_portal: staffConfigured() });
+    return sendJson(res, 200, { ok: true, town: town.name, model: MODEL, review_model: REVIEW_MODEL, calls_today: u.n, daily_cap: DAILY_CAP, staff_portal: staffConfigured(), code_sections: code.count, parcels: gis.counts.parcels });
   }
-  if (req.method === "GET" && p === "/api/town") {
-    return sendJson(res, 200, { code: town.code, checklist: town.checklist });
+  if (req.method === "GET" && p === "/api/town") return sendJson(res, 200, townPublic());
+  if (req.method === "GET" && p === "/api/demo") return sendJson(res, 200, DEMO);
+
+  // Map and parcels (read-only, from the cached public layers)
+  if (req.method === "GET" && p === "/api/map/city.svg") {
+    if (!citySvgCache) citySvgCache = gis.renderSvg({ width: 1000, height: 750 });
+    res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
+    return res.end(citySvgCache);
+  }
+  m = p.match(/^\/api\/map\/parcel\/([^/]+)\.svg$/);
+  if (req.method === "GET" && m) {
+    if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
+    const id = decodeURIComponent(m[1]);
+    if (!gis.getParcel(id)) return notFound(res);
+    const meters = Math.min(600, Math.max(60, Number(url.searchParams.get("m") || 160)));
+    res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
+    return res.end(gis.renderSvg({ parcelId: id, meters, width: 1000, height: 750 }));
+  }
+  if (req.method === "GET" && p === "/api/parcels/lookup") {
+    if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
+    const q = String(url.searchParams.get("q") || "").slice(0, 120);
+    if (!q) return sendError(res, 400, "Give an address or parcel id in q.");
+    const r = gis.locate({ address: q, parcelId: q });
+    return sendJson(res, 200, { match: r.match, parcel: r.parcel, candidates: r.candidates });
+  }
+  m = p.match(/^\/api\/code\/sections\/([^/]+)$/);
+  if (req.method === "GET" && m) {
+    const s = code.getSection(decodeURIComponent(m[1]));
+    if (!s) return notFound(res);
+    return sendJson(res, 200, { id: s.id, title: s.title, chapter: s.chapterName, titleName: s.titleName, url: s.url, text: s.text });
+  }
+  if (req.method === "GET" && p === "/api/code/search") {
+    const q = String(url.searchParams.get("q") || "").slice(0, 200);
+    if (!q) return sendError(res, 400, "Give a query in q.");
+    return sendJson(res, 200, { results: code.search(q, { limit: 10, chapter: url.searchParams.get("chapter") || null }) });
   }
 
-  // Resident: submit
-  if (req.method === "POST" && p === "/api/applications") {
-    if (!submitLimiter.check(ip)) return sendError(res, 429, "Too many submissions from this connection. Please try again in an hour.");
-    if (runningFlows >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The assistant is busy right now. Please try again in a minute.");
+  // Voice: raw WAV body -> transcript (Muse Voice Transcribe)
+  if (req.method === "POST" && p === "/api/voice/transcribe") {
+    if (!voiceLimiter.check(ip)) return sendError(res, 429, "Too many voice requests. Please type instead for a while.");
+    const buf = await sec.readBody(req, MAX_AUDIO_BYTES);
+    if (buf.length < 1000 || buf.slice(0, 4).toString() !== "RIFF") return sendError(res, 400, "Expected a WAV recording.");
+    try {
+      const out = await client.transcribeWav(buf, { keywords: ["Hildale", "zoning", "parcel", "casita", "lot split", "variance", "rooster", "setback"] });
+      return sendJson(res, 200, out);
+    } catch (e) {
+      const [s, msg] = errorFrom(e);
+      return sendError(res, s, msg);
+    }
+  }
+
+  // Resident: start a session
+  if (req.method === "POST" && p === "/api/sessions") {
+    if (!submitLimiter.check(ip)) return sendError(res, 429, "Too many new conversations from this connection. Please try again in an hour.");
+    if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
     const body = await readJson(req, MAX_SUBMIT_BYTES);
     const text = typeof body.text === "string" ? body.text.trim() : "";
-    if (text.length < 20) return sendError(res, 400, "Please describe what you want to do in a sentence or two.");
-    if (text.length > MAX_TEXT_CHARS) return sendError(res, 400, `Please keep the description under ${MAX_TEXT_CHARS} characters.`);
-    let sketch = null;
-    if (body.image && typeof body.image === "object") {
-      const mime = String(body.image.mime || "");
-      let data;
-      try {
-        data = Buffer.from(String(body.image.base64 || ""), "base64");
-      } catch {
-        return sendError(res, 400, "The image could not be read.");
-      }
-      const problem = validateImage(mime, data);
-      if (problem) return sendError(res, 400, problem);
-      sketch = { mime, data };
-    }
-    const { ref, viewKey } = store.createApplication({ requestText: text, sketch });
-    startFlow(ref);
+    if (text.length < 2) return sendError(res, 400, "Say a few words about what you need.");
+    if (text.length > MAX_TEXT_CHARS) return sendError(res, 400, `Please keep each message under ${MAX_TEXT_CHARS} characters.`);
+    const sketch = parseImage(body, res);
+    if (sketch === false) return;
+    const demoId = typeof body.demo_id === "string" ? body.demo_id.slice(0, 60) : null;
+    const { ref, viewKey } = store.createSession({ town: town.id, text, sketch, demoId });
+    startTurn(ref);
     return sendJson(res, 202, { ref, view_key: viewKey });
   }
 
-  // Resident: read (needs the view key) and sketch image
-  let m = p.match(/^\/api\/applications\/([^/]+)(\/sketch)?$/);
-  if (req.method === "GET" && m) {
+  // Resident: read, message, submit, sketch (view key required unless staff)
+  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch))?$/);
+  if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
     const ref = decodeURIComponent(m[1]);
-    if (!REF_RE.test(ref)) return sendError(res, 404, "No application with that reference code.");
-    const app = store.getApplication(ref);
-    if (!app) return sendError(res, 404, "No application with that reference code.");
+    const action = m[2];
+    if (!REF_RE.test(ref)) return sendError(res, 404, "No conversation with that reference code.");
+    const s = store.getSession(ref);
+    if (!s) return sendError(res, 404, "No conversation with that reference code.");
     const staff = isStaff(req);
     const key = url.searchParams.get("key") || "";
-    if (!staff && !(key && sec.constantTimeEqual(key, app.view_key))) return sendError(res, 403, "That reference code needs its access key. Use the link you were given.");
-    if (m[2]) {
+    if (!staff && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That reference code needs its access key. Use the link you were given.");
+    if (req.method === "GET" && !action) return sendJson(res, 200, publicSession(s, { staff }));
+    if (req.method === "GET" && action === "sketch") {
       const img = store.getSketch(ref);
       if (!img) return notFound(res);
       res.writeHead(200, { "Content-Type": img.mime, "Cache-Control": "private, max-age=600", "Content-Length": img.data.length });
       return res.end(img.data);
     }
-    return sendJson(res, 200, publicApp(app, { staff }));
+    if (req.method === "POST" && action === "messages") {
+      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many messages. Please slow down.");
+      if (s.busy) return sendError(res, 409, "The desk is still working on your last message.");
+      if (["submitted", "needs_info", "in_review", "answered"].includes(s.status) && !staff) return sendError(res, 409, "This conversation has been submitted. Start a new one for a new request.");
+      if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
+      const body = await readJson(req, MAX_SUBMIT_BYTES);
+      const text = typeof body.text === "string" ? body.text.trim() : "";
+      const sketch = parseImage(body, res);
+      if (sketch === false) return;
+      if (text.length < 1 && !sketch) return sendError(res, 400, "Type a message or attach a drawing.");
+      if (text.length > MAX_TEXT_CHARS) return sendError(res, 400, `Please keep each message under ${MAX_TEXT_CHARS} characters.`);
+      if (sketch) store.setSketch(ref, sketch);
+      store.addMessage(ref, { role: "resident", text: text || "(attached a drawing)", has_sketch: !!sketch });
+      startTurn(ref);
+      return sendJson(res, 202, { ok: true });
+    }
+    if (req.method === "POST" && action === "submit") {
+      if (s.busy) return sendError(res, 409, "The desk is still working. Wait for the packet, then submit.");
+      if (!s.packet || !s.packet.documents || !s.packet.documents.length) return sendError(res, 400, "There is no prepared packet to submit yet.");
+      if (["submitted", "needs_info", "in_review", "answered"].includes(s.status)) return sendJson(res, 200, { ok: true, status: s.status });
+      const ts = new Date().toISOString();
+      store.updateSession(ref, { status: "submitted", submitted_at: ts });
+      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted. Your reference code is ${ref}. The planning office will review it and write back here. Keep this page's address to check on it.` });
+      return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts });
+    }
+    return notFound(res);
   }
 
   // Staff: session
@@ -211,8 +306,7 @@ async function handle(req, res) {
     const body = await readJson(req, MAX_JSON_BYTES);
     const pass = typeof body.passcode === "string" ? body.passcode : "";
     if (!pass || !sec.constantTimeEqual(pass, STAFF_PASSCODE)) return sendError(res, 401, "That passcode is not right.");
-    const token = sec.signStaffToken(COOKIE_SECRET);
-    res.setHeader("Set-Cookie", `cc_staff=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${https ? "; Secure" : ""}`);
+    res.setHeader("Set-Cookie", `cc_staff=${sec.signStaffToken(COOKIE_SECRET)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${https ? "; Secure" : ""}`);
     return sendJson(res, 200, { ok: true });
   }
   if (req.method === "POST" && p === "/api/staff/logout") {
@@ -221,66 +315,100 @@ async function handle(req, res) {
   }
   if (req.method === "GET" && p === "/api/staff/me") {
     if (!staffConfigured()) return sendError(res, 503, "The staff portal is not set up on this server yet.");
-    return isStaff(req) ? sendJson(res, 200, { ok: true, review_model: REVIEW_MODEL }) : sendError(res, 401, "Not signed in.");
+    return isStaff(req) ? sendJson(res, 200, { ok: true, review_model: REVIEW_MODEL, second_read_model: SECOND_READ_MODEL }) : sendError(res, 401, "Not signed in.");
   }
 
-  // Staff: queue and actions
   if (p.startsWith("/api/staff/")) {
     if (!requireStaff(req, res)) return;
     if (req.method === "GET" && p === "/api/staff/queue") {
-      const u = store.callsToday();
-      return sendJson(res, 200, { applications: store.listApplications(), usage_today: u, daily_cap: DAILY_CAP });
+      return sendJson(res, 200, { sessions: store.listSessions(), usage_today: store.callsToday(), daily_cap: DAILY_CAP });
     }
-    m = p.match(/^\/api\/staff\/applications\/([^/]+)(?:\/(prereview|decision|letter|rerun))?$/);
-    if (m) {
-      const ref = decodeURIComponent(m[1]);
-      if (!REF_RE.test(ref)) return sendError(res, 404, "No application with that reference code.");
-      const app = store.getApplication(ref);
-      if (!app) return sendError(res, 404, "No application with that reference code.");
-      const action = m[2];
-      if (req.method === "GET" && !action) return sendJson(res, 200, publicApp(app, { staff: true }));
-      if (req.method === "POST" && action === "prereview") {
-        if (app.status === "processing") return sendError(res, 409, "The resident flow is still running for this application.");
-        try {
-          const out = await preReview(client, app, { model: REVIEW_MODEL });
-          store.savePrereview(ref, out, out.model);
-          store.addStaffAction(ref, { action: "prereview_run", payload: { model: out.model, counts: out.counts } });
-          return sendJson(res, 200, { prereview: out });
-        } catch (e) {
-          const [s, msg] = errorFrom(e);
-          return sendError(res, s, msg);
-        }
+    m = p.match(/^\/api\/staff\/sessions\/([^/]+)(?:\/(considerations|consideration|ask|second-read|letter\/draft|letter|status|rerun))?$/);
+    if (!m) return notFound(res);
+    const ref = decodeURIComponent(m[1]);
+    const action = m[2];
+    if (!REF_RE.test(ref)) return sendError(res, 404, "No conversation with that reference code.");
+    const s = store.getSession(ref);
+    if (!s) return sendError(res, 404, "No conversation with that reference code.");
+    if (req.method === "GET" && !action) return sendJson(res, 200, publicSession(s, { staff: true }));
+    try {
+      if (req.method === "POST" && action === "considerations") {
+        if (s.busy) return sendError(res, 409, "The resident-side desk is still working on this one.");
+        const out = await review.buildConsiderations(client, s, { town, code, tools, model: REVIEW_MODEL });
+        store.saveReview(ref, out, out.model);
+        store.addStaffAction(ref, { action: "considerations_built", payload: { model: out.model, count: out.considerations.length } });
+        return sendJson(res, 200, { review: store.getSession(ref).review });
       }
-      if (req.method === "POST" && action === "decision") {
+      if (req.method === "POST" && action === "consideration") {
         const body = await readJson(req, MAX_JSON_BYTES);
-        const decision = body.decision === "request_info" || body.decision === "move_to_review" ? body.decision : null;
-        if (!decision) return sendError(res, 400, "Choose 'request more information' or 'move to Planning Commission review'.");
-        const note = typeof body.note === "string" ? body.note.trim().slice(0, 2000) : "";
-        try {
-          const letter = await draftLetter(client, app, { decision, staffNote: note, model: REVIEW_MODEL });
-          store.updateApplication(ref, { status: decision === "request_info" ? "needs_info" : "in_review" });
-          store.addStaffAction(ref, { action: decision, note, payload: { draft_letter: letter } });
-          return sendJson(res, 200, { letter, status: decision === "request_info" ? "needs_info" : "in_review" });
-        } catch (e) {
-          const [s, msg] = errorFrom(e);
-          return sendError(res, s, msg);
+        if (body.add && typeof body.add === "object") {
+          const title = String(body.add.title || "").trim().slice(0, 200);
+          if (!title) return sendError(res, 400, "A consideration needs a title.");
+          const id = "staff-" + Date.now().toString(36);
+          store.addConsideration(ref, { id, title, kind: "policy", sections: [], requirement: String(body.add.requirement || "").slice(0, 1000), quote: "", quote_verified: false, evidence_in_packet: "", document_reading: "cannot_verify", how_to_verify: String(body.add.how_to_verify || "").slice(0, 1000), note: "", added_by: "staff", section_links: [] });
+          return sendJson(res, 200, { review: store.getSession(ref).review });
         }
+        const id = String(body.id || "");
+        const state = String(body.state || "");
+        if (!["not_started", "met", "not_met", "cannot_verify", "not_applicable", "staff_note"].includes(state)) return sendError(res, 400, "Unknown state.");
+        const states = store.setReviewState(ref, id, { state, note: typeof body.note === "string" ? body.note.slice(0, 2000) : "" });
+        return sendJson(res, 200, { states });
+      }
+      if (req.method === "POST" && action === "ask") {
+        const body = await readJson(req, MAX_JSON_BYTES);
+        const question = String(body.question || "").trim().slice(0, 2000);
+        if (!question) return sendError(res, 400, "Ask a question.");
+        const out = await review.askStaff(client, s, { question, considerationId: body.consideration_id || null, town, code, tools, model: REVIEW_MODEL });
+        store.addStaffAction(ref, { action: "asked", note: question, payload: out });
+        return sendJson(res, 200, out);
+      }
+      if (req.method === "POST" && action === "second-read") {
+        if (!s.review) return sendError(res, 400, "Build the considerations first.");
+        const out = await review.secondRead(client, s, { town, code, model: SECOND_READ_MODEL });
+        store.setSecondRead(ref, out);
+        store.addStaffAction(ref, { action: "second_read", payload: { model: out.model, missed: out.missed.length, overstated: out.overstated.length } });
+        return sendJson(res, 200, out);
+      }
+      if (req.method === "POST" && action === "letter/draft") {
+        const body = await readJson(req, MAX_JSON_BYTES);
+        const decision = String(body.decision || "");
+        if (!review.DECISIONS[decision]) return sendError(res, 400, "Choose a kind of letter.");
+        const note = typeof body.note === "string" ? body.note.trim().slice(0, 4000) : "";
+        if (decision === "answer" && note.length < 10) return sendError(res, 400, "For an answer letter, write the answer in the note; the agent only formats your words.");
+        const letter = await review.draftLetter(client, s, { decision, staffNote: note, town, code, model: REVIEW_MODEL });
+        store.addStaffAction(ref, { action: "letter_drafted", note, payload: { decision, model: letter.model } });
+        return sendJson(res, 200, { letter });
       }
       if (req.method === "POST" && action === "letter") {
         const body = await readJson(req, MAX_JSON_BYTES);
         const subject = typeof body.subject === "string" ? body.subject.trim().slice(0, 300) : "";
-        const text = typeof body.body === "string" ? body.body.trim().slice(0, 8000) : "";
+        const text = typeof body.body === "string" ? body.body.trim().slice(0, 12000) : "";
+        const decision = String(body.decision || "");
         if (!subject || !text) return sendError(res, 400, "The letter needs a subject and a body.");
-        store.addStaffAction(ref, { action: "letter_saved", payload: { subject, body: text, decision: body.decision || null } });
-        return sendJson(res, 200, { ok: true });
+        const next = { request_info: "needs_info", accept_complete: "in_review", answer: "answered", refer: "referred" }[decision] || s.status;
+        store.addStaffAction(ref, { action: "letter_saved", payload: { subject, body: text, decision } });
+        store.updateSession(ref, { status: next });
+        store.addMessage(ref, { role: "desk", department: "planning", character: "Planning & Zoning staff", text: `${subject}\n\n${text}`, letter: true });
+        return sendJson(res, 200, { ok: true, status: next });
+      }
+      if (req.method === "POST" && action === "status") {
+        const body = await readJson(req, MAX_JSON_BYTES);
+        const status = String(body.status || "");
+        if (!["submitted", "needs_info", "in_review", "answered", "referred"].includes(status)) return sendError(res, 400, "Unknown status.");
+        store.updateSession(ref, { status });
+        store.addStaffAction(ref, { action: "status_set", note: status });
+        return sendJson(res, 200, { ok: true, status });
       }
       if (req.method === "POST" && action === "rerun") {
-        if (app.status === "processing") return sendError(res, 409, "Already running.");
-        if (runningFlows >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "Busy. Try again in a minute.");
-        store.updateApplication(ref, { status: "processing", error: null });
-        startFlow(ref);
+        if (s.busy) return sendError(res, 409, "Already running.");
+        if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "Busy. Try again in a minute.");
+        startTurn(ref);
         return sendJson(res, 202, { ok: true });
       }
+    } catch (e) {
+      const [st, msg] = errorFrom(e);
+      if (st === 500) console.error(e);
+      return sendError(res, st, msg);
     }
     return notFound(res);
   }
@@ -292,13 +420,14 @@ const server = http.createServer((req, res) => {
   handle(req, res).catch((e) => {
     const [status, message] = errorFrom(e);
     if (status === 500) console.error(e);
-    if (!res.headersSent) sendError(res, e && e.status === 400 ? 400 : status, e && e.status === 400 ? "Bad request." : message);
+    if (!res.headersSent) sendError(res, status, message);
     else res.end();
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`citycenter running at http://localhost:${PORT}`);
-  console.log(`Model: ${MODEL} (review: ${REVIEW_MODEL}) ${process.env.MODEL_API_KEY ? "key found" : "NO KEY: add MODEL_API_KEY to .env"}`);
+  console.log(`citycenter (${town.name}) running at http://localhost:${PORT}`);
+  console.log(`Code: ${code.count} sections from ${code.meta.source} (${code.meta.fetchedAt}); parcels ${gis.counts.parcels}, zoning polygons ${gis.counts.zones}`);
+  console.log(`Model: ${MODEL} (review: ${REVIEW_MODEL}, second read: ${SECOND_READ_MODEL}) ${process.env.MODEL_API_KEY ? "key found" : "NO KEY: add MODEL_API_KEY to .env"}`);
   console.log(`Staff portal: ${staffConfigured() ? "enabled at /staff" : "disabled (set STAFF_PASSCODE and COOKIE_SECRET)"}; data in ${store.dir}`);
 });

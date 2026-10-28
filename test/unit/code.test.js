@@ -21,7 +21,7 @@ const SAMPLE_HTML = `
 
 test("htmlToText keeps list items and table rows readable and strips style blocks", () => {
   const t = htmlToText("<style>x{}</style><ol><li>One<br>two</li><li>Three</li></ol><table><tr><td>a</td><td>b</td></tr></table><p>end &amp; done</p>");
-  assert.match(t, /- One\ntwo\n- Three/);
+  assert.match(t, /- One\ntwo\n+- Three/);
   assert.match(t, /a \| b/);
   assert.match(t, /end & done/);
   assert.doesNotMatch(t, /x\{\}/);

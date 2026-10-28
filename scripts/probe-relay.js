@@ -7,7 +7,7 @@ const path = require("path");
 require("../lib/env").loadEnv();
 
 const base = (process.argv[2] || "").replace(/\/+$/, "");
-if (!/^https:\/\//.test(base)) {
+if (!/^https:\/\//.test(base) && !/^http:\/\/localhost(:\d+)?$/.test(base)) {
   console.error("usage: node scripts/probe-relay.js https://<relay address> [--secret <value>]");
   process.exit(2);
 }
@@ -44,5 +44,6 @@ const H = { Authorization: "Bearer " + key, "Content-Type": "application/json", 
   }
   console.log("chat (muse-spark-1.3) x5:", codes.join(" "));
   const ok = codes.filter((c) => c === 200).length;
-  console.log(ok === 5 ? "RELAY WORKS: all five calls answered." : ok ? `Partly: ${ok} of 5 answered.` : "Relay reached, but Meta refused every call from its network too.");
+  if (codes.every((c) => c === 403)) console.log("The relay refused us: the secret does not match RELAY_SECRET on the worker.");
+  else console.log(ok === 5 ? "RELAY WORKS: all five calls answered." : ok ? `Partly: ${ok} of 5 answered.` : "Relay reached, but Meta refused every call from its network too.");
 })().catch((e) => { console.error("probe failed:", e.message); process.exit(1); });

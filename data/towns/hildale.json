@@ -1,0 +1,127 @@
+{
+  "name": "Hildale City",
+  "shortName": "Hildale",
+  "state": "Utah",
+  "county": "Washington County",
+  "refPrefix": "HC",
+  "timezone": "America/Denver",
+  "code": {
+    "adapter": "municipalcodeonline",
+    "printUrl": "https://hildale.municipalcodeonline.com/book/print?type=ordinances",
+    "bookUrl": "https://hildale.municipalcodeonline.com/book?type=ordinances",
+    "landUseTitle": "TITLE XV LAND DEVELOPMENT",
+    "citation": "Hildale City Code",
+    "landUseChapterPrefix": "152-",
+    "keyChapters": {
+      "procedures": "CHAPTER 7 ADMINISTRATIVE AND DEVELOPMENT REVIEW PROCEDURES",
+      "nonconforming": "CHAPTER 8 NON-COMPLYING STRUCTURES, NON-CONFORMING USES AND LOTS",
+      "enforcement": "CHAPTER 9 ENFORCEMENT",
+      "zones": "CHAPTER 11 ZONES ESTABLISHED",
+      "standards": "CHAPTER 37 SUPPLEMENTARY DEVELOPMENT STANDARDS",
+      "subdivisions": "CHAPTER 39 SUBDIVISIONS",
+      "adu": "CHAPTER 41 ACCESSORY DWELLING UNITS",
+      "homeBusiness": "CHAPTER 42 HOME BASED BUSINESSES",
+      "animals": "CHAPTER 90 ANIMALS",
+      "nuisances": "CHAPTER 91 HEALTH AND SANITATION"
+    }
+  },
+  "gis": {
+    "zoning": {
+      "url": "https://agisprodvm.washco.utah.gov/arcgis/rest/services/Zoning/MapServer/4",
+      "zoneField": "ZONINGCODE",
+      "credit": "Zoning: Washington County GIS (Hildale layer)"
+    },
+    "parcels": {
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington/FeatureServer/0",
+      "where": "PARCEL_CITY='Hildale'",
+      "idField": "PARCEL_ID",
+      "addressField": "PARCEL_ADD",
+      "credit": "Parcels: State of Utah, SGID (no owner names are published)"
+    },
+    "lir": {
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington_LIR/FeatureServer/0",
+      "where": "PARCEL_CITY='Hildale'",
+      "fields": ["PARCEL_ID", "PARCEL_ACRES", "PROP_CLASS", "BUILT_YR", "BLDG_SQFT", "HOUSE_CNT", "SUBDIV_NAME"]
+    }
+  },
+  "zones": {
+    "A-40": { "name": "Agricultural 40", "chapter": "CHAPTER 12 AGRICULTURAL ZONES", "usesSection": "152-12-3", "standardsSection": "152-12-4" },
+    "A-20": { "name": "Agricultural 20", "chapter": "CHAPTER 12 AGRICULTURAL ZONES", "usesSection": "152-12-3", "standardsSection": "152-12-4" },
+    "A-10": { "name": "Agricultural 10", "chapter": "CHAPTER 12 AGRICULTURAL ZONES", "usesSection": "152-12-3", "standardsSection": "152-12-4" },
+    "A-5": { "name": "Agricultural 5", "chapter": "CHAPTER 12 AGRICULTURAL ZONES", "usesSection": "152-12-3", "standardsSection": "152-12-4" },
+    "RA-1": { "name": "Residential-agricultural 1 (one-acre lots)", "chapter": "CHAPTER 14 RESIDENTIAL AGRICULTURE ZONES", "usesSection": "152-14-3", "standardsSection": "152-14-4" },
+    "RA-.5": { "name": "Residential-agricultural .5 (half-acre lots)", "chapter": "CHAPTER 14 RESIDENTIAL AGRICULTURE ZONES", "usesSection": "152-14-3", "standardsSection": "152-14-4" },
+    "R1-15": { "name": "Single-family residential 15", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "R1-10": { "name": "Single-family residential 10", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "R1-8": { "name": "Single-family residential 8", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "R1-6": { "name": "Single-family residential 6", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "RM-1": { "name": "Multiple-family residential 1", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "RM-2": { "name": "Multiple-family residential 2", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "RM-3": { "name": "Multiple-family residential 3", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "MH/RV": { "name": "Mobile home / RV park", "chapter": "CHAPTER 13 RESIDENTIAL ZONES", "usesSection": "152-13-3", "standardsSection": "152-13-4" },
+    "NC": { "name": "Neighborhood commercial", "chapter": "CHAPTER 15 COMMERCIAL ZONES", "usesSection": "152-15-3", "standardsSection": "152-15-4" },
+    "GC": { "name": "General commercial", "chapter": "CHAPTER 15 COMMERCIAL ZONES", "usesSection": "152-15-3", "standardsSection": "152-15-4" },
+    "HC": { "name": "Highway commercial", "chapter": "CHAPTER 15 COMMERCIAL ZONES", "usesSection": "152-15-3", "standardsSection": "152-15-4" },
+    "PC": { "name": "Planned commercial", "chapter": "CHAPTER 15 COMMERCIAL ZONES", "usesSection": "152-15-3", "standardsSection": "152-15-4" },
+    "POC": { "name": "Pedestrian-oriented commercial", "chapter": "CHAPTER 15 COMMERCIAL ZONES", "usesSection": "152-15-3", "standardsSection": "152-15-4" },
+    "MU": { "name": "Mixed use", "chapter": "CHAPTER 15 COMMERCIAL ZONES", "usesSection": "152-15-3", "standardsSection": "152-15-4" },
+    "BMP": { "name": "Business/manufacturing park", "chapter": "CHAPTER 16 BUSINESS AND INDUSTRIAL ZONES", "usesSection": "152-16-3", "standardsSection": "152-16-4" },
+    "PO": { "name": "Professional office", "chapter": "CHAPTER 16 BUSINESS AND INDUSTRIAL ZONES", "usesSection": "152-16-3", "standardsSection": "152-16-4" },
+    "M-1": { "name": "Light industrial", "chapter": "CHAPTER 16 BUSINESS AND INDUSTRIAL ZONES", "usesSection": "152-16-3", "standardsSection": "152-16-4" },
+    "M-2": { "name": "Heavy industrial", "chapter": "CHAPTER 16 BUSINESS AND INDUSTRIAL ZONES", "usesSection": "152-16-3", "standardsSection": "152-16-4" },
+    "OS": { "name": "Open space", "chapter": "CHAPTER 17 OPEN SPACE AND PUBLIC FACILITY ZONES", "usesSection": "152-17-3", "standardsSection": "152-17-4" },
+    "PF": { "name": "Public facilities", "chapter": "CHAPTER 17 OPEN SPACE AND PUBLIC FACILITY ZONES", "usesSection": "152-17-3", "standardsSection": "152-17-4" },
+    "RR": { "name": "Recreation resort", "chapter": "CHAPTER 26 RECREATION RESORT ZONE", "usesSection": "152-26-3", "standardsSection": "152-26-6" },
+    "OTH": { "name": "Other / unclassified on the county layer", "chapter": "CHAPTER 11 ZONES ESTABLISHED", "usesSection": "152-11-5", "standardsSection": "152-11-5" }
+  },
+  "departments": [
+    { "id": "front_desk", "name": "Virtual City Help Desk", "character": "Marlowe", "role": "front desk", "live": true, "handles": "greeting, general questions, routing to the right department, flagging zoning implications" },
+    { "id": "planning", "name": "Planning & Zoning", "character": "Juniper", "role": "land use planner", "live": true, "handles": "zoning questions, zoning verification letters, land use applications (lot splits, conditional uses, variances, rezones), zoning complaints" },
+    { "id": "building", "name": "Building Department", "character": "Bob", "role": "building official", "live": false, "handles": "building permits, inspections, construction plans, anything on private property that involves structures, plumbing or electrical", "contact": "Hildale City Building Department (call the city office)" },
+    { "id": "utilities", "name": "Public Works & Utilities", "character": "Reyes", "role": "utilities desk", "live": false, "handles": "water, sewer, gas and streets in the public right of way, utility connections and billing", "contact": "Hildale City Public Works (call the city office)" },
+    { "id": "enforcement", "name": "Code Enforcement & Animal Control", "character": "Dakota", "role": "code enforcement officer", "live": false, "handles": "complaints about neighbors: animals, noise, junk, weeds, work without permits", "contact": "Hildale City Code Enforcement (call the city office)" },
+    { "id": "recorder", "name": "City Recorder", "character": "Avery", "role": "city recorder", "live": false, "handles": "public records, meeting agendas, fee schedule, business licenses", "contact": "Hildale City Recorder, 320 E Newel Ave" }
+  ],
+  "processTiers": [
+    { "id": "none", "label": "No land use application needed", "decider": "nobody; the code allows it outright when its standards are met", "sections": ["152-11-5"], "resident": "If the standards in the cited sections are met, no planning application is needed. A building permit may still apply; check with the Building Department." },
+    { "id": "building_permit", "label": "Building permit with zoning compliance check", "decider": "Building Official, with the Zoning Administrator checking zoning compliance", "sections": ["152-7-13"], "resident": "Apply to the Building Department. The Zoning Administrator checks the permit for zoning compliance under section 152-7-13." },
+    { "id": "zoning_verification", "label": "Zoning verification letter / administrative interpretation", "decider": "Zoning Administrator", "sections": ["152-6-8", "152-7-18"], "resident": "The Zoning Administrator answers in writing. For a formal interpretation of the code the request follows section 152-7-18." },
+    { "id": "administrative", "label": "Administrative approval by staff", "decider": "Zoning Administrator (city staff)", "sections": ["152-7-8", "152-7-17", "152-39-4", "152-7-9"], "resident": "Staff can approve this if every requirement in the cited sections is met. No public hearing is needed." },
+    { "id": "commission", "label": "Planning Commission decision", "decider": "Planning Commission, after notice and a public meeting or hearing", "sections": ["152-7-9", "152-7-4", "152-6-4"], "resident": "The Planning Commission decides at a noticed meeting under section 152-7-4. Staff prepare a report; the Commission may approve, approve with conditions, or deny." },
+    { "id": "variance", "label": "Variance (Hearing Officer)", "decider": "Hearing Officer", "sections": ["152-7-12", "152-6-5"], "resident": "A variance is a narrow form of relief for an unreasonable hardship caused by the property itself. The Hearing Officer decides under section 152-7-12." },
+    { "id": "council", "label": "City Council decision (legislative)", "decider": "City Council, after a Planning Commission hearing and recommendation", "sections": ["152-7-7", "152-6-3"], "resident": "A zoning map or text amendment is a legislative decision. The Planning Commission holds a hearing and recommends; the City Council decides under section 152-7-7." },
+    { "id": "enforcement", "label": "Complaint for Code Enforcement", "decider": "Zoning Administrator (zoning violations) or Animal Control / Code Enforcement (animals, nuisances)", "sections": ["152-9-5", "152-9-8"], "resident": "A complaint report goes to the enforcement office. The code's notice-and-cure procedure is in section 152-9-8." },
+    { "id": "other_department", "label": "Not a land use matter", "decider": "another city department", "sections": [], "resident": "This belongs with another department. The help desk hands you there with a note." }
+  ],
+  "packetTypes": {
+    "zoning_verification_request": "Zoning Verification Request",
+    "application_set": "Land Use Application",
+    "complaint_report": "Complaint Report",
+    "referral": "Department Referral"
+  },
+  "applicationTypes": {
+    "lot_split": { "name": "Lot split (one new lot, staff approval)", "section": "152-39-4", "tier": "administrative" },
+    "subdivision": { "name": "Subdivision (preliminary and final plat)", "section": "152-39-6", "tier": "commission" },
+    "permitted_use_review": { "name": "Permitted use review", "section": "152-7-8", "tier": "administrative" },
+    "conditional_use_permit": { "name": "Conditional use permit", "section": "152-7-9", "tier": "commission" },
+    "site_plan_review": { "name": "Site plan review", "section": "152-7-10", "tier": "commission" },
+    "variance": { "name": "Variance", "section": "152-7-12", "tier": "variance" },
+    "zoning_map_amendment": { "name": "Zoning map amendment (rezone)", "section": "152-7-7", "tier": "council" },
+    "zoning_text_amendment": { "name": "Zoning text amendment", "section": "152-7-7", "tier": "council" },
+    "administrative_interpretation": { "name": "Administrative interpretation", "section": "152-7-18", "tier": "zoning_verification" },
+    "home_based_business": { "name": "Home based business (with business license)", "section": "152-42-3", "tier": "administrative" },
+    "accessory_dwelling_unit": { "name": "Accessory dwelling unit", "section": "152-41-3", "tier": "administrative" },
+    "building_permit": { "name": "Building permit (zoning compliance)", "section": "152-7-13", "tier": "building_permit" },
+    "temporary_use_permit": { "name": "Temporary use permit", "section": "152-7-16", "tier": "administrative" },
+    "sign_permit": { "name": "Sign permit", "section": "152-7-15", "tier": "administrative" }
+  },
+  "wording": {
+    "fee": "Fees are set by the city's schedule of fees (section 152-7-3); the City Recorder has the current amounts.",
+    "timing": "Timing depends on when the application is complete and, for hearings, on the notice period in section 152-7-4. Staff can give current meeting dates.",
+    "staffDecide": "This desk prepares paperwork and cites the code. City staff, the Planning Commission, the Hearing Officer and the City Council make every decision."
+  },
+  "notes": {
+    "fictionalOwners": "Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.",
+    "dataCredits": "Code: Hildale City Code (municipalcodeonline.com). Zoning: Washington County GIS. Parcels: State of Utah, SGID."
+  }
+}

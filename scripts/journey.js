@@ -104,7 +104,12 @@ const ok = (cond, msg) => {
   await api(`/api/staff/sessions/${ref}/consideration`, { method: "POST", body: JSON.stringify({ add: { title: "Call the fire district about the second kitchen", how_to_verify: "Phone the Hildale Valley Fire District" } }) });
   let d = await api(`/api/staff/sessions/${ref}`);
   ok(d.review.states[cons[0].id].state === "met" && d.review.considerations.some((c) => c.added_by === "staff"), "states saved and a staff consideration added");
-  r = await api(`/api/staff/sessions/${ref}/letter/draft`, { method: "POST", body: JSON.stringify({ decision: "request_info", note: "Please bring a plot plan showing the suite's footprint and setbacks." }) });
+  r = await api(`/api/staff/sessions/${ref}/summary`, { method: "POST", body: "{}" });
+  ok(r.submission_summary && r.submission_summary.bullets.length >= 3, `step 1 summary: ${r.submission_summary && r.submission_summary.bullets.length} bullets`);
+  r = await api(`/api/staff/sessions/${ref}/code-summary`, { method: "POST", body: "{}" });
+  ok(r.code_summary && r.code_summary.sections.length >= 1, `step 2 code summary: ${r.code_summary && r.code_summary.sections.length} sections, ${r.code_summary && r.code_summary.sections.filter((x) => x.quote_verified).length} verified quotes`);
+  r = await api(`/api/staff/sessions/${ref}/letter/generate`, { method: "POST", body: JSON.stringify({ mode: "regenerate" }) });
+  ok(r.letter && r.letter.subject, `letter generated (${r.letter && r.letter.decision}, auto: ${r.letter && r.letter.decision_auto}): ${r.letter && r.letter.subject}`);
   ok(r.letter.subject && r.letter.body.length > 100, `letter drafted: ${r.letter.subject}`);
   ok(!/\bapproved\b/i.test(r.letter.body), "letter does not claim an approval");
   r = await api(`/api/staff/sessions/${ref}/letter`, { method: "POST", body: JSON.stringify({ subject: r.letter.subject, body: r.letter.body, decision: "request_info" }) });

@@ -4,14 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>citycenter: reviewer workspace</title>
-<link rel="stylesheet" href="/public/app.css?v=20261028c">
+<link rel="stylesheet" href="/public/app.css?v=20261028j">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
-<body>
+<body class="staff">
 <header class="top">
   <div class="brand">citycenter <span id="townName">Planning & Zoning · reviewer workspace</span></div>
   <nav>
-    <button type="button" class="quiet hidden" id="backBtn">← Queue</button>
     <a href="/">Resident counter</a>
     <button type="button" class="quiet hidden" id="logout">Sign out</button>
   </nav>
@@ -27,62 +26,73 @@
   </form>
 </section>
 
-<div id="queueView" class="hidden">
-  <div class="queue">
-    <div>
-      <div class="card">
-        <div class="row" style="justify-content:space-between"><h2 style="margin:0">Queue</h2><span><button type="button" class="quiet" id="purgeDemo" title="Delete every conversation that came from the worked examples">Clear demo conversations</button> <button type="button" class="quiet" id="refresh">Refresh</button></span></div>
-        <p class="small" id="usage"></p>
-        <table><thead><tr><th>Ref</th><th>Request</th><th>Status</th></tr></thead><tbody id="queue"></tbody></table>
-      </div>
+<div id="app" class="hidden">
+  <!-- Queue across the top: full when nothing is open, half when an application is selected, collapsed on request -->
+  <section class="qpanel q-full" id="qpanel">
+    <div class="qtools">
+      <div class="qtitle"><strong>Queue</strong> <span class="small" id="qCount"></span> <span class="small" id="qSelected"></span></div>
+      <input type="search" id="qSearch" placeholder="Search reference, name, address, request…" aria-label="Search the queue">
+      <select id="qStatus" aria-label="Filter by status">
+        <option value="">All statuses</option>
+        <option value="submitted">Submitted</option>
+        <option value="needs_info">Needs info</option>
+        <option value="in_review">Forwarded</option>
+        <option value="answered">Answered</option>
+        <option value="referred">Referred</option>
+        <option value="ready">Ready, not submitted</option>
+        <option value="open">Talking</option>
+        <option value="error">Error</option>
+      </select>
+      <select id="qDept" aria-label="Filter by department"><option value="">All departments</option></select>
+      <select id="qSort" aria-label="Sort">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="status">By status</option>
+        <option value="updated">Recently updated</option>
+        <option value="title">By request</option>
+      </select>
+      <button type="button" class="quiet" id="refresh">Refresh</button>
+      <button type="button" class="quiet" id="purgeDemo" title="Delete every conversation that came from the worked examples">Clear demo</button>
+      <button type="button" class="quiet" id="qToggle" title="Show more or less of the queue">▲</button>
     </div>
-    <div class="card"><p>Pick a conversation from the queue. Submitted packets are at the top. The workspace shows the considerations across the top, the document on the left, the evidence on the right, and the agent strip along the bottom.</p><p class="small">The agent describes documents and quotes the code. It never recommends a decision.</p></div>
+    <div class="qbody">
+      <table class="qtable"><thead><tr><th>Reference</th><th>Request</th><th>Department</th><th>Status</th><th>Submitted</th></tr></thead><tbody id="queue"></tbody></table>
+      <p class="small" id="usage"></p>
+    </div>
+  </section>
+
+  <div id="empty" class="card qhint"><p>Pick an application from the queue. The review runs in four steps across the bar: what was submitted, the code that applies, your point-by-point review, and the return letter.</p><p class="small">The agent describes documents and quotes the code. It never recommends a decision.</p></div>
+
+  <div id="workspace" class="ws hidden">
+    <div class="workspace-head">
+      <div class="row"><span class="refbox" id="wsRef"></span><span id="wsStatus"></span><span class="small" id="wsTitle"></span></div>
+      <div class="row"><a class="small" id="wsResidentLink" href="#" target="_blank" rel="noopener">Open the resident's view</a><span class="small" id="wsMsg"></span></div>
+    </div>
+    <nav class="stepbar" id="stepbar" aria-label="Review steps">
+      <button type="button" class="stepbtn" data-step="1"><span class="num">1</span><span class="lbl">Review submitted documents</span><span class="dot" id="dot1"></span></button>
+      <button type="button" class="stepbtn" data-step="2"><span class="num">2</span><span class="lbl">Review relevant code</span><span class="dot" id="dot2"></span></button>
+      <button type="button" class="stepbtn" data-step="3"><span class="num">3</span><span class="lbl">Application review</span><span class="dot" id="dot3"></span></button>
+      <button type="button" class="stepbtn" data-step="4"><span class="num">4</span><span class="lbl">Return document</span><span class="dot" id="dot4"></span></button>
+    </nav>
+    <div class="panes">
+      <div class="pane doc" id="leftPane"></div>
+      <div class="pane evidence" id="rightPane"></div>
+    </div>
   </div>
 </div>
 
-<div id="workspace" class="ws hidden">
-  <div class="workspace-head">
-    <div class="row"><span class="refbox" id="wsRef"></span><span id="wsStatus"></span><span class="small" id="wsTitle"></span></div>
-    <div class="row">
-      <button type="button" class="quiet" id="buildBtn">Build considerations</button>
-      <button type="button" class="quiet" id="secondReadBtn" title="A stronger model re-reads the list against the code">Second read (Muse Wonder)</button>
-      <button type="button" class="quiet" id="letterBtn">Draft letter…</button>
-      <span class="small" id="wsMsg"></span>
-    </div>
-  </div>
-  <div class="rail" id="rail"></div>
-  <div class="panes">
-    <div class="pane doc" id="docPane"></div>
-    <div class="pane evidence" id="evidencePane"></div>
-  </div>
-  <div class="strip">
-    <div>
-      <div class="agent"><img id="agentImg" src="/public/characters/juniper-neutral.webp" alt=""><div class="text" id="agentText">Pick a consideration above.</div></div>
-      <form class="ask" id="askForm"><input type="text" id="askInput" placeholder="Ask the agent about this consideration (it answers from the code and the packet, never with a recommendation)"><button type="submit" class="secondary">Ask</button></form>
-    </div>
-    <div>
-      <div class="marks" id="marks"></div>
-      <div class="small" style="margin-top:6px">You decide. The agent only shows where it is written.</div>
+<div class="modal hidden" id="updateDialog" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <h2>Update the letter?</h2>
+    <p>You have edited this letter by hand. Updating it from the review may change what you wrote.</p>
+    <div class="actions">
+      <button type="button" id="updKeep">Keep my changes and update the rest</button>
+      <button type="button" class="secondary" id="updAll">Let the AI rewrite everything</button>
+      <button type="button" class="quiet" id="updCancel">Cancel</button>
     </div>
   </div>
 </div>
 
-<div class="demo-panel hidden" id="letterPanel">
-  <h2>Draft a letter from your decisions</h2>
-  <p class="small">The agent writes from the states you marked and your note. You edit before saving. Saving sends it to the resident's conversation.</p>
-  <label class="small">Kind of letter</label>
-  <select id="letterKind" style="width:100%;font:inherit;padding:8px">
-    <option value="request_info">Not complete: ask for the missing items</option>
-    <option value="accept_complete">Complete: forwarded to the deciding body</option>
-    <option value="answer">Answer letter (your answer in the note)</option>
-    <option value="refer">Belongs with another department</option>
-  </select>
-  <label class="small" style="margin-top:8px;display:block">Your note (your words; for an answer letter this is the answer)</label>
-  <textarea id="letterNote" style="min-height:80px"></textarea>
-  <div class="row" style="margin-top:8px"><button type="button" id="letterDraft">Draft</button><button type="button" class="quiet" id="letterClose">Close</button><span class="small" id="letterMsg"></span></div>
-  <div id="letterEditor"></div>
-</div>
-
-<script src="/public/staff.js?v=20261028c"></script>
+<script src="/public/staff.js?v=20261028j"></script>
 </body>
 </html>

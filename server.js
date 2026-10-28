@@ -16,6 +16,7 @@ const { runTurn } = require("./lib/desk");
 const review = require("./lib/review");
 const { validateImage } = require("./lib/sketch");
 const signature = require("./lib/signature");
+const crypto = require("crypto");
 const sec = require("./lib/security");
 
 const PORT = Number(process.env.PORT || 3000);
@@ -126,6 +127,24 @@ function setResidentCookie(res, id, https) {
 }
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// What the return letter was generated from: the point-by-point review plus the two summaries. When this changes,
+// an unedited letter is regenerated the next time staff open step 4; an edited letter is frozen until they choose.
+function reviewBasisHash(s) {
+  const r = s.review || {};
+  const basis = {
+    states: Object.fromEntries(Object.entries(r.states || {}).map(([k, v]) => [k, [v.state, v.note || ""]])),
+    ids: (r.considerations || []).map((c) => c.id),
+    summary: r.submission_summary ? r.submission_summary.generated_at : null,
+    code: r.code_summary ? r.code_summary.generated_at : null,
+    docs: s.packet ? signature.docHash(s.packet) : null,
+  };
+  return crypto.createHash("sha256").update(JSON.stringify(basis)).digest("hex");
+}
+function reviewMeta(s) {
+  const letter = s.review && s.review.letter;
+  const hash = reviewBasisHash(s);
+  return { review_basis_hash: hash, letter_stale: !!(letter && letter.basis_hash !== hash), letter_decision_auto: review.deriveDecision(s) };
+}
 function publicSession(s, { staff }) {
   const out = { ...s };
   delete out.view_key;
@@ -479,15 +498,51 @@ async function handle(req, res) {
     if (req.method === "GET" && p === "/api/staff/queue") {
       return sendJson(res, 200, { sessions: store.listSessions(), usage_today: store.callsToday(), daily_cap: DAILY_CAP });
     }
-    m = p.match(/^\/api\/staff\/sessions\/([^/]+)(?:\/(considerations|consideration|ask|second-read|letter\/draft|letter|status|rerun))?$/);
+    m = p.match(/^\/api\/staff\/sessions\/([^/]+)(?:\/(considerations|consideration|ask|second-read|summary|code-summary|letter\/generate|letter\/edit|letter\/draft|letter|status|rerun))?$/);
     if (!m) return notFound(res);
     const ref = decodeURIComponent(m[1]);
     const action = m[2];
     if (!REF_RE.test(ref)) return sendError(res, 404, "No conversation with that reference code.");
     const s = store.getSession(ref);
     if (!s) return sendError(res, 404, "No conversation with that reference code.");
-    if (req.method === "GET" && !action) return sendJson(res, 200, publicSession(s, { staff: true }));
+    if (req.method === "GET" && !action) return sendJson(res, 200, { ...publicSession(s, { staff: true }), ...reviewMeta(s) });
     try {
+      if (req.method === "POST" && action === "summary") {
+        if (s.busy) return sendError(res, 409, "The resident-side desk is still working on this one.");
+        const out = await review.summarizeSubmission(client, s, { town, model: REVIEW_MODEL });
+        store.setReviewPart(ref, "submission_summary", out);
+        store.addStaffAction(ref, { action: "summary_built", payload: { model: out.model, bullets: out.bullets.length } });
+        return sendJson(res, 200, { submission_summary: out });
+      }
+      if (req.method === "POST" && action === "code-summary") {
+        if (s.busy) return sendError(res, 409, "The resident-side desk is still working on this one.");
+        const out = await review.summarizeCode(client, s, { town, code, model: REVIEW_MODEL });
+        store.setReviewPart(ref, "code_summary", out);
+        store.addStaffAction(ref, { action: "code_summary_built", payload: { model: out.model, sections: out.sections.length } });
+        return sendJson(res, 200, { code_summary: out });
+      }
+      if (req.method === "POST" && action === "letter/generate") {
+        const body = await readJson(req, MAX_JSON_BYTES);
+        const mode = body.mode === "keep_manual" ? "keep_manual" : "regenerate";
+        const derived = review.deriveDecision(s);
+        const decision = review.DECISIONS[body.decision] ? String(body.decision) : derived.decision;
+        const note = typeof body.note === "string" ? body.note.trim().slice(0, 4000) : "";
+        const current = s.review && s.review.letter ? s.review.letter : null;
+        const letter = await review.generateLetter(client, s, { decision, staffNote: note, mode, current: mode === "keep_manual" ? current : null, town, code, model: REVIEW_MODEL });
+        const stored = { subject: letter.subject, body: letter.body, decision, decision_auto: !review.DECISIONS[body.decision], decision_why: derived.why, note, model: letter.model, generated_at: letter.generated_at, basis_hash: reviewBasisHash(s), edited: false, edited_at: null, sent_at: current && current.sent_at ? current.sent_at : null };
+        store.setReviewPart(ref, "letter", stored);
+        store.addStaffAction(ref, { action: "letter_generated", payload: { decision, mode, model: letter.model } });
+        return sendJson(res, 200, { letter: stored, ...reviewMeta(store.getSession(ref)) });
+      }
+      if (req.method === "POST" && action === "letter/edit") {
+        const body = await readJson(req, MAX_JSON_BYTES);
+        const subject = typeof body.subject === "string" ? body.subject.trim().slice(0, 300) : "";
+        const text = typeof body.body === "string" ? body.body.slice(0, 12000) : "";
+        const prev = (s.review && s.review.letter) || {};
+        const stored = { ...prev, subject, body: text, edited: true, edited_at: new Date().toISOString(), decision: review.DECISIONS[body.decision] ? String(body.decision) : prev.decision || "request_info", decision_auto: review.DECISIONS[body.decision] ? false : prev.decision_auto };
+        store.setReviewPart(ref, "letter", stored);
+        return sendJson(res, 200, { letter: stored, ...reviewMeta(store.getSession(ref)) });
+      }
       if (req.method === "POST" && action === "considerations") {
         if (s.busy) return sendError(res, 409, "The resident-side desk is still working on this one.");
         const out = await review.buildConsiderations(client, s, { town, code, tools, model: REVIEW_MODEL });
@@ -537,14 +592,16 @@ async function handle(req, res) {
       }
       if (req.method === "POST" && action === "letter") {
         const body = await readJson(req, MAX_JSON_BYTES);
-        const subject = typeof body.subject === "string" ? body.subject.trim().slice(0, 300) : "";
-        const text = typeof body.body === "string" ? body.body.trim().slice(0, 12000) : "";
-        const decision = String(body.decision || "");
+        const stored = (s.review && s.review.letter) || {};
+        const subject = (typeof body.subject === "string" ? body.subject : stored.subject || "").trim().slice(0, 300);
+        const text = (typeof body.body === "string" ? body.body : stored.body || "").trim().slice(0, 12000);
+        const decision = review.DECISIONS[body.decision] ? String(body.decision) : stored.decision || "";
         if (!subject || !text) return sendError(res, 400, "The letter needs a subject and a body.");
         const next = { request_info: "needs_info", accept_complete: "in_review", answer: "answered", refer: "referred" }[decision] || s.status;
         store.addStaffAction(ref, { action: "letter_saved", payload: { subject, body: text, decision } });
         store.updateSession(ref, { status: next });
         store.addMessage(ref, { role: "desk", department: "planning", character: "Planning & Zoning staff", text: `${subject}\n\n${text}`, letter: true });
+        if (s.review) store.setReviewPart(ref, "letter", { ...stored, subject, body: text, decision, sent_at: new Date().toISOString() });
         return sendJson(res, 200, { ok: true, status: next });
       }
       if (req.method === "POST" && action === "status") {

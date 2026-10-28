@@ -18,7 +18,8 @@
       "persona": "Ryan",
       "turns": [
         "I need a building permit for a mother-in-law suite.",
-        "Sure. I'm Ryan Castillo at 455 E Jessop Ave. It would be attached to the house, about 650 square feet, with its own entrance. My mom would live there; we own the house and live in it."
+        "Sure. I'm Ryan Castillo at 455 E Jessop Ave. It would be attached to the house, about 650 square feet, with its own entrance. My mom would live there; we own the house and live in it.",
+        "Yes, this is our primary residence and we own it. The suite would be one story at the back of the house, about 25 feet from the rear property line and 12 feet from the side, on the same water and sewer connection, with its own kitchen and bathroom, and it will not be rented out. There is no other suite or second home on the property today. We have a two-car garage and room for two more cars in the driveway, and I can bring a plot plan."
       ]
     },
     {
@@ -27,7 +28,8 @@
       "persona": "Tomas",
       "turns": [
         "My wife wants to start a small daycare in our house. What do we need from the city?",
-        "Tomas Ibarra, 865 N Redwood St, 435-555-0105. Up to 6 kids to start, we live here, no employees."
+        "Tomas Ibarra, 865 N Redwood St, 435-555-0105. Up to 6 kids to start, we live here, no employees.",
+        "We will apply to the state for a Residential Certificate, which covers up to 8 children; we're starting with 6, ages 2 to 5. My wife lives here full time and will be the only caregiver. We'd use the living room and one bedroom, about 500 square feet, plus the fenced back yard; no garage or shed. Parents would drop off in our driveway, which holds two cars, and I'll contact the Fire District for the inspection."
       ]
     },
     {
@@ -58,7 +60,9 @@
       "id": "barking-dogs",
       "title": "Marcus complains about barking dogs",
       "persona": "Marcus",
-      "turns": ["My neighbor's three dogs bark all day and all night. Who do I talk to?"]
+      "turns": [
+        "My neighbor's three dogs bark all day and all night. Who do I talk to?"
+      ]
     }
   ]
 }

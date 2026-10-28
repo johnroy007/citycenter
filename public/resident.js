@@ -756,7 +756,7 @@
   }
   function demoNextTurn() {
     var d = state.demo; if (!d || d.paused) return;
-    if (d.turn >= d.example.turns.length) { $("demoStatus").textContent = "Example finished. You can keep talking, edit, or submit."; return; }
+    if (d.turn >= d.example.turns.length) { $("demoStatus").textContent = "Example finished. If " + characterFor("planning").character + " still has questions, answer them yourself in the box below, edit the paperwork, or press Submit."; return; }
     var text = d.example.turns[d.turn];
     $("demoStatus").textContent = d.example.persona + " is typing (turn " + (d.turn + 1) + " of " + d.example.turns.length + ")…";
     var box = $("text"); box.value = ""; var i = 0;

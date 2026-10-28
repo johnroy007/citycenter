@@ -57,6 +57,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-10-28 (late afternoon) — Claude Code on John's laptop — demo examples finish properly
+- John: the daycare example stopped with Juniper still asking questions. Added a third scripted line to the daycare and casita examples that answers the usual follow-ups (state certificate type, caregiver, rooms, parking; owner-occupancy, setbacks that meet R1-10, kitchen, no rental, parking). Verified locally: daycare ends in the administrative tier (home based business), casita in the administrative tier (ADU + building permit). An earlier draft of Ryan's line with 10 ft rear / 8 ft side setbacks produced a variance, which is the code working as intended, so the numbers were corrected to 25 / 12. The demo bar's finished message now says the resident can answer any remaining questions themselves.
+
 ### 2026-10-28 (afternoon, relay live) — Claude Code on John's laptop — live site working through the Cloudflare relay
 - John created the worker `citycenter-relay` in his Cloudflare account and set `RELAY_SECRET`. Probe from the laptop: 9 models, 5 of 5 chat calls. Settings pushed to Render with `scripts/render-env.js`; diag from Render: 9 models, chat 200, responses 200, three times in a row. Full journey on the live site passed (169 s): routing, parcel, sketch reading, research with 9 tool calls, packet, change by telling, submit, 17 considerations (13 verified quotes), staff question, letter, resident view. Demo conversations seeded to the live site with `npm run seed:remote`.
 

@@ -103,6 +103,14 @@
       "turns": [
         "I want to reserve the pavilion at the city park for my daughter's birthday party on a Saturday in November. How do I do that?"
       ]
+    },
+    {
+      "id": "inspection",
+      "title": "Omar needs to schedule a framing inspection (Building Department)",
+      "persona": "Omar",
+      "turns": [
+        "My contractor finished the framing on our garage addition and we have a building permit already. How do I schedule the framing inspection?"
+      ]
     }
   ]
 }

@@ -611,16 +611,6 @@
   }
 
   // ---------- paperwork, in the city's application format ----------
-  function formField(label, value, opts) {
-    opts = opts || {};
-    var box = el("div", { class: "ff" + (opts.wide ? " wide" : "") }, [el("label", null, [el("span", { text: label }), opts.src ? el("span", { class: "src", text: "from " + opts.src.replace("_", " ") }) : null])]);
-    if (opts.input) box.appendChild(opts.input);
-    else box.appendChild(el("div", { class: "fv" + (value ? "" : " blank"), text: value || "" }));
-    return box;
-  }
-  function checkbox(label, checked) {
-    return el("div", { class: "cb" }, [el("span", { class: "box" + (checked ? " on" : ""), text: checked ? "✓" : "" }), el("span", { text: label })]);
-  }
   function renderPaperwork(screen, s) {
     var p = s.packet;
     var office = (town && town.office) || {};
@@ -629,90 +619,9 @@
     screen.appendChild(el("p", { class: "lead", text: pt + ": " + (p.title || "") + ". " + (p.one_line_summary || "") }));
     if (p.process_summary) screen.appendChild(el("div", { class: "notice", text: p.process_summary }));
     var pages = el("div", { class: "pages" });
+    var sigSrc = s.signature ? "/api/sessions/" + encodeURIComponent(state.ref) + "/signature?key=" + encodeURIComponent(state.key) + "&t=" + encodeURIComponent(s.signature.signed_at) : null;
     (p.documents || []).forEach(function (d, di) {
-      var page = el("article", { class: "form-page" });
-      // Letterhead
-      page.appendChild(el("div", { class: "letterhead" }, [
-        el("div", { class: "seal", text: (town && town.refPrefix ? town.refPrefix : "HC").slice(0, 3).toUpperCase() }),
-        el("div", null, [el("div", { class: "city", text: (office.cityLine || (town && town.name) || "City").toUpperCase() }), el("div", { class: "dept", text: office.department || "Planning & Zoning Department" }), el("div", { class: "addr", text: [office.addressLine, office.phone].filter(Boolean).join(" · ") })]),
-        el("div", { class: "appno" }, [el("div", { class: "small", text: "Application No." }), el("div", { class: "num", text: s.ref }), el("div", { class: "small", text: "Page " + (di + 1) + " of " + p.documents.length })]),
-      ]));
-      page.appendChild(el("div", { class: "form-title" }, [el("h2", { text: d.name }), el("div", { class: "small", text: d.section ? "Filed under " + (town ? town.name : "city") + " Code section " + d.section : "" })]));
-      // Section 1: applicant and property
-      var u = s.understanding || {};
-      var ap = u.applicant || {};
-      var grid1 = el("div", { class: "fgrid" }, [
-        formField("Applicant name", ap.name || firstField(d, /applicant|name/i)),
-        formField("Phone", ap.phone || firstField(d, /phone/i)),
-        formField("Email", ap.email || firstField(d, /e-?mail/i)),
-        formField("Date prepared", fmtDate(s.submitted_at || s.updated_at)),
-      ]);
-      page.appendChild(el("h3", { class: "fsec", text: "1. Applicant" }));
-      page.appendChild(grid1);
-      var pr = s.parcel || {};
-      page.appendChild(el("h3", { class: "fsec", text: "2. Property" }));
-      page.appendChild(el("div", { class: "fgrid" }, [
-        formField("Site address", pr.address || (u.location && u.location.address_text) || ""),
-        formField("Tax parcel number", pr.id || (u.location && u.location.parcel_id_text) || ""),
-        formField("Zoning district", pr.zone ? pr.zone + (pr.zoneName ? " · " + pr.zoneName : "") : ""),
-        formField("Lot size", pr.areaAcres ? pr.areaAcres + " acres" + (pr.areaSqft ? " (" + pr.areaSqft.toLocaleString() + " sq ft)" : "") : ""),
-        formField("Owner of record", s.owner ? s.owner.name + " (fictional demo name)" : ""),
-        formField("Applicant is the owner", u.location && u.location.is_own_property === true ? "Yes" : u.location && u.location.is_own_property === false ? "No" : ""),
-      ]));
-      // Section 3: request type
-      page.appendChild(el("h3", { class: "fsec", text: "3. Type of request" }));
-      var types = el("div", { class: "cbgrid" });
-      var at = (town && town.applicationTypes) || {};
-      var checkedAny = false;
-      Object.keys(at).forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox(at[id].name, on)); });
-      ["zoning_verification_request", "complaint_report", "referral"].forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox((town && town.packetTypes && town.packetTypes[id]) || id.replace(/_/g, " "), on)); });
-      if (!checkedAny) types.appendChild(checkbox("Other: " + d.name, true));
-      page.appendChild(types);
-      // Section 4: application details (the code's own fields)
-      page.appendChild(el("h3", { class: "fsec", text: "4. Application details" }));
-      var grid4 = el("div", { class: "fgrid" });
-      (d.fields || []).forEach(function (f, fi) {
-        var wide = (f.value || "").length > 60 || /description|statement|reason|explain|legal/i.test(f.label);
-        if (state.editing) {
-          var inp = el("input", { class: "field", type: "text", value: f.value || "", "data-doc": String(di), "data-field": String(fi) });
-          grid4.appendChild(formField(f.label, "", { input: inp, wide: wide }));
-        } else {
-          grid4.appendChild(formField(f.label, f.value, { wide: wide, src: f.source && f.source !== "blank" ? f.source : null }));
-        }
-      });
-      page.appendChild(grid4);
-      // Section 5: statement
-      page.appendChild(el("h3", { class: "fsec", text: "5. Project description and statement" }));
-      if (state.editing) { var ta = el("textarea", { "data-doc": String(di), "data-narrative": "1" }); ta.value = d.narrative || ""; page.appendChild(ta); }
-      else page.appendChild(el("div", { class: "narrative", text: d.narrative || "" }));
-      // Section 6: code sections
-      var basis = (d.code_basis || []).filter(function (c) { return c.quote || c.section; });
-      if (basis.length) {
-        page.appendChild(el("h3", { class: "fsec", text: "6. Code sections this application is made under" }));
-        basis.forEach(function (c) {
-          page.appendChild(el("div", { class: "quote" }, [c.quote ? el("span", { text: "“" + c.quote + "”" }) : null, el("span", { class: "cite" }, [el("a", { href: c.url || "#", target: "_blank", rel: "noopener", text: "Section " + c.section }), c.quote ? " · " + (c.quote_verified ? "quote verified against the code text" : "unverified") : ""])]));
-        });
-      }
-      // Section 7: attachments
-      page.appendChild(el("h3", { class: "fsec", text: (basis.length ? "7" : "6") + ". Attachments" }));
-      page.appendChild(el("div", { class: "cbgrid" }, [
-        checkbox("Site sketch or drawing", !!s.has_sketch),
-        checkbox("Zoning map excerpt showing the parcel", !!s.parcel),
-        checkbox("Record of the help desk conversation", true),
-        checkbox("Code review with cited sections", !!s.research),
-      ]));
-      // Certification and office use
-      page.appendChild(el("div", { class: "certify" }, [
-        el("p", { text: "I certify that the information in this application is true and complete to the best of my knowledge, and I authorize city staff to visit the property for the purpose of reviewing this application." }),
-        signatureLines(s),
-      ]));
-      var tier = s.research ? tierInfo(s.research.process_tier) : null;
-      page.appendChild(el("div", { class: "office-use" }, [
-        el("div", { class: "ou-title", text: "For office use only" }),
-        el("div", { class: "fgrid" }, [formField("Received by", ""), formField("Date received", s.submitted_at ? fmtDate(s.submitted_at) : ""), formField("Fee paid", ""), formField("Application complete", ""), formField("Decision body", tier ? tier.decider : ""), formField("Staff reference", s.ref)]),
-      ]));
-      page.appendChild(el("p", { class: "small foot", text: office.formFooter || "" }));
-      pages.appendChild(page);
+      pages.appendChild(CCForm.page(town, s, d, di, p.documents.length, { editing: state.editing, sigSrc: sigSrc }));
     });
     screen.appendChild(pages);
     var actions = el("div", { class: "actions" });
@@ -751,23 +660,6 @@
     screen.appendChild(actions);
     if (s.submitted_at && !s.changed_since_submit) screen.appendChild(el("p", { class: "small", text: "Staff will write back in this conversation." }));
     if (p.questions && p.questions.length && !s.submitted_at) screen.appendChild(el("div", { class: "notice warn" }, [el("b", { text: "Still needed: " }), p.questions.join(" ")]));
-  }
-  function signatureLines(s) {
-    var sig = s.signature;
-    var current = !!s.signature_current;
-    var appl = el("div", { class: "sig" + (sig ? " signed" : "") });
-    var date = el("div", { class: "sig short" + (sig ? " signed" : "") });
-    if (sig) {
-      var img = el("img", { class: "sigimg", src: "/api/sessions/" + encodeURIComponent(state.ref) + "/signature?key=" + encodeURIComponent(state.key) + "&t=" + encodeURIComponent(sig.signed_at), alt: "Signature of " + sig.name });
-      appl.appendChild(img);
-      appl.appendChild(el("span", { text: "Applicant signature · " + sig.name + " (electronic, " + sig.method + ")" + (current ? "" : " · signed an earlier version") }));
-      date.appendChild(el("div", { class: "sigdate", text: fmtDate(sig.signed_at) }));
-      date.appendChild(el("span", { text: "Date" }));
-    } else {
-      appl.appendChild(el("span", { text: "Applicant signature" }));
-      date.appendChild(el("span", { text: "Date" }));
-    }
-    return el("div", { class: "siglines" }, [appl, date, el("div", { class: "sig" }, [el("span", { text: "Owner signature (if different)" })]), el("div", { class: "sig short" }, [el("span", { text: "Date" })])]);
   }
 
   // ---------- signing panel (draw or type, then submit) ----------
@@ -849,10 +741,6 @@
   }
   function clearPad() { if (pad.canvas) setupPad(pad.canvas); }
 
-  function firstField(d, re) {
-    var f = (d.fields || []).find(function (x) { return re.test(x.label) && x.value; });
-    return f ? f.value : "";
-  }
 
   // ---------- resident account ----------
   var account = { signed_in: false, visits: [] };

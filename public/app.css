@@ -298,6 +298,8 @@ body.staff { background: var(--bg); }
 .doctab { background: transparent; border: 1px solid transparent; border-bottom: 0; color: var(--muted); font-weight: 600; font-size: 13px; padding: 7px 12px; border-radius: 8px 8px 0 0; }
 .doctab.active { background: #fff; color: var(--ink); border-color: var(--line); margin-bottom: -1px; border-bottom: 1px solid #fff; }
 .docview { background: #fff; }
+.pane.doc .form-page { padding: 16px 18px 14px; }
+.pane.doc .letterhead .city { font-size: 17px; }
 .doc-head { margin-bottom: 6px; }
 table.facts th { width: 40%; font-size: 12px; text-transform: none; letter-spacing: 0; color: var(--muted); font-weight: 600; }
 table.facts td.blank { color: var(--muted); font-style: italic; }

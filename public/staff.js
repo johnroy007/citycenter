@@ -236,7 +236,8 @@
   function renderDocumentTabs(pane) {
     var s = current;
     var tabs = [];
-    (s.packet ? s.packet.documents : []).forEach(function (d, i) { tabs.push({ label: d.name, render: function (box) { renderOneDocument(box, d); } }); });
+    var total = s.packet ? s.packet.documents.length : 0;
+    (s.packet ? s.packet.documents : []).forEach(function (d, i) { tabs.push({ label: "Page " + (i + 1) + ": " + d.name, render: function (box) { renderOneDocument(box, d, i, total); } }); });
     if (s.has_sketch) tabs.push({ label: "Drawing", render: function (box) {
       var skStep = (s.steps || []).find(function (x) { return x.name === "sketch" && x.status === "done"; });
       box.appendChild(drawingWithOutline("/api/sessions/" + encodeURIComponent(s.ref) + "/sketch", skStep ? skStep.output : null));
@@ -271,19 +272,10 @@
     tabs[docTab].render(box);
     pane.appendChild(box);
   }
-  function renderOneDocument(box, d) {
-    box.appendChild(el("div", { class: "doc-head" }, [el("b", { text: d.name }), el("span", { class: "small", text: d.section ? " · filed under section " + d.section : "" })]));
-    var tb = el("tbody");
-    (d.fields || []).forEach(function (f) {
-      tb.appendChild(el("tr", null, [el("td", { text: f.label }), el("td", { class: "val" }, [f.value ? document.createTextNode(f.value) : el("span", { class: "blank", text: "[blank]" })]), el("td", { class: "small", text: f.source && f.source !== "blank" ? "from " + f.source.replace("_", " ") : "" })]));
-    });
-    box.appendChild(el("table", null, [el("thead", null, [el("tr", null, [el("th", { text: "Field" }), el("th", { text: "Value" }), el("th", { text: "" })])]), tb]));
-    box.appendChild(el("h3", { text: "Statement" }));
-    box.appendChild(el("div", { class: "narrative", text: d.narrative || "" }));
-    if (d.code_basis && d.code_basis.length) {
-      box.appendChild(el("h3", { text: "Code sections the application cites" }));
-      d.code_basis.forEach(function (c) { if (c.section) box.appendChild(el("div", { class: "quote" }, [el("span", { text: c.quote ? "“" + c.quote + "”" : "" }), el("span", { class: "cite", text: "Section " + c.section + (c.quote ? (c.quote_verified ? " · verified" : " · unverified") : "") })])); });
-    }
+  function renderOneDocument(box, d, di, total) {
+    var s = current;
+    var sigSrc = s.signature ? "/api/sessions/" + encodeURIComponent(s.ref) + "/signature?t=" + encodeURIComponent(s.signature.signed_at) : null;
+    box.appendChild(el("div", { class: "pages" }, [CCForm.page(town, s, d, di, total, { sigSrc: sigSrc })]));
   }
   function renderDocuments(pane) {
     var s = current, c = active();

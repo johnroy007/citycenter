@@ -74,6 +74,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-10-30 (later) — Claude Code on John's laptop — staff see the real application form
+- John: the document tabs must look like the application, not a table. The form rendering moved to `public/form.js` (`CCForm.page`), shared by the resident's paperwork screen and the staff step-1 tabs, so both sides show the identical letterhead form with the signature line. Screenshots of both checked.
+
 ### 2026-10-30 — Claude Code on John's laptop — step 1 laid out as John sketched it
 - Step 1: submitted documents on the left with a tab per document (each application page, drawing, parcel & map, signature, conversation); on the right what the agent gleans, starting with the basic facts in John's order (name, application type, address, existing zone, requested zoning, General Plan designation, proposed use), then development standards proposed vs required with section and status, then the bullet points and blanks. The summary schema gained `facts` and `standards`. General Plan designation reads "not available" until a General Plan layer is loaded (open item). Older summaries show a "regenerate" notice.
 

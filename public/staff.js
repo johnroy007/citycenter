@@ -182,7 +182,7 @@
   function renderStep() {
     var left = $("leftPane"), right = $("rightPane");
     left.textContent = ""; right.textContent = "";
-    if (step === 1) { renderSummary(left); renderDocuments(right); }
+    if (step === 1) { renderDocumentTabs(left); renderSummary(right); }
     else if (step === 2) { renderCodeSummary(left); renderResearch(right); }
     else if (step === 3) { renderPoints(left); renderEvidence(right); }
     else { renderLetter(left); renderLetterSide(right); }
@@ -203,6 +203,24 @@
       return;
     }
     pane.appendChild(el("p", { class: "lead", text: sum.headline }));
+    if (!sum.facts) {
+      pane.appendChild(el("div", { class: "notice warn", text: "This summary was made before the basic facts and standards were added. Regenerate it to fill them in." }));
+    } else {
+      pane.appendChild(el("h3", { text: "Basic facts" }));
+      var ftb = el("tbody");
+      [["Name of applicant", "applicant_name"], ["Application type", "application_type"], ["Address of property", "property_address"], ["Existing zone", "existing_zone"], ["Requested zoning", "requested_zoning"], ["General Plan designation", "general_plan_designation"], ["Proposed use", "proposed_use"]].forEach(function (row) {
+        var v = sum.facts[row[1]] || "not stated";
+        ftb.appendChild(el("tr", null, [el("th", { text: row[0] }), el("td", { class: /^not (stated|available)/i.test(v) ? "blank" : "", text: v })]));
+      });
+      pane.appendChild(el("table", { class: "kv facts" }, [ftb]));
+      pane.appendChild(el("h3", { text: "Development standards: proposed vs required" }));
+      if (sum.standards && sum.standards.length) {
+        var stb = el("tbody");
+        sum.standards.forEach(function (x) { stb.appendChild(el("tr", null, [el("td", { text: x.standard }), el("td", { text: x.proposed }), el("td", { text: x.required }), el("td", null, [chip(x.status)])])); });
+        pane.appendChild(el("table", { class: "standards" }, [el("thead", null, [el("tr", null, [el("th", { text: "Standard" }), el("th", { text: "Proposed" }), el("th", { text: "Required" }), el("th", { text: "" })])]), stb]));
+      } else pane.appendChild(el("p", { class: "small", text: "No dimensional standards apply to this kind of request." }));
+      pane.appendChild(el("h3", { text: "Everything else the agent found" }));
+    }
     var ul = el("ul", { class: "bullets" });
     (sum.bullets || []).forEach(function (b) { ul.appendChild(el("li", null, [document.createTextNode(b.text + " "), el("span", { class: "src", text: String(b.source).replace(/_/g, " ") })])); });
     pane.appendChild(ul);
@@ -212,6 +230,60 @@
     }
     pane.appendChild(el("p", { class: "small", text: "Generated " + fmt(sum.generated_at) + ". Facts as the resident gave them; nothing here is a judgment." }));
     pane.appendChild(btn);
+  }
+  // Step 1 left: the submitted documents, one tab each (application pages, drawing, conversation, signature).
+  var docTab = 0;
+  function renderDocumentTabs(pane) {
+    var s = current;
+    var tabs = [];
+    (s.packet ? s.packet.documents : []).forEach(function (d, i) { tabs.push({ label: d.name, render: function (box) { renderOneDocument(box, d); } }); });
+    if (s.has_sketch) tabs.push({ label: "Drawing", render: function (box) {
+      var skStep = (s.steps || []).find(function (x) { return x.name === "sketch" && x.status === "done"; });
+      box.appendChild(drawingWithOutline("/api/sessions/" + encodeURIComponent(s.ref) + "/sketch", skStep ? skStep.output : null));
+      if (skStep && skStep.output) { var o = skStep.output; box.appendChild(el("p", { class: "small", text: "Read by Muse Spark as " + String(o.drawing_type || "").replace(/_/g, " ") + ", " + o.readability + ". SAM 3.1 outlines drawn on the image." + (o.building_code_site_plan_note ? " " + o.building_code_site_plan_note : "") })); if (o.dimensions && o.dimensions.length) box.appendChild(el("ul", null, o.dimensions.map(function (d) { return el("li", { text: d.what + ": " + d.value_text }); }))); }
+    } });
+    if (s.parcel) tabs.push({ label: "Parcel & map", render: function (box) {
+      box.appendChild(el("div", { text: (s.parcel.address || "") + " · " + (s.parcel.id || "") + " · zone " + (s.parcel.zone || "?") + (s.parcel.zoneName ? " (" + s.parcel.zoneName + ")" : "") + " · " + (s.parcel.areaAcres || "?") + " acres" + (s.parcel.straddlesZones ? " · touches " + s.parcel.zonesTouched.join(", ") : "") + (s.parcel.assumed ? " · ASSUMED among several parcels at this address" : "") }));
+      box.appendChild(el("div", { class: "small", text: "Owner of record: " + (s.owner ? s.owner.name : "?") + " (fictional demo name)" }));
+      box.appendChild(el("img", { src: "/api/map/parcel/" + encodeURIComponent(s.parcel.id) + ".svg", alt: "Zoning map around the parcel", style: "width:100%;border-radius:10px;border:1px solid var(--line);margin-top:10px" }));
+    } });
+    if (s.signature) tabs.push({ label: "Signature", render: function (box) {
+      box.appendChild(el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/signature?t=" + encodeURIComponent(s.signature.signed_at), alt: "Signature", style: "max-width:360px;display:block;border:1px solid var(--line);border-radius:8px;background:#fff" }));
+      box.appendChild(el("div", { class: "small", text: "Signed by " + s.signature.name + " (" + s.signature.method + ") on " + fmt(s.signature.signed_at) + " from " + (s.signature.ip || "?") + (s.signature_current ? " · matches the application as it stands" : " · the application changed after signing; a resubmit needs a new signature") }));
+      box.appendChild(el("p", { class: "small", text: s.signature.consent || "" }));
+    } });
+    tabs.push({ label: "Conversation", render: function (box) {
+      var tl = el("ul", { class: "transcript" });
+      (s.messages || []).forEach(function (m) { tl.appendChild(el("li", { class: m.role }, [el("strong", { text: (m.role === "resident" ? "Resident" : (m.character || "Desk")) + ": " }), m.text])); });
+      box.appendChild(tl);
+    } });
+    if (!tabs.length) { pane.appendChild(el("p", { class: "small", text: "Nothing submitted yet." })); return; }
+    if (docTab >= tabs.length) docTab = 0;
+    var bar = el("div", { class: "doctabs" });
+    tabs.forEach(function (t, i) {
+      var b = el("button", { type: "button", class: "doctab" + (i === docTab ? " active" : ""), text: t.label });
+      b.addEventListener("click", function () { docTab = i; renderStep(); });
+      bar.appendChild(b);
+    });
+    pane.appendChild(el("h2", { text: "Submitted documents" }));
+    pane.appendChild(bar);
+    var box = el("div", { class: "docview" });
+    tabs[docTab].render(box);
+    pane.appendChild(box);
+  }
+  function renderOneDocument(box, d) {
+    box.appendChild(el("div", { class: "doc-head" }, [el("b", { text: d.name }), el("span", { class: "small", text: d.section ? " · filed under section " + d.section : "" })]));
+    var tb = el("tbody");
+    (d.fields || []).forEach(function (f) {
+      tb.appendChild(el("tr", null, [el("td", { text: f.label }), el("td", { class: "val" }, [f.value ? document.createTextNode(f.value) : el("span", { class: "blank", text: "[blank]" })]), el("td", { class: "small", text: f.source && f.source !== "blank" ? "from " + f.source.replace("_", " ") : "" })]));
+    });
+    box.appendChild(el("table", null, [el("thead", null, [el("tr", null, [el("th", { text: "Field" }), el("th", { text: "Value" }), el("th", { text: "" })])]), tb]));
+    box.appendChild(el("h3", { text: "Statement" }));
+    box.appendChild(el("div", { class: "narrative", text: d.narrative || "" }));
+    if (d.code_basis && d.code_basis.length) {
+      box.appendChild(el("h3", { text: "Code sections the application cites" }));
+      d.code_basis.forEach(function (c) { if (c.section) box.appendChild(el("div", { class: "quote" }, [el("span", { text: c.quote ? "“" + c.quote + "”" : "" }), el("span", { class: "cite", text: "Section " + c.section + (c.quote ? (c.quote_verified ? " · verified" : " · unverified") : "") })])); });
+    }
   }
   function renderDocuments(pane) {
     var s = current, c = active();

@@ -61,6 +61,8 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 - **Staff workspace redesign (2026-10-28 evening, John's layout):** the queue runs across the top with search, status and department filters and sort; it is full when nothing is open, half-height (a few rows) when an application is open, and collapses to one line with the ▲/▼ button. Below it a four-step bar: 1 Review submitted documents (AI bullet points, facts only, with the documents beside them), 2 Review relevant code (AI summary per section with a verified quote and the full text on demand), 3 Application review (each point with Approve / Deny / Needs info / N/A and a comment; evidence for the selected point on the right; ask-the-agent; second read), 4 Return document (the letter). Steps 1 to 3 generate themselves the first time the tab is opened. The letter is generated when step 4 is opened and regenerated automatically when the review changes, until staff edit it; then it freezes and "Update from the review" asks whether to keep the edits and update the rest, or let the AI rewrite everything. The letter kind follows the review (any Deny or Needs info → incomplete letter; all Approved/N/A → forwarded letter; a zoning question with comments → answer letter) and can be overridden. Old "Draft letter…" panel removed; `letter/draft` route kept for compatibility.
 
+- **General Plan layer:** not loaded; step 1 shows 'not available' for the General Plan designation. If Washington County or Hildale publishes a General Plan land use layer, add it in `data/towns/hildale.json` under `gis` and the fact can be filled from the map.
+
 ## Open questions / known issues
 - Render auto-deploy on push does not fire for this API-created service; `npm run deploy` triggers it through the API.
 - Live tests cost roughly 15 cents per scenario; a full run is about $3.
@@ -71,6 +73,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-10-30 — Claude Code on John's laptop — step 1 laid out as John sketched it
+- Step 1: submitted documents on the left with a tab per document (each application page, drawing, parcel & map, signature, conversation); on the right what the agent gleans, starting with the basic facts in John's order (name, application type, address, existing zone, requested zoning, General Plan designation, proposed use), then development standards proposed vs required with section and status, then the bullet points and blanks. The summary schema gained `facts` and `standards`. General Plan designation reads "not available" until a General Plan layer is loaded (open item). Older summaries show a "regenerate" notice.
 
 ### 2026-10-28 (evening, staff redesign) — Claude Code on John's laptop — queue on top, four-step review, auto letter
 - Back end: `summarizeSubmission`, `summarizeCode`, `deriveDecision`, `generateLetter` (modes regenerate / keep_manual) in `lib/review.js`; two new schemas; reviews table gained `submission_summary`, `code_summary`, `letter`; routes `summary`, `code-summary`, `letter/generate`, `letter/edit`; the staff session GET carries `letter_stale` (basis hash of states, notes, summaries and document hash) and the auto letter kind.

@@ -3,26 +3,22 @@
 > Handoff log. Every agent (Claude or Codex, any laptop) reads this at the start of a task and updates it at the end. Newest log entries at the top. The day-by-day plan and rules digest live in the private notebook `C:\Users\John Barlow\Projects\citycenter-notes`.
 
 ## Status
-**Built, verified, and live. The hosting problem is solved with a relay: the Render site now sends its Meta calls through a Cloudflare Worker (`relay/`), and the full resident-to-staff journey passes on the live site (2026-10-28 afternoon, 169 s).** The resident counter is the office scene John asked for (history, character, TV with remote, city-format application), residents can sign in and keep working after submission, and staff get the reviewer workspace. 30 offline unit tests pass; 20 of 22 live scenarios pass; the HTTP journey passes locally and on Render.
+**Feature-complete and live. Submission due 2026-11-04, 9 PM ET.** The live site runs end to end through the Cloudflare relay: the office scene (history, characters, TV with remote, zoom and map views), consent before every hand-off, eleven desks with their own characters (Planning is the working one; the rest say they are not built out yet), tappable replies, resident accounts and a single visit code, electronic signature before submission, resubmission after changes, and the four-step staff workspace (submitted documents as the real form, code summary with verified quotes, point-by-point review, auto-generated return letter that freezes once edited). 32 offline unit tests pass; the HTTP journey passes locally and on Render; 13 worked examples are seeded on the live site with signatures.
 
-- **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (passcode in Render's dashboard / John's `.env`). Everything works there through the relay. If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` (signed in as staff): `api_base` must be the worker address and `models` must list 9.
-- **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff (passcode in `.env`). Everything works locally.
-- **Last updated:** 2026-10-28 (afternoon) by Claude Code on John's laptop
+- **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (passcode in Render's dashboard / John's `.env`). If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` signed in as staff: `api_base` must be the worker address and `models` must list 9.
+- **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff. Stop any old `node server.js` first.
+- **Last updated:** 2026-11-02 by Claude Code on John's laptop (computer name JOHN)
 
 ## RESUME POINT
-The live site is complete and working through the relay (see Log, 2026-10-28 afternoon). Remaining work is John's: three real photographed sketches run through the live site, a fresh-eyes test of the whole flow, review of the decisions list below, the video (`notes/submission-draft.md` in the notebook has the script and form text), the submission, Discord housekeeping and the eligibility ruling.
+Nothing is half-built. The next session should start with John's own fresh-eyes pass through the live site (resident side, then staff side), fix whatever he reports, and then help with the submission package: the video (script and form text in the notebook, `notes/submission-draft.md`, written 2026-10-28 and now out of date on the staff side and the signature; refresh it), the README check, and the Devpost/Cerebral Valley form, all before 2026-11-04 9 PM ET.
 
-How the hosting fix works, for whoever picks this up: Meta's API refused most calls from Render's network (details in the midday log entry). The app's Meta client reads `META_API_BASE` and `META_RELAY_SECRET` from the environment and sends every call there instead of to `api.meta.ai`. The relay is a Cloudflare Worker in John's Cloudflare account (`citycenter-relay`, address in Render's env var `META_API_BASE`; code in `relay/worker.js`; `RELAY_SECRET` set on the worker). To check it: `node scripts/probe-relay.js <worker address>` from the laptop; `/api/staff/diag` on the live site. To change Render settings: edit the git-ignored `.env.render-vars.local` and run `node scripts/render-env.js --file .env.render-vars.local` (it redeploys). Deploys after a push still need `npm run deploy`.
-
-If the relay ever stops working: `relay/deno.js` is the same relay for Deno Deploy; the laptop tunnel (`npm run tunnel`) is the last resort.
+How the hosting works, for whoever picks this up: the app's Meta client reads `META_API_BASE` and `META_RELAY_SECRET` and sends every call to the Cloudflare Worker `citycenter-relay` in John's Cloudflare account (code in `relay/worker.js`). Check it with `node scripts/probe-relay.js <worker address>` from the laptop or `/api/staff/diag` on the live site. Change Render settings by editing the git-ignored `.env.render-vars.local` and running `node scripts/render-env.js --file .env.render-vars.local`. Deploys after a push need `npm run deploy`. Fallbacks: `relay/deno.js` on Deno Deploy; `npm run tunnel` from the laptop.
 
 ## Waiting on John
-- **Try the live site end to end yourself** (resident side, then staff side) and tell Claude what to change.
-- **Optional:** Discord question to Meta about `model_not_found` from cloud networks (the relay works around it; this is only to help them and other teams).
-- **Corrections to the decisions list below** (names, wording, scenario numbers) whenever you have time.
-- **Three photographed hand sketches** for Sunday's test.
-- **Discord housekeeping from the notebook:** delete the stray "government" message; accept the Official Rules; eligibility ruling still pending (it decides whether Hildale is named in the README and video; right now it is).
-- **Render:** the Starter instance is running (~$7/month); cancel after judging or sooner if the tunnel fallback is used.
+- **Fresh-eyes pass of the live site** (resident, then staff) and a list of changes.
+- **Submission package before 2026-11-04 9 PM ET:** record the video (refresh the script first), check the README, fill the form. Decide whether Hildale is named publicly (eligibility ruling from the Discord thread was still open on 2026-10-28).
+- **Optional:** three photographed hand sketches to replace the computer-generated ones in `public/sketches/`; corrections to the decisions list below; Discord housekeeping from the notebook.
+- **After judging:** cancel the Render Starter instance (~$7/month) and delete the Cloudflare worker.
 
 ## Decisions Claude made on John's behalf (change any of these; say the word)
 Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can override.
@@ -73,6 +69,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-02 — Claude Code on John's laptop — wrap-up
+- No code changes. Verified for the handoff: working tree clean and pushed (last commit 0b26655), notebook repo pushed, live health OK through the relay, 32 of 32 unit tests pass. `AGENTS.md` rewritten to describe the current app (it still described the first-day prototype with Sample Creek). Status, resume point and click-list above refreshed; the submission deadline is in two days.
 
 ### 2026-10-30 (later) — Claude Code on John's laptop — staff see the real application form
 - John: the document tabs must look like the application, not a table. The form rendering moved to `public/form.js` (`CCForm.page`), shared by the resident's paperwork screen and the staff step-1 tabs, so both sides show the identical letterhead form with the signature line. Screenshots of both checked.

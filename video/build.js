@@ -212,9 +212,9 @@ function captionsFor(sc, start, narrSeconds) {
   const music = ["mp3", "m4a", "wav"].map((e) => path.join(HERE, "music." + e)).find((f) => fs.existsSync(f));
   const final = path.join(OUT, ONLY ? `preview-${ONLY.join("-")}.mp4` : "citycenter-demo.mp4");
   if (music) {
-    ff(["-i", silent, "-i", voice, "-stream_loop", "-1", "-i", music, "-filter_complex", `[2:a]volume=0.10,afade=t=in:d=2,afade=t=out:st=${(t - 3).toFixed(2)}:d=3,atrim=duration=${t.toFixed(3)}[m];[1:a][m]amix=inputs=2:duration=first:normalize=0[a]`, "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", final]);
+    ff(["-i", silent, "-i", voice, "-stream_loop", "-1", "-i", music, "-filter_complex", `[2:a]volume=0.10,afade=t=in:d=2,afade=t=out:st=${(t - 3).toFixed(2)}:d=3,atrim=duration=${t.toFixed(3)}[m];[1:a][m]amix=inputs=2:duration=first:normalize=0[a]`, "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ac", "2", "-movflags", "+faststart", final]);
   } else {
-    ff(["-i", silent, "-i", voice, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", final]);
+    ff(["-i", silent, "-i", voice, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ac", "2", "-movflags", "+faststart", "-shortest", final]);
   }
   if (!ONLY) fs.writeFileSync(path.join(OUT, "citycenter-demo.srt"), srt.map((c, i) => `${i + 1}\n${fmtT(c.a)} --> ${fmtT(c.b)}\n${c.text}\n`).join("\n"));
   log(`Done: ${final} (${duration(final).toFixed(1)} s)`);

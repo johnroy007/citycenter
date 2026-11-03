@@ -8,9 +8,11 @@
 - **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (open to everyone, no sign-in since 2026-11-03). If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` (still needs the staff passcode: sign in with `POST /api/staff/login`): `api_base` must be the worker address and `models` must list 9.
 - **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff. Stop any old `node server.js` first.
 - **Demo video:** a full 2:55 cut exists (built 2026-11-02 from the live Trust City site, visit TC-2026-0138), with a stand-in computer voice. It is at `video/out/citycenter-demo.mp4` on John's laptop only (git-ignored, 60 MB); rebuild it anywhere with `node video/capture.js` then `node video/build.js`. See `video/README.md`.
-- **Last updated:** 2026-11-03 by Claude Code on John's laptop (computer name JOHN): logins removed; staff workspace open to everyone.
+- **Last updated:** 2026-11-03 by Claude Code on John's laptop (computer name JOHN): pre-submission audit done, no code changed; findings are in the private notebook.
 
 ## RESUME POINT
+**Start here:** the pre-submission audit is finished and its fixes wait on John. Read `notes/audit-2026-11-03.md` in the private notebook (`C:\Users\John Barlow\Projects\citycenter-notes`) before changing the app, the video or the submission form. Keep its details out of this public repo.
+
 **First:** the live demo examples were written while the town was still called Hildale, so their stored conversations and paperwork still say the old name (and use HC- references). Once John says yes, run `node scripts/seed-remote.js https://citycenter-puh5.onrender.com --fresh` (it deletes the old demo visits and replays all 13; roughly $3 to $5 of model calls; John's own visits are kept). Then tell the video session (citycenter-84) that the reseed is done, if it is still running. After that, the earlier plan stands:
 
 Nothing is half-built. **The final video is done (2026-11-03, afternoon):** re-recorded on the live app after the logins were removed and the Trust Gap Model page was added (the capture hides that page's top-bar link, per John), visit TC-2026-0140, voice one, 2:59. It is in John's Downloads as `CityCenter-demo.mp4` + `CityCenter-demo-captions.srt`, ready for YouTube. If the app changes again before the deadline, repeat these steps:
@@ -25,7 +27,7 @@ How the hosting works, for whoever picks this up: the app's Meta client reads `M
 ## Waiting on John
 - **Say yes to replacing the live demo examples** (see RESUME POINT). The automatic safety check would not let Claude delete live data without John's OK.
 - **Fresh-eyes pass of the live site** (resident, then staff) and a list of changes.
-- **Upload the final video.** It is done (voice one, Charon, with the opening statement in Kore). John uploads the final `CityCenter-demo.mp4` from his Downloads to YouTube with `CityCenter-demo-captions.srt` and puts the link in the submission form.
+- **Pre-submission audit (2026-11-03):** read `notes/audit-2026-11-03.md` in the private notebook and decide which fixes to make. The video is on YouTube (https://youtu.be/W1uqXMMd6Iw); the link goes in the form once John decides whether to replace it.
 - **Submission package before 2026-11-04 9 PM ET:** check the README, fill the form. The town is now shown as Trust City everywhere (John, 2026-11-02), which settles the naming question.
 - **Optional:** three photographed hand sketches to replace the computer-generated ones in `public/sketches/`; corrections to the decisions list below; Discord housekeeping from the notebook.
 - **After judging:** cancel the Render Starter instance (~$7/month) and delete the Cloudflare worker.
@@ -79,6 +81,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-03 (afternoon) — Claude Code on John's laptop (JOHN) — pre-submission audit
+- John asked for an audit of the program and video: will it work for judges, are the claims true, does it meet the rules. Tested the live site end to end, read the Official Rules, and reviewed the video. No code changed. Test visits TC-2026-0141 to 0143 are labeled as examples, so the demo reset clears them. Findings and proposed fixes are in the private notebook.
 
 ### 2026-11-03 (afternoon) — Claude Code on John's laptop — final video redo
 - Re-recorded the video on the live app (visit TC-2026-0140) after John's changes (logins removed, Trust Gap Model page added). The capture hides the Trust Gap top-bar link (John: keep it out of the video); `video/capture.js` no longer needs the staff page's resident-link element, which is gone. Built with voice one at 2:59; fixed two-channel sound so it stays at full level. Final copy in John's Downloads.

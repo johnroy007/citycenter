@@ -5,7 +5,7 @@
 //             by `w` (weight; a seg may name its own `clip`); the recording is sped up or slowed to fit. A "fast-forward" badge shows when sped up.
 //   card:     a full-screen text card (see video/overlay.html).
 // Callouts are the small labels that name the Meta model doing the work: { at: seconds into scene, dur, model, text }.
-// Scene length = the narration's length plus a little air, so the voice drives the timing.
+// Scene length = the narration's length plus a little air (or `min` seconds if longer), so the voice drives the timing.
 "use strict";
 
 module.exports = [
@@ -52,7 +52,7 @@ module.exports = [
     clip: "resident", segs: [{ from: "home", to: "sent1", w: 1.3 }, { from: "sent1", to: "juniper-asks", w: 1 }],
     say: "Here's a real visit on the live site. Devon wants to split his lot and sell the back half to his son. He says it in his own words, and the front desk sends him to Planning.",
     callouts: [
-      { at: 0.6, dur: 6, model: "Live site", text: "citycenter-puh5.onrender.com · Hildale City, Utah" },
+      { at: 0.6, dur: 6, model: "Live site", text: "citycenter-puh5.onrender.com · Trust City" },
       { at: 6.5, dur: 5.5, model: "Muse Spark", text: "understands the request and finds the right desk" },
     ],
   },
@@ -62,7 +62,7 @@ module.exports = [
     say: "He gives his address and a hand-drawn sketch. The planner finds his parcel on the county's real zoning map, and searches all eight hundred sixty-five sections of the city's code, with tools.",
     callouts: [
       { at: 0.5, dur: 5, model: "Muse Voice Transcribe", text: "residents can hold the mic and talk instead of typing" },
-      { at: 6, dur: 7, model: "Muse Spark · tool calls", text: "county parcel and zoning layers · 865 sections of Hildale's code" },
+      { at: 6, dur: 7, model: "Muse Spark · tool calls", text: "county parcel and zoning layers · 865 sections of the city's code" },
     ],
   },
   {
@@ -77,8 +77,8 @@ module.exports = [
     ],
   },
   {
-    id: "sign",
-    clip: "sign", segs: [{ from: "sign-open", to: "end", w: 1 }],
+    id: "sign", min: 6.5,
+    clip: "resident", segs: [{ from: "sign-open", to: "end", w: 1 }],
     say: "Devon reads it, signs it, and submits it.",
   },
 
@@ -90,7 +90,7 @@ module.exports = [
     callouts: [{ at: 1, dur: 6, model: "Staff workspace", text: "review in four steps · the agent prepares, staff decide" }],
   },
   {
-    id: "staff2",
+    id: "staff2", min: 7,
     clip: "staff", segs: [{ from: "step2-click", to: "step3-click", w: 1 }],
     say: "Second: the code that applies, summarized, with the exact text.",
   },

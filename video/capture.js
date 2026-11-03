@@ -124,6 +124,7 @@ async function signAndSubmit(b) {
 
 async function staff(b, ref) {
   const pass = readEnv("STAFF_PASSCODE");
+  await b.viewport(1280, 720, 1.5); // larger text for the dense staff screens; still 1920x1080 frames
   await b.goto(BASE + "/staff", 2500);
   const loggedIn = await b.eval(`return !document.getElementById("app").classList.contains("hidden")`);
   if (!loggedIn) {
@@ -140,6 +141,9 @@ async function staff(b, ref) {
   await b.eval(`${rowSel}.setAttribute("data-vt","row")`);
   await b.tap(`[data-vt="row"]`, { pause: 900 });
   b.mark("open");
+  await sleep(1500);
+  await b.tap("#qToggle", { pause: 600 }); // collapse the queue to give the review the whole screen
+  b.mark("collapsed");
   await b.waitFor(`/Generated/.test(document.getElementById("rightPane").textContent)`, 300000);
   b.mark("step1");
   await sleep(4000);
@@ -208,6 +212,7 @@ async function staff(b, ref) {
 }
 
 async function reply(b, href) {
+  await b.viewport(1440, 810, 4 / 3);
   await b.goto(href, 4000);
   await b.cursor();
   const stop = await startClip(b, "reply");

@@ -34,10 +34,22 @@ if (!document.getElementById("vcur")) {
   window.__vclick = (x, y) => { const r = document.createElement("div"); Object.assign(r.style, { position: "fixed", left: (x - 18) + "px", top: (y - 18) + "px", width: "36px", height: "36px", borderRadius: "50%", border: "3px solid rgba(31,95,191,.85)", zIndex: 2147483646, pointerEvents: "none", transition: "transform .5s, opacity .5s" }); document.body.appendChild(r); requestAnimationFrame(() => { r.style.transform = "scale(1.8)"; r.style.opacity = "0"; }); setTimeout(() => r.remove(), 700); };
 }`;
 
+// Hides internet addresses (the signature record shows where it was signed from) so none appear in a public video.
+const MASK_JS = `
+if (!window.__ipmask && document.body) {
+  window.__ipmask = true;
+  const one = /\\b\\d{1,3}(?:\\.\\d{1,3}){3}\\b/, all = /\\b\\d{1,3}(?:\\.\\d{1,3}){3}\\b/g;
+  const fix = (n) => { if (!n) return; if (n.nodeType === 3) { if (one.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(all, "(address hidden)"); return; }
+    const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) if (one.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(all, "(address hidden)"); };
+  fix(document.body);
+  new MutationObserver((ms) => ms.forEach((m) => { fix(m.target); m.addedNodes.forEach(fix); })).observe(document.body, { childList: true, subtree: true, characterData: true });
+}`;
+
 async function setup(b) {
   await b.send("Page.setBypassCSP", { enabled: true });
   b.on((m) => { if (m.method === "Page.javascriptDialogOpening") b.send("Page.handleJavaScriptDialog", { accept: true }).catch(() => {}); });
-  b.cursor = async () => { try { await b.eval(CURSOR_JS); } catch {} };
+  b.cursor = async () => { try { await b.eval(CURSOR_JS); await b.eval(MASK_JS); } catch {} };
+  b.viewport = async (width, height, scale) => { await b.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: scale, mobile: false }); b.size = { width, height, scale }; };
   // Move the visible pointer, then click for real.
   b.tap = async (selector, { pause = 650 } = {}) => {
     await b.cursor();

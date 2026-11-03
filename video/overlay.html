@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>citycenter video overlays</title>
+<!-- Rendered by video/build.js with headless Chrome at 1440x810 (x4/3 = 1920x1080) on a transparent background. -->
+<style>
+  :root { --ink: #1f2a37; --muted: #5f6b7a; --blue: #1f5fbf; --teal: #0f766e; --cream: #fbf7ef; --navy: #141c2b; }
+  html, body { margin: 0; width: 1440px; height: 810px; overflow: hidden; background: transparent; font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); }
+  #root { position: absolute; inset: 0; }
+  .title { position: absolute; left: 56px; bottom: 54px; max-width: 760px; background: rgba(251, 247, 239, 0.95); border-radius: 18px; padding: 26px 34px; box-shadow: 0 18px 50px rgba(20, 28, 43, 0.28); border-left: 8px solid var(--blue); }
+  .title h1 { margin: 0; font-family: Georgia, serif; font-weight: 600; font-size: 40px; line-height: 1.22; letter-spacing: -0.2px; }
+  .callout { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; background: var(--navy); color: #fff; border-radius: 999px; padding: 8px 22px 8px 8px; box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3); white-space: nowrap; font-size: 19px; }
+  .callout .model { background: var(--blue); color: #fff; border-radius: 999px; padding: 6px 15px; font-weight: 700; font-size: 16px; letter-spacing: 0.4px; text-transform: uppercase; }
+  .callout .model.meta { background: linear-gradient(90deg, #0866ff, #7b3fe4); }
+  .callout .model.data { background: var(--teal); }
+  .caption { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); max-width: 1120px; width: max-content; background: rgba(17, 24, 39, 0.84); color: #fff; border-radius: 12px; padding: 10px 22px; font-size: 25px; line-height: 1.35; text-align: center; }
+  .badge { position: absolute; right: 18px; top: 74px; background: rgba(17, 24, 39, 0.82); color: #fff; border-radius: 999px; padding: 6px 14px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
+  .card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 110px; box-sizing: border-box; }
+  .card.dark { align-items: center; text-align: center; background: radial-gradient(ellipse at 30% 20%, #22304a, var(--navy) 70%); color: #fff; }
+  .card.light { background: var(--cream); }
+  .card .bg { position: absolute; inset: -30px; background-size: cover; background-position: center; filter: blur(14px) saturate(0.9); opacity: 0.35; }
+  .card > *:not(.bg) { position: relative; }
+  .card h1 { font-family: Georgia, serif; font-weight: 600; font-size: 54px; line-height: 1.15; margin: 0 0 30px; }
+  .nots { display: flex; gap: 26px; margin: 10px 0 46px; }
+  .card.dark h1 { font-size: 66px; }
+  .nots div { border: 2px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 18px 28px; font-size: 31px; }
+  .nots b { color: #ff8a80; margin-right: 10px; }
+  .decide { font-size: 42px; font-weight: 600; color: #9ec5ff; }
+  .word { font-weight: 800; font-size: 76px; letter-spacing: -1.5px; margin: 0; }
+  .tag { font-family: Georgia, serif; font-size: 32px; margin: 6px 0 34px; color: var(--ink); }
+  .models { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; margin-bottom: 34px; }
+  .models div { background: #fff; border-radius: 12px; padding: 12px 18px; box-shadow: 0 6px 20px rgba(31, 42, 55, 0.08); font-size: 20px; }
+  .models b { color: var(--blue); margin-right: 8px; }
+  .foot { font-size: 22px; color: var(--muted); display: flex; gap: 34px; }
+  .foot strong { color: var(--ink); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  // window.render(spec) draws one overlay; build.js screenshots it.
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  window.render = async function (spec) {
+    const root = document.getElementById("root");
+    root.replaceChildren();
+    if (spec.mode === "title") { const t = el("div", "title"); t.appendChild(el("h1", null, spec.text)); root.appendChild(t); }
+    if (spec.mode === "callout") {
+      const c = el("div", "callout");
+      const m = el("span", "model" + (/^(Muse|SAM)/.test(spec.model) ? " meta" : /data|Verified|Live/.test(spec.model) ? " data" : ""), spec.model);
+      c.appendChild(m); c.appendChild(el("span", null, spec.text)); root.appendChild(c);
+    }
+    if (spec.mode === "caption") root.appendChild(el("div", "caption", spec.text));
+    if (spec.mode === "badge") root.appendChild(el("div", "badge", spec.text));
+    if (spec.mode === "line") {
+      const c = el("div", "card dark");
+      c.appendChild(el("h1", null, "What the AI never does."));
+      const n = el("div", "nots");
+      for (const t of ["recommend a decision", "predict the outcome", "rate the person"]) { const d = el("div"); d.appendChild(el("b", null, "✕")); d.appendChild(document.createTextNode(t)); n.appendChild(d); }
+      c.appendChild(n);
+      c.appendChild(el("div", "decide", spec.decide || "Only real City Officials can make decisions."));
+      root.appendChild(c);
+    }
+    if (spec.mode === "close") {
+      const c = el("div", "card light");
+      const bg = el("div", "bg"); bg.style.backgroundImage = "url('" + spec.bg + "')"; c.appendChild(bg);
+      c.appendChild(el("p", "word", "citycenter"));
+      c.appendChild(el("p", "tag", "Residents get to be residents. Officials get the tools to treat everyone fairly."));
+      const g = el("div", "models");
+      for (const [m, t] of [["Muse Spark", "understands, routes, researches the code with tools, fills in forms, lists review points"], ["SAM 3.1", "outlines the resident's drawing"], ["Muse Voice Transcribe", "talk instead of type"], ["Muse Wonder", "second read for staff"], ["Muse Image", "the characters, the office and this video's illustrations"], ["Real public data", "Hildale's code · county zoning · state parcels · invented people"]]) {
+        const d = el("div"); d.appendChild(el("b", null, m)); d.appendChild(document.createTextNode(t)); g.appendChild(d);
+      }
+      c.appendChild(g);
+      const f = el("div", "foot");
+      const a = el("span"); a.appendChild(el("strong", null, "Try it: ")); a.appendChild(document.createTextNode("citycenter-puh5.onrender.com")); f.appendChild(a);
+      const b = el("span"); b.appendChild(el("strong", null, "Code: ")); b.appendChild(document.createTextNode("github.com/johnroy007/citycenter")); f.appendChild(b);
+      c.appendChild(f);
+      root.appendChild(c);
+    }
+    await document.fonts.ready;
+    await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+    await new Promise((r) => setTimeout(r, spec.bg ? 400 : 30));
+    return true;
+  };
+</script>
+</body>
+</html>

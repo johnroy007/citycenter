@@ -1,0 +1,34 @@
+{
+  "generated_with": "muse-image-1.0",
+  "style": "Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+  "images": {
+    "town": {
+      "prompt": "A quiet small desert town main street at morning: a modest one-story city hall building with a covered entrance, a few houses, a pickup truck, two neighbors waving, tall red sandstone cliffs and blue sky behind. Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+      "file": "town.webp"
+    },
+    "official": {
+      "prompt": "Inside a small-town city hall: a kind, ordinary middle-aged town official with rolled-up sleeves stands behind a wooden service counter, surrounded by towering stacks of thick binders and rule books, scratching his head, a little overwhelmed but friendly. Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+      "file": "official.webp"
+    },
+    "resident": {
+      "prompt": "A friendly resident in work clothes and a ball cap stands at a wooden city hall counter holding a hand-drawn sketch of his property, puzzled, looking at a very long multi-page government form that unrolls onto the floor. Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+      "file": "resident.webp"
+    },
+    "fair": {
+      "prompt": "Two different residents, a young woman and an older man, stand side by side at a city hall counter; each receives an identical neat folder of papers; a simple balance scale sits level on the counter between them. Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+      "file": "fair.webp"
+    },
+    "personal": {
+      "prompt": "At a city hall counter, a town clerk laughs and chats warmly with one resident, while a second resident walking away toward the door glances back over his shoulder with a doubtful, uneasy expression. Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+      "file": "personal.webp"
+    },
+    "together": {
+      "prompt": "A resident and a town official stand together on the same side of a city hall counter, both smiling, looking at a large friendly screen showing a property map and a neat application form, warm and hopeful. Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+      "file": "together.webp"
+    },
+    "local": {
+      "prompt": "A friendly bird's-eye illustrated map of a wide American countryside dotted with dozens of tiny distinct small towns, each with its own little town hall, water tower and county building, connected by winding roads, from desert to farmland to mountains. Friendly flat vector cartoon illustration, clean bold outlines, simple shapes, calm muted warm colors, soft warm lighting, small-town American Southwest setting, same style as a children's picture book, wide 16:9 composition with open space, no text, no letters, no words, no signs, no logos, no flags.",
+      "file": "local.webp"
+    }
+  }
+}

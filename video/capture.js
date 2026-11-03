@@ -206,7 +206,7 @@ async function staff(b, ref) {
   await b.tapText("button", "Send to the resident", { pause: 800 });
   b.mark("sent-letter");
   await sleep(4000);
-  const residentHref = await b.eval(`return document.getElementById("wsResidentLink").href`);
+  const residentHref = await b.eval(`const l = document.getElementById("wsResidentLink"); return l ? l.href : null`);
   await stop();
   return residentHref;
 }

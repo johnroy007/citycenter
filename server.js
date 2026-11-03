@@ -505,7 +505,10 @@ async function handle(req, res) {
     if (!REF_RE.test(ref)) return sendError(res, 404, "No conversation with that reference code.");
     const s = store.getSession(ref);
     if (!s) return sendError(res, 404, "No conversation with that reference code.");
-    if (req.method === "GET" && !action) return sendJson(res, 200, { ...publicSession(s, { staff: true }), ...reviewMeta(s) });
+    if (req.method === "GET" && !action) {
+      const sigCurrent = !!(s.signature && s.packet && s.signature.doc_hash === signature.docHash(s.packet));
+      return sendJson(res, 200, { ...publicSession(s, { staff: true }), ...reviewMeta(s), signature_current: sigCurrent });
+    }
     try {
       if (req.method === "POST" && action === "summary") {
         if (s.busy) return sendError(res, 409, "The resident-side desk is still working on this one.");

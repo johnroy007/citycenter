@@ -53,7 +53,7 @@ async function setup(b) {
   // Clicks the first element matching selector whose text includes `text`.
   b.tapText = async (selector, text, opts) => {
     const idx = await b.waitFor(`(() => { const l = [...document.querySelectorAll(${JSON.stringify(selector)})]; const i = l.findIndex(e => e.offsetParent && e.textContent.includes(${JSON.stringify(text)})); return i > -1 ? i + 1 : 0; })()`, 180000);
-    await b.eval(`document.querySelectorAll(${JSON.stringify(selector)}).forEach((e,i)=>e.toggleAttribute("data-vt", false)); [...document.querySelectorAll(${JSON.stringify(selector)})][${idx - 1}].setAttribute("data-vt","1");`);
+    await b.eval(`document.querySelectorAll("[data-vt]").forEach((e)=>e.removeAttribute("data-vt")); [...document.querySelectorAll(${JSON.stringify(selector)})][${idx - 1}].setAttribute("data-vt","1");`);
     await b.tap(`[data-vt="1"]`, opts);
   };
   b.markers = [];

@@ -49,8 +49,10 @@ function frameAt(clip, t) {
 
 // ---------- overlays (rendered with Chrome) ----------
 let browser = null;
+const OVERLAY_VERSION = require("node:crypto").createHash("sha1").update(fs.readFileSync(path.join(HERE, "overlay.html"))).digest("hex").slice(0, 10);
 async function overlay(spec, file) {
-  if (fs.existsSync(file) && fs.existsSync(file + ".json") && fs.readFileSync(file + ".json", "utf8") === JSON.stringify(spec)) return file;
+  const key = JSON.stringify({ ...spec, v: OVERLAY_VERSION });
+  if (fs.existsSync(file) && fs.existsSync(file + ".json") && fs.readFileSync(file + ".json", "utf8") === key) return file;
   if (!browser) {
     browser = await launch({ port: 9334 });
     await browser.send("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });
@@ -58,7 +60,7 @@ async function overlay(spec, file) {
   }
   await browser.eval(`return window.render(${JSON.stringify(spec)})`);
   await browser.screenshot(file);
-  fs.writeFileSync(file + ".json", JSON.stringify(spec));
+  fs.writeFileSync(file + ".json", key);
   return file;
 }
 

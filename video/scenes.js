@@ -78,7 +78,7 @@ module.exports = [
   },
   {
     id: "sign",
-    clip: "resident", segs: [{ from: "sign-open", to: "end", w: 1 }],
+    clip: "sign", segs: [{ from: "sign-open", to: "end", w: 1 }],
     say: "Devon reads it, signs it, and submits it.",
   },
 

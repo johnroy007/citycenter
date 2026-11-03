@@ -82,6 +82,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-03 (afternoon, later) — Claude Code on John's laptop (JOHN) — final requirements recheck
+- John asked for a last check against the event requirements. Rechecked the live site, repo and video; nothing has changed since the audit and no code changed. The Details page needs John's Cerebral Valley login, so it is still unread. Results are in the private notebook audit.
+
 ### 2026-11-03 (afternoon) — Claude Code on John's laptop (JOHN) — pre-submission audit
 - John asked for an audit of the program and video: will it work for judges, are the claims true, does it meet the rules. Tested the live site end to end, read the Official Rules, and reviewed the video. No code changed. Test visits TC-2026-0141 to 0143 are labeled as examples, so the demo reset clears them. Findings and proposed fixes are in the private notebook.
 

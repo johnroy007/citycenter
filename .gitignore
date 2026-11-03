@@ -154,3 +154,7 @@ CLAUDE.local.md
 
 # citycenter runtime data (SQLite database, local only)
 data/runtime/
+
+# demo video: build output is under video/out (ignored above); John's voice takes and optional music stay local
+video/voice/
+video/music.*

@@ -667,7 +667,7 @@
   function openSignPanel() {
     state.signing = true; state.channel = "paperwork"; state.manual = true;
     renderScreen(state.session); renderRemote(state.session);
-    var sp = document.querySelector(".signpanel"); if (sp) sp.scrollIntoView({ block: "start" });
+    $("screen").scrollTop = 0; // the panel is the first thing on the screen; scroll only the TV, never the whole page
   }
   function signPanel(s) {
     var u = s.understanding || {};

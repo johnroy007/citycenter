@@ -96,6 +96,8 @@ function notFound(res) {
   res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
   res.end("Not found");
 }
+// The staff workspace is open to everyone (John, 2026-11-03), so judges and visitors can press Staff and try it.
+// The passcode now guards only two maintenance tools: the diagnostic and "clear demo" (used by scripts/seed-remote.js).
 const staffConfigured = () => STAFF_PASSCODE.length >= 8 && COOKIE_SECRET.length >= 16;
 function isStaff(req) {
   if (!staffConfigured()) return false;
@@ -103,30 +105,15 @@ function isStaff(req) {
 }
 function requireStaff(req, res) {
   if (!staffConfigured()) {
-    sendError(res, 503, "The staff portal is not set up on this server yet (STAFF_PASSCODE and COOKIE_SECRET are needed).");
+    sendError(res, 503, "This maintenance tool is not set up on this server (STAFF_PASSCODE and COOKIE_SECRET are needed).");
     return false;
   }
   if (!isStaff(req)) {
-    sendError(res, 401, "Please sign in to the staff portal.");
+    sendError(res, 401, "This maintenance tool needs the staff passcode.");
     return false;
   }
   return true;
 }
-
-// Resident accounts: optional. A signed-in resident's visits are listed under "My visits"; the reference
-// code + access key still work on their own, so nothing requires an account.
-const RESIDENT_COOKIE = "cc_resident";
-function residentFromReq(req) {
-  if (COOKIE_SECRET.length < 16) return null;
-  const sub = sec.verifyToken(sec.parseCookies(req.headers.cookie)[RESIDENT_COOKIE], COOKIE_SECRET);
-  const m = sub && sub.match(/^resident:(\d+)$/);
-  if (!m) return null;
-  return store.getResident(Number(m[1]));
-}
-function setResidentCookie(res, id, https) {
-  res.setHeader("Set-Cookie", `${RESIDENT_COOKIE}=${sec.signToken(COOKIE_SECRET, "resident:" + id)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${30 * 24 * 3600}${https ? "; Secure" : ""}`);
-}
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // What the return letter was generated from: the point-by-point review plus the two summaries. When this changes,
 // an unedited letter is regenerated the next time staff open step 4; an edited letter is frozen until they choose.
@@ -154,8 +141,6 @@ function publicSession(s, { staff }) {
     delete out.review;
     out.staff_actions = (s.staff_actions || []).filter((a) => a.action === "letter_saved").map((a) => ({ action: a.action, created_at: a.created_at, payload: a.payload }));
     if (out.research) out.research = { ...out.research, tool_log: (out.research.tool_log || []).map((t) => ({ tool: t.tool, summary: t.summary })) };
-  } else {
-    out.resident_link = `/?ref=${encodeURIComponent(s.ref)}&key=${encodeURIComponent(s.view_key)}`;
   }
   return out;
 }
@@ -225,7 +210,7 @@ async function handle(req, res) {
 
   if (req.method === "GET" && p === "/api/health") {
     const u = store.callsToday();
-    return sendJson(res, 200, { ok: true, town: town.name, model: MODEL, review_model: REVIEW_MODEL, calls_today: u.n, daily_cap: DAILY_CAP, staff_portal: staffConfigured(), code_sections: code.count, parcels: gis.counts.parcels });
+    return sendJson(res, 200, { ok: true, town: town.name, model: MODEL, review_model: REVIEW_MODEL, calls_today: u.n, daily_cap: DAILY_CAP, staff_portal: true, code_sections: code.count, parcels: gis.counts.parcels });
   }
   if (req.method === "GET" && p === "/api/town") return sendJson(res, 200, townPublic());
   if (req.method === "GET" && p === "/api/demo") return sendJson(res, 200, DEMO);
@@ -289,13 +274,13 @@ async function handle(req, res) {
     const sketch = parseImage(body, res);
     if (sketch === false) return;
     const demoId = typeof body.demo_id === "string" ? body.demo_id.slice(0, 60) : null;
-    const resident = residentFromReq(req);
-    const { ref, viewKey } = store.createSession({ town: town.id, text, sketch, demoId, residentId: resident ? resident.id : null });
+    const { ref, viewKey } = store.createSession({ town: town.id, text, sketch, demoId, residentId: null });
     startTurn(ref);
     return sendJson(res, 202, { ref, view_key: viewKey });
   }
 
-  // Resident: read, message, submit, sketch (view key required unless staff)
+  // Resident: read, message, submit, sketch. The visit code is required for everything except the drawing and the
+  // signature image, which the (open) staff workspace shows. Only the visit code can read or change a visit here.
   m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature))?$/);
   if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
@@ -310,15 +295,11 @@ async function handle(req, res) {
     if (!REF_RE.test(ref)) return sendError(res, 404, "No visit with that code.");
     const s = store.getSession(ref);
     if (!s) return sendError(res, 404, "No visit with that code.");
-    const staff = isStaff(req);
-    if (!staff && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That visit code is not complete. It looks like " + town.refPrefix + "-2026-0107-xxxxxxxx: the reference plus the part after it.");
+    const staffPicture = req.method === "GET" && (action === "sketch" || action === "signature");
+    if (!staffPicture && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That visit code is not complete. It looks like " + town.refPrefix + "-2026-0107-xxxxxxxx: the reference plus the part after it.");
     if (req.method === "GET" && !action) {
-      if (!staff && !s.resident_id) {
-        const resident = residentFromReq(req);
-        if (resident && store.claimSession(ref, resident.id)) s.resident_id = resident.id;
-      }
       const sigCurrent = !!(s.signature && s.packet && s.signature.doc_hash === signature.docHash(s.packet));
-      return sendJson(res, 200, { ...publicSession(s, { staff }), linked_to_account: !!s.resident_id, signature_current: sigCurrent, ...(staff ? {} : { visit_code: `${s.ref}-${s.view_key}` }) });
+      return sendJson(res, 200, { ...publicSession(s, { staff: false }), signature_current: sigCurrent, visit_code: `${s.ref}-${s.view_key}` });
     }
     if (req.method === "GET" && action === "signature") {
       const img = store.getSignature(ref);
@@ -422,49 +403,6 @@ async function handle(req, res) {
     return notFound(res);
   }
 
-  // Resident accounts (email + password). Google/Apple sign-in and password reset are listed in LOGIN-TODO.md.
-  if (p.startsWith("/api/resident/")) {
-    if (COOKIE_SECRET.length < 16) return sendError(res, 503, "Accounts are not set up on this server (COOKIE_SECRET is needed).");
-    if (req.method === "POST" && p === "/api/resident/signup") {
-      if (!loginLimiter.check(ip)) return sendError(res, 429, "Too many attempts. Please wait 15 minutes.");
-      const body = await readJson(req, MAX_JSON_BYTES);
-      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-      const name = typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
-      const password = typeof body.password === "string" ? body.password : "";
-      const password2 = typeof body.password2 === "string" ? body.password2 : "";
-      if (!EMAIL_RE.test(email) || email.length > 200) return sendError(res, 400, "Please enter a valid email address.");
-      if (password.length < 8) return sendError(res, 400, "Use a password of at least 8 characters.");
-      if (password !== password2) return sendError(res, 400, "The two passwords do not match.");
-      if (store.getResidentByEmail(email)) return sendError(res, 409, "There is already an account with that email. Sign in instead.");
-      const { salt, hash } = sec.hashPassword(password);
-      const id = store.createResident({ email, name, passHash: hash, passSalt: salt });
-      setResidentCookie(res, id, https);
-      return sendJson(res, 201, { ok: true, email, name });
-    }
-    if (req.method === "POST" && p === "/api/resident/login") {
-      if (!loginLimiter.check(ip)) return sendError(res, 429, "Too many sign-in attempts. Please wait 15 minutes.");
-      const body = await readJson(req, MAX_JSON_BYTES);
-      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-      const password = typeof body.password === "string" ? body.password : "";
-      const r = store.getResidentByEmail(email);
-      // Same answer whether the email or the password is wrong.
-      if (!r || !sec.verifyPassword(password, r.pass_salt, r.pass_hash)) return sendError(res, 401, "That email and password do not match an account.");
-      store.touchResident(r.id);
-      setResidentCookie(res, r.id, https);
-      return sendJson(res, 200, { ok: true, email: r.email, name: r.name });
-    }
-    if (req.method === "POST" && p === "/api/resident/logout") {
-      res.setHeader("Set-Cookie", `${RESIDENT_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`);
-      return sendJson(res, 200, { ok: true });
-    }
-    if (req.method === "GET" && p === "/api/resident/me") {
-      const r = residentFromReq(req);
-      if (!r) return sendJson(res, 200, { signed_in: false });
-      return sendJson(res, 200, { signed_in: true, email: r.email, name: r.name, visits: store.listResidentSessions(r.id) });
-    }
-    return notFound(res);
-  }
-
   // Staff: session
   if (req.method === "POST" && p === "/api/staff/login") {
     if (!staffConfigured()) return sendError(res, 503, "The staff portal is not set up on this server yet.");
@@ -480,17 +418,17 @@ async function handle(req, res) {
     return sendJson(res, 200, { ok: true });
   }
   if (req.method === "GET" && p === "/api/staff/me") {
-    if (!staffConfigured()) return sendError(res, 503, "The staff portal is not set up on this server yet.");
-    return isStaff(req) ? sendJson(res, 200, { ok: true, review_model: REVIEW_MODEL, second_read_model: SECOND_READ_MODEL }) : sendError(res, 401, "Not signed in.");
+    return sendJson(res, 200, { ok: true, review_model: REVIEW_MODEL, second_read_model: SECOND_READ_MODEL });
   }
 
   if (p.startsWith("/api/staff/")) {
-    if (!requireStaff(req, res)) return;
     if (req.method === "GET" && p === "/api/staff/diag") {
+      if (!requireStaff(req, res)) return;
       // What can this host reach? Never echoes the key (prefix and length only).
       return sendJson(res, 200, { ...(await client.diagnose()), env_model: process.env.META_MODEL || null, node: process.version, data_dir: store.dir });
     }
     if (req.method === "POST" && p === "/api/staff/purge-demo") {
+      if (!requireStaff(req, res)) return;
       // Removes conversations that were started from the worked examples (demo_id set), so the queue can be re-seeded.
       const victims = store.listSessions().filter((x) => x.demo_id && !x.busy);
       let n = 0;
@@ -647,5 +585,5 @@ server.listen(PORT, () => {
   console.log(`citycenter (${town.name}) running at http://localhost:${PORT}`);
   console.log(`Code: ${code.count} sections from ${code.meta.source} (${code.meta.fetchedAt}); parcels ${gis.counts.parcels}, zoning polygons ${gis.counts.zones}`);
   console.log(`Model: ${MODEL} (review: ${REVIEW_MODEL}, second read: ${SECOND_READ_MODEL}) ${process.env.MODEL_API_KEY ? "key found" : "NO KEY: add MODEL_API_KEY to .env"}`);
-  console.log(`Staff portal: ${staffConfigured() ? "enabled at /staff" : "disabled (set STAFF_PASSCODE and COOKIE_SECRET)"}; data in ${store.dir}`);
+  console.log(`Staff workspace: open to everyone at /staff; maintenance tools ${staffConfigured() ? "need the passcode" : "disabled (set STAFF_PASSCODE and COOKIE_SECRET)"}; data in ${store.dir}`);
 });

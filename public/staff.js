@@ -55,17 +55,6 @@
     return wrap;
   }
 
-  // ---------- sign-in ----------
-  async function checkSession() {
-    try { await api("/api/staff/me"); $("login").classList.add("hidden"); $("app").classList.remove("hidden"); $("logout").classList.remove("hidden"); await loadQueue(); return true; }
-    catch (e) { $("login").classList.remove("hidden"); if (e.status === 503) { $("loginMsg").textContent = e.message; $("loginForm").querySelector("button").disabled = true; } return false; }
-  }
-  $("loginForm").addEventListener("submit", async function (ev) {
-    ev.preventDefault(); $("loginMsg").textContent = "";
-    try { await api("/api/staff/login", { method: "POST", body: JSON.stringify({ passcode: $("passcode").value }) }); $("passcode").value = ""; await checkSession(); }
-    catch (e) { $("loginMsg").textContent = e.message; }
-  });
-  $("logout").addEventListener("click", async function () { await api("/api/staff/logout", { method: "POST" }); location.reload(); });
 
   // ---------- queue ----------
   function setQueueMode(mode) {
@@ -81,11 +70,6 @@
   });
   $("qSearch").addEventListener("input", renderQueue);
   $("refresh").addEventListener("click", loadQueue);
-  $("purgeDemo").addEventListener("click", async function () {
-    if (!confirm("Delete every conversation that was started from the worked examples? Real visits are kept.")) return;
-    try { var r = await api("/api/staff/purge-demo", { method: "POST", body: "{}" }); $("usage").textContent = "Removed " + r.deleted + " demo conversation(s)."; loadQueue(); }
-    catch (e) { $("usage").textContent = e.message; }
-  });
   function deptName(id) { var d = (town && town.departments || []).find(function (x) { return x.id === id; }); return d ? d.name : (id || ""); }
   async function loadQueue() {
     try {
@@ -93,7 +77,7 @@
       queueRows = data.sessions;
       $("usage").textContent = "Model calls today: " + data.usage_today.n + " of " + data.daily_cap + " (" + data.usage_today.p + " in / " + data.usage_today.c + " out tokens)";
       renderQueue();
-    } catch (e) { if (e.status === 401) return checkSession(); $("usage").textContent = e.message; }
+    } catch (e) { $("usage").textContent = e.message; }
   }
   // Column heading menus: click a heading for its sort and filter options.
   // qSort: { col, dir } (null = newest first). qFilter: text for reference/request, ticked values for department/status, a range for submitted.
@@ -277,7 +261,6 @@
     if (s.resubmit_count) $("wsStatus").appendChild(el("span", { class: "chip in_review", text: "resubmitted " + s.resubmit_count + "x" }));
     if (s.changed_since_submit) $("wsStatus").appendChild(el("span", { class: "chip unclear", text: "resident is updating; not resubmitted yet" }));
     $("wsTitle").textContent = s.packet ? s.packet.title : (s.understanding ? s.understanding.summary : "");
-    $("wsResidentLink").href = s.resident_link;
     renderStepBar();
     renderStep();
   }
@@ -718,8 +701,9 @@
     try {
       town = await api("/api/town");
     } catch (e) {}
-    var ok = await checkSession();
+    // The workspace is open to everyone; no sign-in.
+    await loadQueue();
     var ref = new URLSearchParams(location.search).get("ref");
-    if (ok && ref) openSession(ref);
+    if (ref) openSession(ref);
   })();
 })();

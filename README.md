@@ -78,6 +78,6 @@ Refresh the cached public data: `npm run fetch:code` and `npm run fetch:gis`.
 
 ## Live
 
-https://citycenter-puh5.onrender.com (staff portal at `/staff`).
+https://citycenter-puh5.onrender.com (staff workspace at `/staff`, open to everyone with no sign-in so you can try both sides; residents need no account either).
 
 MIT licensed. Built by John Barlow with Claude Code; the app runs on Meta's Muse models.

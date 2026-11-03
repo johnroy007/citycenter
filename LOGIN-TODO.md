@@ -9,6 +9,8 @@ citycenter is being built in nine days for the Meta Global AI Developer Hackatho
 
 Decision recorded 2026-10-27 (Claude Code, pending John's confirmation in chat). If citycenter continues after the hackathon, the full standard applies and this file becomes the to-do list:
 
+Update 2026-11-03: John asked to remove the resident login and the staff login, so anyone can press Staff and use the workspace. Resident accounts are gone (the sign-in button, the "My visits" list and the `/api/resident/*` routes), and the staff workspace opens with no passcode. What protects visits now: a resident's visit is read or changed only with its visit code (reference plus access key); the open staff side never receives that code (the "Open the resident's view" link was removed), and it can fetch only the drawing and signature images without it. The staff passcode still guards two maintenance tools (`/api/staff/diag` and `/api/staff/purge-demo`, used by `scripts/seed-remote.js`). Because anyone can see every application on the staff side, the resident welcome screen asks people to use made-up names and details. The 2026-10-28 list below is history; if citycenter continues after the hackathon, the full standard applies again.
+
 Update 2026-10-28: John asked for residents to be able to log back in and keep working. Resident accounts now exist, built with Node built-ins (no Supabase in this stack):
 
 - [x] Email + password sign-in (`/api/resident/signup`, `/api/resident/login`; scrypt-hashed passwords; signed HttpOnly cookie, 30 days)

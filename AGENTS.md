@@ -14,12 +14,12 @@ The private planning notebook (rules digest, plan, review log, submission drafts
 
 ## How to run it locally
 1. Copy `.env.example` to `.env`; set `MODEL_API_KEY`, `STAFF_PASSCODE`, `COOKIE_SECRET`.
-2. `npm start`, open http://localhost:3000 (resident) and http://localhost:3000/staff (staff passcode).
+2. `npm start`, open http://localhost:3000 (resident) and http://localhost:3000/staff (open to everyone, no sign-in; John's decision 2026-11-03).
 3. `npm test` (offline, about 30 s). `npm run test:live` (real API, about a dollar). `node scripts/journey.js http://localhost:3000` runs the whole resident-to-staff flow over HTTP. `node scripts/seed-remote.js http://localhost:3000 [ids] [--fresh]` replays the worked examples (`--fresh` first deletes earlier demo conversations).
 4. A server started from an earlier session can keep holding port 3000; stop old `node server.js` processes before starting a new one.
 
 ## Where the important things are
-- `server.js`: routes, limits, auth (staff passcode cookie; optional resident accounts), static files, relay/health/diag.
+- `server.js`: routes, limits, auth (no sign-in anywhere: the staff workspace is open to all; the staff passcode cookie now guards only `/api/staff/diag` and `/api/staff/purge-demo`; resident accounts were removed 2026-11-03; a resident visit is read or changed only with its visit code, and the open staff side never sees that code), static files, relay/health/diag.
 - `lib/prompts.js`: the rules every model call gets and every JSON schema (no schema may have an approval, recommendation, score or likelihood field; a unit test enforces this).
 - `lib/desk.js`: the resident turn: sketch, route (with consent before every hand-off), understand, locate, research (tool loop), draft. `lib/tools.js`: the planner's tools over the code and the map. `lib/review.js`: staff steps (submission summary, code summary, considerations, ask, second read, letter generation and the derived letter kind).
 - `lib/codestore.js`, `lib/codeparse.js`, `scripts/fetch-code.js`: the town's code from Municipal Code Online (865 sections, stored verbatim; quotes are verified against it). `lib/gis.js`, `scripts/fetch-gis.js`: Washington County zoning and Utah SGID parcels (no owner names; fictional owners come from `lib/owners.js`).
@@ -29,7 +29,7 @@ The private planning notebook (rules digest, plan, review log, submission drafts
 - `relay/`: the Cloudflare Worker that forwards Meta calls, with dashboard setup steps.
 - `scripts/`: `deploy.js` (Render deploy), `render-env.js` (push settings from `.env.render-vars.local`), `probe-relay.js`, `probe-region.js`, `tunnel.js` (laptop fallback), `make-characters.js`, `make-office.js`, `seed.js`, `seed-remote.js`, `journey.js`, `try.js`.
 - `test/unit/`: offline tests (32). `test/live/`: scenario tests against the real API. `test/fixtures/scenarios.json`: 22 cases.
-- `docs/PROGRESS.md`: handoff log and the list of decisions John can change. `LOGIN-TODO.md`: what the resident accounts have and lack.
+- `docs/PROGRESS.md`: handoff log and the list of decisions John can change. `LOGIN-TODO.md`: why there are no logins, and what the login standard would need if the project continues.
 
 ## Deploys
 - Render web service `citycenter` (Starter, Oregon, 1 GB disk at `/var/data`). Live: https://citycenter-puh5.onrender.com (staff at `/staff`). Health: `/api/health`. Staff-only diagnostic: `/api/staff/diag`.

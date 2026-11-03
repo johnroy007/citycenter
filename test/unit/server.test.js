@@ -112,19 +112,34 @@ test("a session without an API key is accepted, ends in a clear error; reading n
   // Submitting without a packet is refused.
   assert.equal((await post(`/api/sessions/${ref}/submit?key=${view_key}`, {})).status, 400);
 
-  // Staff
-  assert.equal((await fetch(BASE + "/api/staff/queue")).status, 401);
+  // Staff: the workspace is open to everyone (no sign-in), but it never reveals a resident's visit code.
+  const cookie = "";
+  assert.equal((await fetch(BASE + "/api/staff/me")).status, 200);
+  const qr = await fetch(BASE + "/api/staff/queue");
+  assert.equal(qr.status, 200);
+  const qText = await qr.text();
+  assert.ok(JSON.parse(qText).sessions.length >= 1);
+  assert.ok(!qText.includes(view_key), "the queue never contains a visit code");
+  const dText = await (await fetch(`${BASE}/api/staff/sessions/${ref}`)).text();
+  const detail = JSON.parse(dText);
+  assert.equal(detail.ref, ref);
+  assert.equal(detail.view_key, undefined);
+  assert.equal(detail.resident_link, undefined);
+  assert.ok(!dText.includes(view_key), "the staff view never contains the visit code");
+  // Without the visit code nobody can read or act on the resident's side; only the drawing and signature images are open.
+  assert.equal((await post(`/api/sessions/${ref}/messages`, { text: "hello" })).status, 403);
+  assert.equal((await post(`/api/sessions/${ref}/submit`, {})).status, 403);
+  assert.equal((await post(`/api/sessions/${ref}/sign`, { name: "Someone Else", method: "typed", agree: true })).status, 403);
+  assert.equal((await fetch(`${BASE}/api/sessions/${ref}/sketch`)).status, 404, "no drawing on this visit, but not refused");
+  assert.equal((await fetch(`${BASE}/api/sessions/${ref}/signature`)).status, 404, "no signature yet, but not refused");
+  // The maintenance tools still need the passcode.
+  assert.equal((await fetch(BASE + "/api/staff/diag")).status, 401);
+  assert.equal((await post("/api/staff/purge-demo", {})).status, 401);
   let lr = await post("/api/staff/login", { passcode: "wrong" });
   assert.equal(lr.status, 401);
   lr = await post("/api/staff/login", { passcode: PASS });
   assert.equal(lr.status, 200);
-  const cookie = lr.headers.get("set-cookie").split(";")[0];
   assert.match(lr.headers.get("set-cookie"), /HttpOnly/);
-  const q = await (await fetch(BASE + "/api/staff/queue", { headers: { cookie } })).json();
-  assert.ok(q.sessions.length >= 1);
-  const detail = await (await fetch(`${BASE}/api/staff/sessions/${ref}`, { headers: { cookie } })).json();
-  assert.match(detail.resident_link, /\?ref=TC-/);
-  assert.equal(detail.view_key, undefined);
   // Building considerations needs the model: clean error, nothing corrupted.
   let cr = await post(`/api/staff/sessions/${ref}/considerations`, {}, cookie);
   assert.equal(cr.status, 500);

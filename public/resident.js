@@ -251,7 +251,6 @@
     clearTimeout(state.timer);
     try {
       var s = await api("/api/sessions/" + encodeURIComponent(state.ref) + "?key=" + encodeURIComponent(state.key));
-      if (!state.session || state.session.status !== s.status || (!!state.session.changed_since_submit) !== (!!s.changed_since_submit)) { if (account.signed_in) loadAccount(); }
       state.session = s;
       render(s);
       if (s.busy) state.timer = setTimeout(poll, 1500);
@@ -457,14 +456,10 @@
       el("p", { text: "Tell me what you're trying to do, in your own words. I'll find the right desk, pull up your parcel on the county map, read the real city code, and prepare the paperwork. City staff make every decision." }),
       el("div", { class: "examples", id: "welcomeExamples" }),
       el("p", { class: "small", text: "This screen shows the work as it happens. Use the remote to look at the parcel map, the code review, what you've given us, and the paperwork." }),
+      el("p", { class: "small", text: "This is a public demo: the staff workspace is open to everyone, so anything you type here can be seen there. Please use made-up names and details." }),
       el("p", { class: "small", id: "demoNote", text: "" }),
     ]);
     screen.appendChild(w);
-    if (account.signed_in && account.visits && account.visits.length) {
-      var box = el("div", { class: "visits" }, [el("h2", { text: "Your visits" })]);
-      account.visits.slice(0, 8).forEach(function (v) { box.appendChild(visitRow(v)); });
-      w.insertBefore(box, w.children[2]);
-    }
     [["I want to split my lot and sell the back half to my son.", "lot split"], ["Can I keep a rooster at my house?", "rooster"], ["I need a building permit for a mother-in-law suite.", "casita"], ["My bank needs a zoning verification letter.", "bank letter"]].forEach(function (x) {
       var b = el("button", { type: "button", class: "quiet", text: x[0] });
       b.addEventListener("click", function () { $("text").value = x[0]; $("text").focus(); });
@@ -742,47 +737,6 @@
   function clearPad() { if (pad.canvas) setupPad(pad.canvas); }
 
 
-  // ---------- resident account ----------
-  var account = { signed_in: false, visits: [] };
-  function visitRow(v) {
-    var row = el("div", { class: "v" }, [
-      el("div", null, [el("div", { class: "vt", text: v.title || v.preview || v.ref }), el("div", { class: "small", text: v.ref + " · " + fmt(v.updated_at) })]),
-      chip(v.changed_since_submit ? "unclear" : v.status, v.changed_since_submit ? "Updated; not resubmitted" : (STATUS_LABEL[v.status] || v.status)),
-    ]);
-    row.addEventListener("click", function () { $("accountPanel").classList.add("hidden"); if (state.ref !== v.ref) { resetVisit(); openSession(v.ref, v.view_key); } });
-    return row;
-  }
-  async function loadAccount() {
-    try { account = await api("/api/resident/me"); } catch (e) { account = { signed_in: false, visits: [] }; }
-    $("accountBtn").textContent = account.signed_in ? "My visits" : "Sign in";
-    $("accountOut").classList.toggle("hidden", !account.signed_in);
-    $("accountIn").classList.toggle("hidden", !!account.signed_in);
-    if (account.signed_in) {
-      $("accountWho").textContent = (account.name ? account.name + " · " : "") + account.email;
-      var ul = $("visitList"); ul.textContent = "";
-      (account.visits || []).forEach(function (v) { ul.appendChild(el("li", null, [visitRow(v)])); });
-      if (!(account.visits || []).length) ul.appendChild(el("li", { class: "small", text: "No visits yet. Start one below and it will be saved to your account." }));
-    }
-    if (state.channel === "welcome") renderScreen(null);
-  }
-  function accountMsg(text) { var m = $("accountMsg"); m.textContent = text || ""; m.classList.toggle("hidden", !text); }
-  $("accountBtn").addEventListener("click", function () { $("demoPanel").classList.add("hidden"); $("accountPanel").classList.toggle("hidden"); accountMsg(""); });
-  ["accountClose", "accountClose2", "accountClose3"].forEach(function (id) { $(id).addEventListener("click", function () { $("accountPanel").classList.add("hidden"); }); });
-  $("tabSignIn").addEventListener("click", function () { $("signInForm").classList.remove("hidden"); $("signUpForm").classList.add("hidden"); $("tabSignIn").classList.add("active"); $("tabSignUp").classList.remove("active"); accountMsg(""); });
-  $("tabSignUp").addEventListener("click", function () { $("signUpForm").classList.remove("hidden"); $("signInForm").classList.add("hidden"); $("tabSignUp").classList.add("active"); $("tabSignIn").classList.remove("active"); accountMsg(""); });
-  $("signInForm").addEventListener("submit", async function (ev) {
-    ev.preventDefault();
-    try { await api("/api/resident/login", { method: "POST", body: JSON.stringify({ email: $("siEmail").value, password: $("siPass").value }) }); $("siPass").value = ""; await loadAccount(); if (state.ref) poll(); }
-    catch (e) { accountMsg(e.message); }
-  });
-  $("signUpForm").addEventListener("submit", async function (ev) {
-    ev.preventDefault();
-    if ($("suPass").value !== $("suPass2").value) return accountMsg("The two passwords do not match.");
-    try { await api("/api/resident/signup", { method: "POST", body: JSON.stringify({ name: $("suName").value, email: $("suEmail").value, password: $("suPass").value, password2: $("suPass2").value }) }); $("suPass").value = ""; $("suPass2").value = ""; await loadAccount(); if (state.ref) poll(); }
-    catch (e) { accountMsg(e.message); }
-  });
-  $("signOut").addEventListener("click", async function () { try { await api("/api/resident/logout", { method: "POST", body: "{}" }); } catch (e) {} $("accountPanel").classList.add("hidden"); await loadAccount(); });
-
   // ---------- demo mode ----------
   $("demoBtn").addEventListener("click", async function () {
     $("demoPanel").classList.toggle("hidden");
@@ -853,7 +807,6 @@
       if (window.speechSynthesis) speechSynthesis.getVoices();
     } catch (e) { $("formMsg").textContent = "Could not load the town: " + e.message; }
     renderScreen(null); renderRemote(null);
-    await loadAccount();
     var params = new URLSearchParams(location.search);
     if (!(params.get("ref") && params.get("key"))) {
       $("chat").appendChild(greetingItem(new Date().toISOString()));

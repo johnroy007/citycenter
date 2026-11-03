@@ -1,4 +1,4 @@
-// Resident accounts and working after submission. Boots the real server with NO Meta key and a temp data folder.
+// Visits without accounts, and working after submission. Boots the real server with NO Meta key and a temp data folder.
 "use strict";
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -48,53 +48,16 @@ test.after(() => {
   if (child) child.kill();
 });
 
-test("a resident can create an account, sign in, and see their visits; the key still works without an account", async () => {
-  let r = await post("/api/resident/signup", { email: "pat@example.com", password: "longenough1", password2: "different1" });
-  assert.equal(r.status, 400, "mismatched passwords are refused");
-  r = await post("/api/resident/signup", { email: "not-an-email", password: "longenough1", password2: "longenough1" });
-  assert.equal(r.status, 400);
-  r = await post("/api/resident/signup", { name: "Pat", email: "Pat@Example.com", password: "longenough1", password2: "longenough1" });
-  assert.equal(r.status, 201);
-  const cookie = cookieOf(r);
-  assert.match(cookie, /^cc_resident=/);
-  r = await post("/api/resident/signup", { email: "pat@example.com", password: "longenough1", password2: "longenough1" });
-  assert.equal(r.status, 409, "duplicate email");
-  r = await post("/api/resident/login", { email: "pat@example.com", password: "wrongwrong" });
-  assert.equal(r.status, 401);
-  r = await post("/api/resident/login", { email: "pat@example.com", password: "longenough1" });
-  assert.equal(r.status, 200);
-  const me = await (await get("/api/resident/me", cookie)).json();
-  assert.equal(me.signed_in, true);
-  assert.equal(me.email, "pat@example.com");
-  assert.equal(me.visits.length, 0);
-  // A visit started while signed in belongs to the account
-  r = await post("/api/sessions", { text: "I want to build a fence." }, cookie);
+test("resident accounts are gone; the visit code alone opens a visit", async () => {
+  for (const p of ["/api/resident/signup", "/api/resident/login", "/api/resident/logout"]) assert.equal((await post(p, { email: "pat@example.com", password: "longenough1", password2: "longenough1" })).status, 404, p);
+  assert.equal((await get("/api/resident/me")).status, 404);
+  const r = await post("/api/sessions", { text: "I want to build a fence." });
   assert.equal(r.status, 202);
   const { ref, view_key } = await r.json();
-  await settled(ref, view_key);
-  const me2 = await (await get("/api/resident/me", cookie)).json();
-  assert.equal(me2.visits.length, 1);
-  assert.equal(me2.visits[0].ref, ref);
-  assert.equal(me2.visits[0].view_key, view_key);
-  // The reference + key still opens it with no account at all
-  const anon = await (await get(`/api/sessions/${ref}?key=${view_key}`)).json();
-  assert.equal(anon.ref, ref);
-  assert.equal(anon.linked_to_account, true);
-  assert.equal(anon.resident_id, undefined, "account ids are not exposed");
-  // A visit started anonymously is attached when opened while signed in
-  r = await post("/api/sessions", { text: "Can I keep chickens?" });
-  const second = await r.json();
-  await settled(second.ref, second.view_key);
-  const before = await (await get("/api/resident/me", cookie)).json();
-  assert.equal(before.visits.length, 1);
-  await get(`/api/sessions/${second.ref}?key=${second.view_key}`, cookie);
-  const after = await (await get("/api/resident/me", cookie)).json();
-  assert.equal(after.visits.length, 2);
-  // Sign out
-  r = await post("/api/resident/logout", {}, cookie);
-  assert.equal(cookieOf(r), "cc_resident=", "sign-out clears the cookie");
-  const out = await (await get("/api/resident/me")).json();
-  assert.equal(out.signed_in, false);
+  const s = await settled(ref, view_key);
+  assert.equal(s.ref, ref);
+  assert.equal(s.visit_code, `${ref}-${view_key}`);
+  assert.equal(s.resident_id, undefined);
 });
 
 test("after submitting, the resident can keep editing and talking; the application is resubmitted as an update", async () => {
@@ -156,9 +119,7 @@ test("after submitting, the resident can keep editing and talking; the applicati
   assert.equal(s.status, "submitted", "status stays as staff last saw it");
   assert.equal(s.changed_since_submit, true);
   // Staff see the flags in the queue
-  const login = await post("/api/staff/login", { passcode: "test-passcode-123" });
-  const staffCookie = cookieOf(login);
-  const q = await (await get("/api/staff/queue", staffCookie)).json();
+  const q = await (await get("/api/staff/queue")).json();
   const row = q.sessions.find((x) => x.ref === ref);
   assert.equal(row.resubmit_count, 1);
   assert.equal(row.changed_since_submit, true);

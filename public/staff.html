@@ -13,21 +13,10 @@
   <nav>
     <a href="/">Resident counter</a>
     <a href="/trust-gap">Local Government Trust Gap Model</a>
-    <button type="button" class="quiet hidden" id="logout">Sign out</button>
   </nav>
 </header>
 
-<section class="card" id="login" style="max-width:520px;margin:40px auto">
-  <h2>Staff sign-in</h2>
-  <p class="small">Enter the staff passcode. The agent lays out what to consider and where it is written; you make every decision.</p>
-  <form id="loginForm" class="row">
-    <input type="password" id="passcode" placeholder="Passcode" style="max-width:260px" autocomplete="current-password">
-    <button type="submit">Sign in</button>
-    <span class="small" id="loginMsg"></span>
-  </form>
-</section>
-
-<div id="app" class="hidden">
+<div id="app">
   <!-- Queue across the top: full when nothing is open, half when an application is selected, collapsed on request -->
   <section class="qpanel q-full" id="qpanel">
     <div class="qtools">
@@ -36,7 +25,6 @@
       <span class="small qtip">Click a column heading to sort or filter</span>
       <button type="button" class="quiet hidden" id="qClear" title="Remove every sort and filter set from the column headers">Clear sort &amp; filters</button>
       <button type="button" class="quiet" id="refresh">Refresh</button>
-      <button type="button" class="quiet" id="purgeDemo" title="Delete every conversation that came from the worked examples">Clear demo</button>
       <button type="button" class="quiet" id="qToggle" title="Show more or less of the queue">▲</button>
     </div>
     <div class="qbody">
@@ -50,7 +38,7 @@
   <div id="workspace" class="ws hidden">
     <div class="workspace-head">
       <div class="row"><span class="refbox" id="wsRef"></span><span id="wsStatus"></span><span class="small" id="wsTitle"></span></div>
-      <div class="row"><a class="small" id="wsResidentLink" href="#" target="_blank" rel="noopener">Open the resident's view</a><span class="small" id="wsMsg"></span></div>
+      <div class="row"><span class="small" id="wsMsg"></span></div>
     </div>
     <nav class="stepbar" id="stepbar" aria-label="Review steps">
       <button type="button" class="stepbtn" data-step="1"><span class="num">1</span><span class="lbl">Review submitted documents</span><span class="dot" id="dot1"></span></button>

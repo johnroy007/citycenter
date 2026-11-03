@@ -7,19 +7,21 @@
 
 - **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (passcode in Render's dashboard / John's `.env`). If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` signed in as staff: `api_base` must be the worker address and `models` must list 9.
 - **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff. Stop any old `node server.js` first.
+- **Demo video:** a full 2:55 cut exists (built 2026-11-02 from the live Trust City site, visit TC-2026-0138), with a stand-in computer voice. It is at `video/out/citycenter-demo.mp4` on John's laptop only (git-ignored, 60 MB); rebuild it anywhere with `node video/capture.js` then `node video/build.js`. See `video/README.md`.
 - **Last updated:** 2026-11-02 (evening) by Claude Code on John's laptop (computer name JOHN)
 
 ## RESUME POINT
 **First:** the live demo examples were written while the town was still called Hildale, so their stored conversations and paperwork still say the old name (and use HC- references). Once John says yes, run `node scripts/seed-remote.js https://citycenter-puh5.onrender.com --fresh` (it deletes the old demo visits and replays all 13; roughly $3 to $5 of model calls; John's own visits are kept). Then tell the video session (citycenter-84) that the reseed is done, if it is still running. After that, the earlier plan stands:
 
-Nothing is half-built. The next session should start with John's own fresh-eyes pass through the live site (resident side, then staff side), fix whatever he reports, and then help with the submission package: the video (script and form text in the notebook, `notes/submission-draft.md`, written 2026-10-28 and now out of date on the staff side and the signature; refresh it), the README check, and the Devpost/Cerebral Valley form, all before 2026-11-04 9 PM ET.
+Nothing is half-built. The next session should start with John's own fresh-eyes pass through the live site (resident side, then staff side), fix whatever he reports, and then help with the submission package: the video (built; John records his own narration with `node video/recorder.js`, http://localhost:3100, presses Build, watches it, then uploads `video/out/citycenter-demo.mp4` to YouTube with `video/out/citycenter-demo.srt` as captions; if the app's screens change before then, re-record with `node video/capture.js` first), the README check, and the Devpost/Cerebral Valley form, all before 2026-11-04 9 PM ET.
 
 How the hosting works, for whoever picks this up: the app's Meta client reads `META_API_BASE` and `META_RELAY_SECRET` and sends every call to the Cloudflare Worker `citycenter-relay` in John's Cloudflare account (code in `relay/worker.js`). Check it with `node scripts/probe-relay.js <worker address>` from the laptop or `/api/staff/diag` on the live site. Change Render settings by editing the git-ignored `.env.render-vars.local` and running `node scripts/render-env.js --file .env.render-vars.local`. Deploys after a push need `npm run deploy`. Fallbacks: `relay/deno.js` on Deno Deploy; `npm run tunnel` from the laptop.
 
 ## Waiting on John
 - **Say yes to replacing the live demo examples** (see RESUME POINT). The automatic safety check would not let Claude delete live data without John's OK.
 - **Fresh-eyes pass of the live site** (resident, then staff) and a list of changes.
-- **Submission package before 2026-11-04 9 PM ET:** record the video (refresh the script first), check the README, fill the form. The town is now shown as Trust City everywhere (John, 2026-11-02), which settles the naming question.
+- **Record the video narration (about 20 minutes):** run `node video/recorder.js` in the citycenter folder, open http://localhost:3100, read each of the 17 lines, press Build the video, watch it. Then upload it to YouTube (public or unlisted) and put the link in the submission form. Also tell Claude any wording changes to the script.
+- **Submission package before 2026-11-04 9 PM ET:** check the README, fill the form. The town is now shown as Trust City everywhere (John, 2026-11-02), which settles the naming question.
 - **Optional:** three photographed hand sketches to replace the computer-generated ones in `public/sketches/`; corrections to the decisions list below; Discord housekeeping from the notebook.
 - **After judging:** cancel the Render Starter instance (~$7/month) and delete the Cloudflare worker.
 
@@ -72,6 +74,12 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-02 (evening) — Claude Code on John's laptop — the demo video
+- Built a scripted, repeatable 3-minute video in `video/` (no npm packages): a robot drives Chrome through the live site (resident lot split, signing, the staff's four steps, the letter back), the script lives in `video/scenes.js` (John's "Do you trust your government?" opening, about 91,000 local governments per the 2022 Census of Governments), seven opening illustrations made with Muse Image (`video/art/`), labels naming the Meta model at work, a "▶▶ N× speed" badge on sped-up waits, a stand-in Windows voice, and a captions file. `video/recorder.js` is a local page for John to record each line and rebuild. His recordings save to the notebook (`citycenter-notes/video-voice/`) so they follow him to other laptops.
+- App fixes found while filming (all deployed and checked live): the signing panel no longer scrolls the whole page; the staff view now gets the signature check (it said "changed after signing" on every signed application); the Muse Wonder second read had too small an answer budget and failed on longer applications ("ran out of room"), now 12,000 tokens.
+- Privacy: the robot hides internet addresses on screen while recording (the staff signature record shows the signer's address, which would have been John's home connection).
+- Coordinated with the parallel session that renamed the town to Trust City; the final take was recorded after that deploy.
 
 ### 2026-11-02 (evening): Claude Code on John's laptop: Trust City, staff heading menus, staff header
 - John: rename the town to Trust City, keeping all the maps and ordinances. The config and data folder are now `data/towns/trust-city(.json)`. `sourceName` plus `renameText`/`renameDeep` in `lib/townconfig.js` swap the name as the code and map data load (never in web addresses). The letterhead, contacts, citation and data credits say Trust City. References are now TC- (HC- still opens). README, demo and scenario notes updated. A new unit test checks that no loaded code text still has the old name and that quotes with the new name verify (33 of 33 pass).

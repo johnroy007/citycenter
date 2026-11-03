@@ -88,7 +88,7 @@ Refresh the cached public data: `npm run fetch:code` and `npm run fetch:gis`.
 - `public/` the counter and the workspace (plain HTML, CSS and JS, rendered with `textContent` only).
 - `data/towns/trust-city.json` the town config; `data/towns/trust-city/` the cached code and map layers; `data/demo.json` the worked examples.
 - `test/fixtures/scenarios.json` the 22 scenario cases; `docs/PROGRESS.md` the build log and the list of placeholder decisions.
-- `relay/` a tiny forwarding script (Cloudflare Worker) the hosted copy uses to reach Meta's API, because Meta's service refused most calls from the host's own network. It carries the same calls unchanged; see `relay/README.md`.
+- `relay/` a forwarding script from early in the event, when the hosted copy could not reach Meta's API reliably. It is no longer used: the live site calls Meta directly.
 
 ## Live
 

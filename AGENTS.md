@@ -10,7 +10,7 @@ The private planning notebook (rules digest, plan, review log, submission drafts
 - Meta Model API (`lib/meta.js` is the only caller): `muse-spark-1.3` for every desk and staff step (structured output, tool calling, image input); `sam-3.1` for drawing outlines; `muse-voice-transcribe-1.0` for the microphone; `muse-wonder-1.0` for the staff second read; `muse-image-1.0` generated the characters and the office background (once, via scripts).
 - Front end: plain HTML/CSS/JS in `public/`, rendered with `textContent` only (never innerHTML). The page's Content-Security-Policy blocks inline `style` attributes; set styles through `element.style`.
 - Storage: one SQLite file (`data/runtime/citycenter.sqlite`, git-ignored; `/var/data` on Render).
-- Hosting: Render web service, with Meta calls routed through a Cloudflare Worker relay (see Deploys).
+- Hosting: Render web service, calling Meta directly (see Deploys).
 
 ## How to run it locally
 1. Copy `.env.example` to `.env`; set `MODEL_API_KEY`, `STAFF_PASSCODE`, `COOKIE_SECRET`.
@@ -26,7 +26,7 @@ The private planning notebook (rules digest, plan, review log, submission drafts
 - `lib/signature.js`: electronic signature helpers (typed SVG, PNG check, document hash). `lib/security.js`: cookies, tokens, scrypt passwords, rate limits, headers. `lib/store.js`: SQLite schema and migrations (new columns are added on open).
 - `data/towns/trust-city.json` (cached data in `data/towns/trust-city/`): everything town-specific (name, `sourceName`, reference prefix `TC`): departments and characters, process tiers, application types, wording, office letterhead, GIS and code URLs. `data/demo.json`: the 13 worked examples. `public/characters/`, `public/office/`: generated art.
 - `public/resident.js`, `public/index.html`: the office scene (history, character, TV with remote). `public/staff.js`, `public/staff.html`: the reviewer workspace. `public/form.js`: the application form, shared by both. `public/trust-gap.html` (with `trust-gap.js`, `trust-gap.css`; served at `/trust-gap`): John's Local Government Trust Gap Model, an illustrative interactive chart linked from the top bar; the chart is drawn on a plain canvas because the security policy allows no outside scripts.
-- `relay/`: the Cloudflare Worker that forwards Meta calls, with dashboard setup steps.
+- `relay/`: an old Cloudflare Worker forwarder, no longer used (see Deploys).
 - `scripts/`: `deploy.js` (Render deploy), `render-env.js` (push settings from `.env.render-vars.local`), `probe-relay.js`, `probe-region.js`, `tunnel.js` (laptop fallback), `make-characters.js`, `make-office.js`, `seed.js`, `seed-remote.js`, `journey.js`, `try.js`.
 - `public/privacy.html`: privacy policy and end-user terms (Meta's terms require both, plus 18+). `data/towns/trust-city/NOTICE.md`: data credits, license and disclaimer (UGRC's CC BY 4.0 terms require them; the MIT license does not cover `data/towns/`).
 - `test/unit/`: offline tests (34). `test/live/`: scenario tests against the real API. `test/fixtures/scenarios.json`: 22 cases.
@@ -35,7 +35,7 @@ The private planning notebook (rules digest, plan, review log, submission drafts
 ## Deploys
 - Render web service `citycenter` (Starter, Oregon, 1 GB disk at `/var/data`). Live: https://citycenter-puh5.onrender.com (staff at `/staff`). Health: `/api/health`. Staff-only diagnostic: `/api/staff/diag`.
 - Render's auto-deploy on push does not fire for this service. After pushing, run `npm run deploy` (uses `RENDER_API_KEY` from the git-ignored `.env.render.local`).
-- Meta's API refuses most calls from Render's own network, so the app sends every Meta call through a Cloudflare Worker in John's Cloudflare account (`citycenter-relay`; code in `relay/worker.js`; the worker checks a shared secret). Render's environment holds `META_API_BASE` (the worker address) and `META_RELAY_SECRET`. To change Render settings, edit the git-ignored `.env.render-vars.local` and run `node scripts/render-env.js --file .env.render-vars.local` (it redeploys). `node scripts/probe-relay.js <worker address>` checks the relay from the laptop.
+- The live site calls Meta directly. From 2026-10-28 to 2026-11-03 it went through a Cloudflare Worker (`relay/`) because Meta's API refused most calls from Render's network. Direct calls worked 16 of 16 times on 2026-11-03, so the relay was turned off. Do not turn it back on without asking Meta first: its terms bar evading access controls. To change Render settings, edit the git-ignored `.env.render-vars.local` and run `node scripts/render-env.js --file .env.render-vars.local` (it redeploys).
 - Secrets live only in `.env*` files (git-ignored) and in Render's and Cloudflare's dashboards.
 
 ## Project rules

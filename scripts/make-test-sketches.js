@@ -198,8 +198,8 @@ function jessopSketch() {
   const X = 140, Y = 110, W = 718, H = 400, F = W / 276;
   r.rect(X, Y, W, H, { t: 3 });
   r.text(X + W / 2 - 60, Y - 40, "276 FT", { scale: 4 });
-  r.text(X - 125, Y + H / 2 - 12, "154 FT", { scale: 4 });
-  r.text(X + W + 14, Y + H / 2 - 12, "154 FT", { scale: 4 });
+  r.text(X - 122, Y + H / 2 - 12, "154 FT", { scale: 3 });
+  r.text(X + W + 12, Y + H / 2 - 12, "154 FT", { scale: 3 });
   const S = X + Math.round(146 * F);
   r.line(S, Y, S, Y + H, { t: 2, dash: 14 });
   r.text(S + 20, Y + H - 40, "NEW LINE 154 FT", { scale: 3 });

@@ -165,7 +165,11 @@ function captionsFor(sc, start, narrSeconds) {
   const tot = () => list.reduce((s, sc) => s + Math.max(sc.min || 3, PRE + narr[sc.id].seconds + POST), 0);
   if (!ONLY && tot() > MAX_TOTAL) { POST = 0.35; PRE = 0.25; }
   if (!ONLY && tot() > MAX_TOTAL) {
-    const tempo = sumN / (MAX_TOTAL - list.length * (PRE + POST));
+    // Find the smallest speed-up that fits, remembering scenes held to a minimum length don't shrink.
+    const fitLen = (tp) => list.reduce((s2, sc) => s2 + Math.max(sc.min || 3, PRE + narr[sc.id].seconds / tp + POST), 0);
+    let lo = 1, hi = 1.5;
+    while (hi - lo > 0.0005) { const mid = (lo + hi) / 2; if (fitLen(mid) > MAX_TOTAL - 0.3) lo = mid; else hi = mid; }
+    const tempo = hi;
     if (tempo > 1.12) throw new Error(`The narration is ${sumN.toFixed(0)} s, too long for 3 minutes even slightly sped up. Shorten some lines in video/scenes.js.`);
     log(`Narration runs long; speeding the voice up ${((tempo - 1) * 100).toFixed(0)}% to fit 3:00.`);
     for (const sc of list) { const n = narr[sc.id], f2 = n.file.replace(/\.wav$/, ".fit.wav"); ff(["-i", n.file, "-af", `atempo=${tempo.toFixed(4)}`, f2]); n.file = f2; n.seconds = duration(f2); }

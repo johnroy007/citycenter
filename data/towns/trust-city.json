@@ -37,7 +37,7 @@
       "where": "PARCEL_CITY='Hildale'",
       "idField": "PARCEL_ID",
       "addressField": "PARCEL_ADD",
-      "credit": "Parcels: State of Utah, SGID (no owner names are published)"
+      "credit": "Parcels: UGRC SGID (data modified), CC BY 4.0"
     },
     "lir": {
       "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington_LIR/FeatureServer/0",
@@ -239,7 +239,7 @@
       "role": "land use planner",
       "live": true,
       "handles": "zoning questions, zoning verification letters, land use applications (lot splits, conditional uses, variances, rezones), zoning complaints",
-      "intro": "Hi, I am Juniper with the Planning & Zoning Department. I can help you get information, prepare applications, and send structured questions to the City Staff to help you get answers you can rely on. Give me one second while I review the information you provided..."
+      "intro": "Hi, I am Juniper, an AI assistant with the Planning & Zoning Department. I can help you get information, prepare applications, and send structured questions to the City Staff to help you get answers you can rely on. Give me one second while I review the information you provided..."
     },
     {
       "id": "building",
@@ -498,7 +498,7 @@
   },
   "notes": {
     "fictionalOwners": "Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.",
-    "dataCredits": "Code: Trust City Code (municipalcodeonline.com). Zoning: Washington County GIS. Parcels: State of Utah, SGID."
+    "dataCredits": "Data sources: UGRC SGID (data modified; CC BY 4.0, creativecommons.org/licenses/by/4.0/), Washington County GIS, and the town's published code on municipalcodeonline.com."
   },
   "office": {
     "department": "Planning & Zoning Department",

@@ -118,6 +118,11 @@ test("after submitting, the resident can keep editing and talking; the applicati
   s = await settled(ref, view_key);
   assert.equal(s.status, "submitted", "status stays as staff last saw it");
   assert.equal(s.changed_since_submit, true);
+  // The open staff side never carries the visit code or where the signer was
+  const staffView = await (await get(`/api/staff/sessions/${ref}`)).text();
+  assert.ok(!staffView.includes(view_key), "no visit code on the staff side");
+  assert.match(staffView, /visit code hidden/);
+  assert.ok(!/"ip"|user_agent/.test(staffView), "no signer address on the staff side");
   // Staff see the flags in the queue
   const q = await (await get("/api/staff/queue")).json();
   const row = q.sessions.find((x) => x.ref === ref);
@@ -136,6 +141,9 @@ test("staff can clear demo conversations; real visits stay", async () => {
   assert.ok(j.deleted >= 1);
   assert.equal((await get(`/api/sessions/${demo.ref}?key=${demo.view_key}`)).status, 404);
   assert.equal((await get(`/api/sessions/${real.ref}?key=${real.view_key}`)).status, 200);
+  const all = await (await post("/api/staff/purge-demo", { all: true }, cookieOf(login))).json();
+  assert.ok(all.deleted >= 1);
+  assert.equal((await get(`/api/sessions/${real.ref}?key=${real.view_key}`)).status, 404);
 });
 
 test("a visit code (reference plus key in one string) opens the visit; the bare reference does not", async () => {

@@ -2,7 +2,21 @@
 
 A resident walks up to a cartoon counter and says what they want to do with their land. The help desk finds the right department, pulls up the parcel on the county map, reads the city's real code, and prepares the paperwork: a zoning verification request, an application set, or a complaint report. City staff open it in a reviewer workspace that lays out every consideration with the exact code text beside it. **The agent packages and prepares. City staff decide.**
 
-Built from scratch during the Meta Global AI Developer Hackathon (Oct 26 to Nov 4, 2026). Entry for the Indie track.
+Entry for the Indie track of the Meta Global AI Developer Hackathon (Oct 26 to Nov 4, 2026).
+
+## Judges: start here
+
+1. Open https://citycenter-puh5.onrender.com and press **Examples**, then choose Devon's lot split. It plays the resident's side while the desk answers live. A full example takes about five minutes, because each planner reply takes a minute or two.
+2. Or type your own request. Try "Can I keep a rooster at 595 E 1400 N?"
+3. Open https://citycenter-puh5.onrender.com/staff (no sign-in), pick a Submitted application, and walk the four steps across the bar. Opening a step for the first time runs the models, which can take up to two minutes.
+
+This is a shared public demo. Please use made-up names and details. Planning & Zoning is the working desk; the other desks route residents and say they are not built out yet.
+
+## Built during the hackathon
+
+Everything in this repository was written during the event, starting with the first commit on Oct 27, 2026: the app, the agents and their tools, the tests, the video scripts and the Muse Image art. Nothing was carried over from an earlier project.
+
+Not ours: the town's code and the county and state map data (see "Real data, invented people"). The app has no third-party code packages.
 
 ## What it does
 
@@ -10,21 +24,21 @@ Built from scratch during the Meta Global AI Developer Hackathon (Oct 26 to Nov 
 - A front desk character (Marlowe) listens, routes to the right department, and flags zoning implications even when the resident asked for "a building permit".
 - The planner character (Juniper) locates the parcel from a street address, reads the zone from the official zoning layer, researches the real code with tools, works out which **process tier** the code provides (no application, building permit, zoning verification, administrative, Planning Commission, variance, City Council, or enforcement), and prepares the packet.
 - The moment: *"It looks like you need a zoning map amendment and a lot split application. I have prepared them for your review. Hit Submit, edit them, or tell me what to change."* Residents can edit fields directly or just say what to change.
-- Drawings: a napkin sketch, a hand drawing, an engineered site plan or a page of building plans can be attached and is read for dimensions and labels.
+- Drawings: a sketch, an engineered site plan or a page of building plans can be attached and is read for dimensions and labels. The sample sketches in this repo are computer-made stand-ins.
 - Voice: hold the microphone and talk; the character talks back (text and voice).
 - Worked examples for judges: a corner button plays a resident's side of the conversation while the desk answers live.
 
 **Staff side (the reviewer workspace)**
-- A rail of considerations across the top, one per thing a Land Use Administrator would check, each tied to a code section with a verified quote.
-- The document on the left with the active section highlighted; the evidence on the right (code text, numbers compared, parcel map, drawing reading).
-- The agent strip along the bottom says what the code requires, what the packet says, and how staff normally verify it. Staff mark each consideration Met, Not met, Cannot verify or N/A, add their own, and ask questions that the agent answers from the code.
-- A second reader (Muse Wonder) checks the list against the code text.
-- Letters are drafted from the staff's marks and words, edited by staff, and sent to the resident's conversation.
+- A queue across the top, then four steps: what was submitted, the code that applies, the point-by-point review, and the return document.
+- Step 1 shows the submitted documents with the facts pulled out. Step 2 summarizes the code sections that matter, with a verified quote from each.
+- Step 3 lists the points a Land Use Administrator would check, each with the requirement, a verified quote where one exists, what the packet says and how staff normally verify it. Staff mark each point Approve, Deny, Needs info or N/A, add comments, and ask questions that the agent answers from the code.
+- A second reader (Muse Wonder) checks the list against the code text and reports what it thinks was missed or not supported.
+- The return letter is drafted from the staff's marks and words, can be edited, and is sent to the resident's conversation with a note that AI drafted it.
 
 **Guardrails, enforced in code**
-- Every quote the model produces is checked against the stored code text before it is shown. Unverifiable quotes are dropped and marked.
+- Code quotes in the application and the staff review are checked against the stored code text before they are shown. Unverifiable quotes are dropped and marked. Letters are written from those checked quotes, and staff read them before sending.
 - No schema contains a recommendation, approval, score or likelihood field (a unit test asserts this). Predictive wording is scrubbed from replies.
-- Numbers in drafted statements must come from the resident, the parcel record or the cited code; anything else becomes [BLANK].
+- Numbers in drafted narrative statements must come from the resident, the parcel record or the cited code; anything else becomes [BLANK].
 - Text in a resident's message or on a drawing is data, never an instruction.
 
 ## Which Meta models do what
@@ -37,17 +51,17 @@ Built from scratch during the Meta Global AI Developer Hackathon (Oct 26 to Nov 
 | Outlining the drawing | `sam-3.1` | Responses API, text-prompted boxes |
 | Resident speaks | `muse-voice-transcribe-1.0` | `POST /v1/asr/transcribe` (WAV built in the browser) |
 | Second read of the considerations | `muse-wonder-1.0` | Chat Completions |
-| Characters | `muse-image-1.0` | Generated once during the event (`scripts/make-characters.js`) |
+| Characters, office background, video art | `muse-image-1.0` | Generated once during the event (`scripts/make-characters.js`, `scripts/make-office.js`, `video/make-art.js`) |
 
-Not Meta, on purpose: the spoken reply uses the browser's own voice (Meta lists no text-to-speech model); quote verification, lot arithmetic and map geometry are plain code so they cannot hallucinate.
+Not Meta, on purpose: the spoken reply uses the browser's own voice and the demo video's narration uses a Google voice (Meta lists no text-to-speech model); quote verification, lot arithmetic and map geometry are plain code so they cannot hallucinate. The parcel is found by plain code before the planner starts, and the planner can look up other parcels with a tool.
 
 ## Real data, invented people
 
 The demo town is called **Trust City**. Its data is the real published data of a small town in Washington County, Utah; only the town's name is changed on screen (the setting is `sourceName` in the town config).
 
 - **Code:** the town's code, pulled from the city's official code host (865 sections, 349 in the Land Use title) and stored verbatim with a link to every section.
-- **Zoning map:** Washington County's official zoning layer for the town (426 polygons).
-- **Parcels:** the State of Utah's parcel layer (749 parcels with boundaries, parcel numbers and addresses). This dataset contains no owner names by state law, and the program never requests any.
+- **Zoning map:** Washington County's official zoning layer for the town (426 polygons), saved as a copy.
+- **Parcels:** the UGRC SGID parcel layer (749 parcels with boundaries, parcel numbers and addresses), saved as a copy and used under CC BY 4.0 (data modified). This dataset contains no owner names, and the program never requests any.
 - **People:** every resident, applicant and intention is invented. Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.
 
 The design is generic: `data/towns/<town>.json` names the code host, zoning layer and parcel layer, and `scripts/fetch-code.js` and `scripts/fetch-gis.js` cache them. Another city is a new config plus a reader for its code host (Municipal Code Online is the first; Municode, American Legal and others are planned).
@@ -62,7 +76,7 @@ npm start                 # http://localhost:3000 (resident), /staff (staff)
 npm test                  # offline unit tests
 npm run try -- lot-split-ok     # one scenario through the desk, printed (a few cents)
 npm run test:live         # 22 scenarios on the real code (a few dollars)
-node scripts/journey.js http://localhost:3000 <staff passcode>   # end-to-end over HTTP
+node scripts/journey.js http://localhost:3000   # end-to-end over HTTP
 ```
 
 Refresh the cached public data: `npm run fetch:code` and `npm run fetch:gis`.
@@ -78,6 +92,12 @@ Refresh the cached public data: `npm run fetch:code` and `npm run fetch:gis`.
 
 ## Live
 
-https://citycenter-puh5.onrender.com (staff workspace at `/staff`, open to everyone with no sign-in so you can try both sides; residents need no account either).
+https://citycenter-puh5.onrender.com (staff workspace at `/staff`, open to everyone with no sign-in so you can try both sides; residents need no account either). Privacy and terms: `/privacy`.
 
-MIT licensed. Built by John Barlow with Claude Code; the app runs on Meta's Muse models.
+## License
+
+The software written for this project is MIT licensed. That license does not cover the data in `data/towns/`, which belongs to its sources: see [data/towns/trust-city/NOTICE.md](data/towns/trust-city/NOTICE.md) for credits, license terms and disclaimers.
+
+Data sources: UGRC SGID (data modified, CC BY 4.0), Washington County GIS, and the town's published code.
+
+Built by John Barlow with Claude Code; the app runs on Meta's Muse models.

@@ -356,7 +356,7 @@
     } });
     if (s.signature) tabs.push({ label: "Signature", render: function (box) {
       box.appendChild(el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/signature?t=" + encodeURIComponent(s.signature.signed_at), alt: "Signature", style: "max-width:360px;display:block;border:1px solid var(--line);border-radius:8px;background:#fff" }));
-      box.appendChild(el("div", { class: "small", text: "Signed by " + s.signature.name + " (" + s.signature.method + ") on " + fmt(s.signature.signed_at) + " from " + (s.signature.ip || "?") + (s.signature_current ? " · matches the application as it stands" : " · the application changed after signing; a resubmit needs a new signature") }));
+      box.appendChild(el("div", { class: "small", text: "Signed by " + s.signature.name + " (" + s.signature.method + ") on " + fmt(s.signature.signed_at) + (s.signature_current ? " · matches the application as it stands" : " · the application changed after signing; a resubmit needs a new signature") }));
       box.appendChild(el("p", { class: "small", text: s.signature.consent || "" }));
     } });
     tabs.push({ label: "Conversation", render: function (box) {
@@ -394,7 +394,7 @@
     if (s.signature) {
       var sigBox = el("div", { class: "docsec" + (c && c.kind === "completeness" ? " hl" : "") }, [el("h3", { text: "Electronic signature" })]);
       sigBox.appendChild(el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/signature?t=" + encodeURIComponent(s.signature.signed_at), alt: "Signature", style: "max-width:320px;display:block;border:1px solid var(--line);border-radius:8px;background:#fff" }));
-      sigBox.appendChild(el("div", { class: "small", text: "Signed by " + s.signature.name + " (" + s.signature.method + ") on " + fmt(s.signature.signed_at) + " from " + (s.signature.ip || "?") + (s.signature_current ? " · matches the application as it stands" : " · the application changed after signing; a resubmit needs a new signature") }));
+      sigBox.appendChild(el("div", { class: "small", text: "Signed by " + s.signature.name + " (" + s.signature.method + ") on " + fmt(s.signature.signed_at) + (s.signature_current ? " · matches the application as it stands" : " · the application changed after signing; a resubmit needs a new signature") }));
       pane.appendChild(sigBox);
     }
     (s.packet ? s.packet.documents : []).forEach(function (d) {

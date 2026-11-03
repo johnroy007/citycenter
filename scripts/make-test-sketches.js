@@ -192,6 +192,36 @@ function conflictSketch() {
   return r;
 }
 
+// The demo video's lot: 345 E Jessop Ave, about 276 x 154 ft on the parcel layer (42,485 sq ft).
+function jessopSketch() {
+  const r = new Raster(1000, 760);
+  const X = 140, Y = 110, W = 718, H = 400, F = W / 276;
+  r.rect(X, Y, W, H, { t: 3 });
+  r.text(X + W / 2 - 60, Y - 40, "276 FT", { scale: 4 });
+  r.text(X - 125, Y + H / 2 - 12, "154 FT", { scale: 4 });
+  r.text(X + W + 14, Y + H / 2 - 12, "154 FT", { scale: 4 });
+  const S = X + Math.round(146 * F);
+  r.line(S, Y, S, Y + H, { t: 2, dash: 14 });
+  r.text(S + 20, Y + H - 40, "NEW LINE 154 FT", { scale: 3 });
+  r.text(X + 60, Y + 30, "LOT 1", { scale: 4 }); r.text(X + 40, Y + 70, "146 X 154", { scale: 3 }); r.text(X + 40, Y + 100, "22,480 SQ FT", { scale: 3 });
+  r.text(S + 60, Y + 30, "LOT 2", { scale: 4 }); r.text(S + 40, Y + 70, "130 X 154", { scale: 3 }); r.text(S + 40, Y + 100, "20,020 SQ FT", { scale: 3 });
+  const HX = S - Math.round(30 * F) - 130;
+  r.rect(HX, Y + 190, 130, 100, { t: 2 }); r.text(HX + 15, Y + 228, "HOUSE", { scale: 3 });
+  r.line(HX + 130, Y + 240, S, Y + 240, { t: 1, dash: 6 }); r.text(HX + 136, Y + 212, "30 FT", { scale: 2 });
+  r.line(X - 100, Y + H + 70, X + W + 100, Y + H + 70, { t: 3 }); r.line(X - 100, Y + H + 130, X + W + 100, Y + H + 130, { t: 3 });
+  r.text(X + W / 2 - 130, Y + H + 88, "E JESSOP AVE", { scale: 4 });
+  r.text(X + 60, Y + H + 30, "146 FT FRONT", { scale: 3 }); r.text(S + 40, Y + H + 30, "130 FT FRONT", { scale: 3 });
+  r.text(30, 720, "345 E JESSOP AVE  SKETCH NOT TO SCALE", { scale: 3 });
+  r.wobble();
+  return r;
+}
+
+if (process.argv.includes("--jessop")) {
+  fs.writeFileSync(path.join(__dirname, "..", "public", "sketches", "sketch-jessop.png"), encodePng(jessopSketch()));
+  console.log("sketch-jessop.png written");
+  process.exit(0);
+}
+
 const outDir = path.join(__dirname, "..", "test", "fixtures");
 fs.mkdirSync(outDir, { recursive: true });
 const files = { "sketch-clear.png": clearSketch, "sketch-messy.png": messySketch, "sketch-injection.png": injectionSketch, "sketch-conflict.png": conflictSketch };

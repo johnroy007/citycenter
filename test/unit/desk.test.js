@@ -12,6 +12,12 @@ const { loadGis, createGis } = require("../../lib/gis");
 
 const town = loadTown("trust-city");
 
+test("visit codes never reach a model prompt", () => {
+  const text = conversationText([{ role: "desk", text: "Your visit code is TC-2026-0107-xzUHULux; keep it." }]);
+  assert.ok(!text.includes("xzUHULux"));
+  assert.match(text, /\[visit code\]/);
+});
+
 test("no schema has a recommendation, approval, score or likelihood field", () => {
   const all = JSON.stringify(prompts.ALL_SCHEMAS);
   assert.doesNotMatch(all, /"recommend|"approve|"approval|"score"|"rating|"likelihood|"odds/i);

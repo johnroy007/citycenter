@@ -137,12 +137,21 @@ function publicSession(s, { staff }) {
   const out = { ...s };
   delete out.view_key;
   delete out.resident_id;
+  // Older signature records hold the signer's internet address; no page ever receives it.
+  if (out.signature) {
+    out.signature = { ...out.signature };
+    delete out.signature.ip;
+    delete out.signature.user_agent;
+  }
   if (!staff) {
     delete out.review;
     out.staff_actions = (s.staff_actions || []).filter((a) => a.action === "letter_saved").map((a) => ({ action: a.action, created_at: a.created_at, payload: a.payload }));
     if (out.research) out.research = { ...out.research, tool_log: (out.research.tool_log || []).map((t) => ({ tool: t.tool, summary: t.summary })) };
+    return out;
   }
-  return out;
+  // The staff side is open to everyone, so it must never carry the visit code, which the desk's submission message contains.
+  if (!s.view_key) return out;
+  return JSON.parse(JSON.stringify(out).split(`${s.ref}-${s.view_key}`).join("[visit code hidden]").split(s.view_key).join("[hidden]"));
 }
 
 function startTurn(ref) {
@@ -205,6 +214,7 @@ async function handle(req, res) {
   if (req.method === "GET" && p === "/") return serveStatic(res, "index.html");
   if (req.method === "GET" && p === "/staff") return serveStatic(res, "staff.html");
   if (req.method === "GET" && p === "/trust-gap") return serveStatic(res, "trust-gap.html");
+  if (req.method === "GET" && p === "/privacy") return serveStatic(res, "privacy.html");
   if (req.method === "GET" && p === "/favicon.ico") return serveStatic(res, "favicon.svg");
   if (req.method === "GET" && p.startsWith("/public/")) return serveStatic(res, p.slice("/public/".length));
 
@@ -334,7 +344,7 @@ async function handle(req, res) {
         data = Buffer.from(signature.typedSignatureSvg(name), "utf8");
         mime = "image/svg+xml";
       }
-      const meta = { name, method, signed_at: new Date().toISOString(), ip, user_agent: String(req.headers["user-agent"] || "").slice(0, 200), consent: signature.CONSENT_TEXT, doc_hash: signature.docHash(s.packet), documents: s.packet.documents.map((d) => d.name) };
+      const meta = { name, method, signed_at: new Date().toISOString(), consent: signature.CONSENT_TEXT, doc_hash: signature.docHash(s.packet), documents: s.packet.documents.map((d) => d.name) };
       store.setSignature(ref, { data, mime, meta });
       return sendJson(res, 200, { ok: true, signed_at: meta.signed_at, name, method });
     }
@@ -430,7 +440,9 @@ async function handle(req, res) {
     if (req.method === "POST" && p === "/api/staff/purge-demo") {
       if (!requireStaff(req, res)) return;
       // Removes conversations that were started from the worked examples (demo_id set), so the queue can be re-seeded.
-      const victims = store.listSessions().filter((x) => x.demo_id && !x.busy);
+      // { all: true } clears every finished conversation (used to reset the public demo).
+      const body = await readJson(req, MAX_JSON_BYTES);
+      const victims = store.listSessions().filter((x) => (x.demo_id || body.all === true) && !x.busy);
       let n = 0;
       for (const v of victims) if (store.deleteSession(v.ref)) n++;
       return sendJson(res, 200, { ok: true, deleted: n });
@@ -543,7 +555,7 @@ async function handle(req, res) {
         const next = { request_info: "needs_info", accept_complete: "in_review", answer: "answered", refer: "referred" }[decision] || s.status;
         store.addStaffAction(ref, { action: "letter_saved", payload: { subject, body: text, decision } });
         store.updateSession(ref, { status: next });
-        store.addMessage(ref, { role: "desk", department: "planning", character: "Planning & Zoning staff", text: `${subject}\n\n${text}`, letter: true });
+        store.addMessage(ref, { role: "desk", department: "planning", character: "Planning & Zoning staff", text: `${subject}\n\n${text}\n\nDrafted with AI from the city staff's review, then sent by staff.`, letter: true });
         if (s.review) store.setReviewPart(ref, "letter", { ...stored, subject, body: text, decision, sent_at: new Date().toISOString() });
         return sendJson(res, 200, { ok: true, status: next });
       }

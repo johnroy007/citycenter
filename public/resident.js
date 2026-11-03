@@ -341,7 +341,7 @@
   // Every visit starts at the front desk, so Marlowe's greeting is always the first line.
   function greetingText() {
     var d = characterFor("front_desk");
-    return "Hello, I'm " + d.character + " at the " + (town ? town.name + " " : "") + "Virtual City Help Desk. Tell me what you're trying to do with your property, or ask me anything. I'll find the right desk, pull up your parcel, read the city code, and prepare the paperwork. City staff make every decision.";
+    return "Hello, I'm " + d.character + ", the AI assistant at the " + (town ? town.name + " " : "") + "Virtual City Help Desk. Tell me what you're trying to do with your property, or ask me anything. I'll find the right desk, pull up your parcel, read the city code, and prepare the paperwork. City staff make every decision.";
   }
   function greetingItem(at) { return chatItem({ role: "desk", department: "front_desk", character: characterFor("front_desk").character, text: greetingText(), at: at }); }
   function renderChat(s) {
@@ -457,6 +457,7 @@
       el("div", { class: "examples", id: "welcomeExamples" }),
       el("p", { class: "small", text: "This screen shows the work as it happens. Use the remote to look at the parcel map, the code review, what you've given us, and the paperwork." }),
       el("p", { class: "small", text: "This is a public demo: the staff workspace is open to everyone, so anything you type here can be seen there. Please use made-up names and details." }),
+      el("p", { class: "small" }, ["The desk characters are AI assistants. They can make mistakes, and nothing here is legal advice. You must be 18 or older to use this demo. ", el("a", { href: "/privacy", text: "Privacy and terms" })]),
       el("p", { class: "small", id: "demoNote", text: "" }),
     ]);
     screen.appendChild(w);
@@ -580,7 +581,7 @@
     }
     if (r.path_if_blocked) screen.appendChild(el("div", { class: "notice warn" }, [el("strong", { text: "Where the code blocks something, it also provides a path: " }), r.path_if_blocked]));
     screen.appendChild(el("h3", { text: "Use under the zone's table" }));
-    screen.appendChild(el("div", null, [chip(r.use_status), " ", r.use_table_row ? el("span", { class: "small", text: r.use_table_row }) : null]));
+    screen.appendChild(el("div", null, [chip(r.use_status, "Table entry: " + String(r.use_status).replace(/_/g, " ") + " (not a decision)"), " ", r.use_table_row ? el("span", { class: "small", text: r.use_table_row }) : null]));
     if (r.standards && r.standards.length) {
       screen.appendChild(el("h3", { text: "Numbers checked" }));
       var tb = el("tbody");

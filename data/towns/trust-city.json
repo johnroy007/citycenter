@@ -39,6 +39,11 @@
       "addressField": "PARCEL_ADD",
       "credit": "Parcels: UGRC SGID (data modified), CC BY 4.0"
     },
+    "roads": {
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/UtahRoads/FeatureServer/0",
+      "nameField": "FULLNAME",
+      "credit": "Roads: UGRC SGID (data modified), CC BY 4.0"
+    },
     "lir": {
       "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington_LIR/FeatureServer/0",
       "where": "PARCEL_CITY='Hildale'",
@@ -246,29 +251,26 @@
       "name": "Building Department",
       "character": "Bob",
       "role": "building official",
-      "live": false,
-      "handles": "building permits, inspections, construction plans, anything on private property that involves structures, plumbing or electrical",
-      "contact": "Trust City Building Department (call the city office)",
-      "stub": true
+      "live": true,
+      "handles": "building permits, building inspections, demolition permits, anything on private property that involves structures, plumbing or electrical",
+      "contact": "Trust City Building Department (call the city office)"
     },
     {
       "id": "utilities",
       "name": "Utility Department",
       "character": "Reyes",
       "role": "utility desk",
-      "live": false,
-      "handles": "water, sewer and gas service connections, meters, outages and leaks at the meter, utility billing",
-      "contact": "Trust City Utility Department (call the city office)",
-      "stub": true
+      "live": true,
+      "handles": "water, sewer and gas service, starting or stopping service, utility billing questions, outages and leaks, hydrant flow tests",
+      "contact": "Trust City Utility Department (call the city office)"
     },
     {
       "id": "public_works",
       "name": "Public Works",
       "character": "Sol",
       "role": "public works crew lead",
-      "live": false,
-      "stub": true,
-      "handles": "streets, potholes, sidewalks, storm drains, street lights, snow and debris in the public right of way",
+      "live": true,
+      "handles": "potholes and road hazards, street lights, sidewalks, storm drains, snow and debris in the street, permits to dig in the public right of way",
       "contact": "Trust City Public Works (call the city office)"
     },
     {
@@ -276,9 +278,8 @@
       "name": "Police Department",
       "character": "Harper",
       "role": "police officer",
-      "live": false,
-      "stub": true,
-      "handles": "crimes, theft, traffic, suspicious activity, non-emergency police reports (emergencies: call 911)",
+      "live": true,
+      "handles": "non-emergency reports, police records requests, police standby at events, house watch while away (emergencies: call 911)",
       "contact": "Trust City Police non-emergency line (call the city office); emergencies 911"
     },
     {
@@ -286,9 +287,8 @@
       "name": "Fire Department",
       "character": "Mateo",
       "role": "fire chief",
-      "live": false,
-      "stub": true,
-      "handles": "fire safety inspections, burn permits, fireworks, fire code questions (emergencies: call 911)",
+      "live": true,
+      "handles": "fire alarm inspections, burn permits, fireworks displays, fire records and response time information (emergencies: call 911)",
       "contact": "Trust City Fire Department (call the city office); emergencies 911"
     },
     {
@@ -296,9 +296,8 @@
       "name": "Parks and Recreation",
       "character": "Rosa",
       "role": "parks and recreation coordinator",
-      "live": false,
-      "stub": true,
-      "handles": "parks, pavilion and field reservations, recreation programs, trails, community events",
+      "live": true,
+      "handles": "pavilion and field reservations, special events, recreation program sign-ups, parks and trails",
       "contact": "Trust City Parks and Recreation (call the city office)"
     },
     {
@@ -306,20 +305,18 @@
       "name": "Code Enforcement & Animal Control",
       "character": "Dakota",
       "role": "code enforcement officer",
-      "live": false,
-      "handles": "complaints about neighbors: animals, noise, junk, weeds, work without permits",
-      "contact": "Trust City Code Enforcement (call the city office)",
-      "stub": true
+      "live": true,
+      "handles": "code complaints about weeds, junk, nuisances and work without permits; animal complaints; dog licenses",
+      "contact": "Trust City Code Enforcement (call the city office)"
     },
     {
       "id": "recorder",
       "name": "City Recorder",
       "character": "Avery",
       "role": "city recorder",
-      "live": false,
-      "handles": "public records, meeting agendas, fee schedule, business licenses",
-      "contact": "Trust City Recorder, 320 E Newel Ave",
-      "stub": true
+      "live": true,
+      "handles": "public records requests, business licenses, meeting agendas and minutes, the fee schedule",
+      "contact": "Trust City Recorder, 320 E Newel Ave"
     }
   ],
   "processTiers": [
@@ -410,13 +407,21 @@
       "decider": "another city department",
       "sections": [],
       "resident": "This belongs with another department. The help desk hands you there with a note."
+    },
+    {
+      "id": "department_service",
+      "label": "Handled by the department",
+      "decider": "the department's staff",
+      "sections": [],
+      "resident": "The department's staff review this and write back."
     }
   ],
   "packetTypes": {
     "zoning_verification_request": "Zoning Verification Request",
     "application_set": "Land Use Application",
     "complaint_report": "Complaint Report",
-    "referral": "Department Referral"
+    "referral": "Department Referral",
+    "service_request": "City Service Request"
   },
   "applicationTypes": {
     "lot_split": {
@@ -494,11 +499,13 @@
     "fee": "Fees are set by the city's schedule of fees (section 152-7-3); the City Recorder has the current amounts.",
     "timing": "Timing depends on when the application is complete and, for hearings, on the notice period in section 152-7-4. Staff can give current meeting dates.",
     "staffDecide": "Only real City Officials can make decisions.",
-    "stub": "I can't help you yet because this area of the program is not built out yet."
+    "stub": "I can't help you yet because this area of the program is not built out yet.",
+    "emergency": "If someone is in danger or this is happening right now, call 911. If you smell gas, leave the area first and call from outside. This help desk is not watched by a dispatcher and cannot send help. When everyone is safe, come back and I can help with the paperwork.",
+    "exampleCity": "Trust City is an example city. Its city code and maps come from Hildale, Utah's public records; its procedures and forms are samples."
   },
   "notes": {
     "fictionalOwners": "Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.",
-    "dataCredits": "Data sources: UGRC SGID (data modified; CC BY 4.0, creativecommons.org/licenses/by/4.0/), Washington County GIS, and the town's published code on municipalcodeonline.com."
+    "dataCredits": "Trust City is an example city, not a real place. Its code and map data are public records of Hildale, Utah (UGRC SGID, data modified, CC BY 4.0, creativecommons.org/licenses/by/4.0/; Washington County GIS; municipalcodeonline.com). Procedures and forms are samples."
   },
   "office": {
     "department": "Planning & Zoning Department",

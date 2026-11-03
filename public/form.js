@@ -43,28 +43,40 @@
     return el("div", { class: "siglines" }, [appl, date, el("div", { class: "sig" }, [el("span", { text: "Owner signature (if different)" })]), el("div", { class: "sig short" }, [el("span", { text: "Date" })])]);
   }
 
+  function serviceOf(town, d) { return ((town && town.services) || []).find(function (x) { return x.id === d.doc_type; }) || null; }
+  function deptOf(town, id) { return ((town && town.departments) || []).find(function (x) { return x.id === id; }) || null; }
+
   function page(town, s, d, di, total, opts) {
     opts = opts || {};
     var office = (town && town.office) || {};
     var editing = !!opts.editing;
+    var svc = serviceOf(town, d);
+    var dept = svc ? deptOf(town, svc.department) : null;
+    var sec = 0;
+    function head(text) { sec += 1; return el("h3", { class: "fsec", text: sec + ". " + text }); }
     var pg = el("article", { class: "form-page" });
     pg.appendChild(el("div", { class: "letterhead" }, [
       el("div", { class: "seal", text: (town && town.refPrefix ? town.refPrefix : "TC").slice(0, 3).toUpperCase() }),
-      el("div", null, [el("div", { class: "city", text: (office.cityLine || (town && town.name) || "City").toUpperCase() }), el("div", { class: "dept", text: office.department || "Planning & Zoning Department" }), el("div", { class: "addr", text: [office.addressLine, office.phone].filter(Boolean).join(" · ") })]),
-      el("div", { class: "appno" }, [el("div", { class: "small", text: "Application No." }), el("div", { class: "num", text: s.ref }), el("div", { class: "small", text: "Page " + (di + 1) + " of " + total })]),
+      el("div", null, [el("div", { class: "city", text: (office.cityLine || (town && town.name) || "City").toUpperCase() }), el("div", { class: "dept", text: dept ? dept.name : office.department || "Planning & Zoning Department" }), el("div", { class: "addr", text: [office.addressLine, office.phone].filter(Boolean).join(" · ") })]),
+      el("div", { class: "appno" }, [el("div", { class: "small", text: svc ? "Request No." : "Application No." }), el("div", { class: "num", text: s.ref }), el("div", { class: "small", text: "Page " + (di + 1) + " of " + total })]),
     ]));
-    pg.appendChild(el("div", { class: "form-title" }, [el("h2", { text: d.name }), el("div", { class: "small", text: d.section ? "Filed under " + (town ? town.name : "city") + " Code section " + d.section : "" })]));
+    pg.appendChild(el("div", { class: "form-title" }, [el("h2", { text: d.name }), el("div", { class: "small", text: svc ? "Sample form of the example city of " + (town ? town.name : "") + (d.section ? ". Related code: section " + d.section : "") : d.section ? "Filed under " + (town ? town.name : "city") + " Code section " + d.section : "" })]));
     var u = s.understanding || {};
     var ap = u.applicant || {};
-    pg.appendChild(el("h3", { class: "fsec", text: "1. Applicant" }));
+    pg.appendChild(head(svc ? "Requester" : "Applicant"));
     pg.appendChild(el("div", { class: "fgrid" }, [
-      formField("Applicant name", ap.name || firstField(d, /applicant|name/i)),
+      formField(svc ? "Name" : "Applicant name", ap.name || firstField(d, /applicant|name/i)),
       formField("Phone", ap.phone || firstField(d, /phone/i)),
       formField("Email", ap.email || firstField(d, /e-?mail/i)),
       formField("Date prepared", fmtDate(s.submitted_at || s.updated_at)),
     ]));
     var pr = s.parcel || {};
-    pg.appendChild(el("h3", { class: "fsec", text: "2. Property" }));
+    if (svc && s.pin) {
+      pg.appendChild(head("Location"));
+      pg.appendChild(el("div", { class: "fgrid" }, [formField("Closest address", s.pin.address || ""), formField("Street", s.pin.road || ""), formField("Map pin", s.pin.lat.toFixed(5) + ", " + s.pin.lon.toFixed(5)), formField("Marked by", s.pin.from === "map" ? "Resident, on the map" : "From the address given")]));
+      pg.appendChild(el("img", { class: "pinimg", src: "/api/map/area.svg?lon=" + s.pin.lon + "&lat=" + s.pin.lat + "&m=120&pin=" + s.pin.lon + "," + s.pin.lat, alt: "Map showing the marked spot" }));
+    } else if (!svc || s.parcel) {
+    pg.appendChild(head("Property"));
     pg.appendChild(el("div", { class: "fgrid" }, [
       formField("Site address", pr.address || (u.location && u.location.address_text) || ""),
       formField("Tax parcel number", pr.id || (u.location && u.location.parcel_id_text) || ""),
@@ -73,49 +85,56 @@
       formField("Owner of record", s.owner ? s.owner.name + " (fictional demo name)" : ""),
       formField("Applicant is the owner", u.location && u.location.is_own_property === true ? "Yes" : u.location && u.location.is_own_property === false ? "No" : ""),
     ]));
-    pg.appendChild(el("h3", { class: "fsec", text: "3. Type of request" }));
+    }
+    pg.appendChild(head("Type of request"));
     var types = el("div", { class: "cbgrid" });
     var at = (town && town.applicationTypes) || {};
     var checkedAny = false;
-    Object.keys(at).forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox(at[id].name, on)); });
-    ["zoning_verification_request", "complaint_report", "referral"].forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox((town && town.packetTypes && town.packetTypes[id]) || id.replace(/_/g, " "), on)); });
+    if (svc) { checkedAny = true; town.services.filter(function (x) { return x.department === svc.department; }).forEach(function (x) { types.appendChild(checkbox(x.name, x.id === svc.id)); }); }
+    else Object.keys(at).forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox(at[id].name, on)); });
+    (svc ? [] : ["zoning_verification_request", "complaint_report", "referral"]).forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox((town && town.packetTypes && town.packetTypes[id]) || id.replace(/_/g, " "), on)); });
     if (!checkedAny) types.appendChild(checkbox("Other: " + d.name, true));
     pg.appendChild(types);
-    pg.appendChild(el("h3", { class: "fsec", text: "4. Application details" }));
+    pg.appendChild(head(svc ? "Details" : "Application details"));
     var grid4 = el("div", { class: "fgrid" });
     (d.fields || []).forEach(function (f, fi) {
       var wide = (f.value || "").length > 60 || /description|statement|reason|explain|legal/i.test(f.label);
       if (editing) {
         var inp = el("input", { class: "field", type: "text", value: f.value || "", "data-doc": String(di), "data-field": String(fi) });
-        grid4.appendChild(formField(f.label, "", { input: inp, wide: wide }));
-      } else grid4.appendChild(formField(f.label, f.value, { wide: wide, src: f.source && f.source !== "blank" ? f.source : null }));
+        grid4.appendChild(formField(f.label + (f.required ? " *" : ""), "", { input: inp, wide: wide }));
+      } else grid4.appendChild(formField(f.label + (f.required ? " *" : ""), f.value, { wide: wide, src: f.source && f.source !== "blank" ? f.source : null }));
     });
     pg.appendChild(grid4);
-    pg.appendChild(el("h3", { class: "fsec", text: "5. Project description and statement" }));
+    pg.appendChild(head(svc ? "Statement" : "Project description and statement"));
     if (editing) { var ta = el("textarea", { "data-doc": String(di), "data-narrative": "1" }); ta.value = d.narrative || ""; pg.appendChild(ta); }
     else pg.appendChild(el("div", { class: "narrative", text: d.narrative || "" }));
     var basis = (d.code_basis || []).filter(function (c) { return c.quote || c.section; });
     if (basis.length) {
-      pg.appendChild(el("h3", { class: "fsec", text: "6. Code sections this application is made under" }));
+      pg.appendChild(head(svc ? "Real code sections that relate to this" : "Code sections this application is made under"));
       basis.forEach(function (c) {
         pg.appendChild(el("div", { class: "quote" }, [c.quote ? el("span", { text: "“" + c.quote + "”" }) : null, el("span", { class: "cite" }, [el("a", { href: c.url || "#", target: "_blank", rel: "noopener", text: "Section " + c.section }), c.quote ? " · " + (c.quote_verified ? "quote verified against the code text" : "unverified") : ""])]));
       });
     }
-    pg.appendChild(el("h3", { class: "fsec", text: (basis.length ? "7" : "6") + ". Attachments" }));
-    pg.appendChild(el("div", { class: "cbgrid" }, [
+    pg.appendChild(head("Attachments"));
+    pg.appendChild(el("div", { class: "cbgrid" }, svc ? [
+      checkbox("Photo or drawing", !!s.has_sketch),
+      checkbox("Map showing the location", !!(s.pin || s.parcel)),
+      checkbox("Record of the help desk conversation", true),
+    ] : [
       checkbox("Site sketch or drawing", !!s.has_sketch),
       checkbox("Zoning map excerpt showing the parcel", !!s.parcel),
       checkbox("Record of the help desk conversation", true),
       checkbox("Code review with cited sections", !!s.research),
     ]));
-    pg.appendChild(el("div", { class: "certify" }, [
+    if (!svc || svc.signature) pg.appendChild(el("div", { class: "certify" }, [
       el("p", { text: "I certify that the information in this application is true and complete to the best of my knowledge, and I authorize city staff to visit the property for the purpose of reviewing this application." }),
       signatureLines(s, opts.sigSrc),
     ]));
+    else pg.appendChild(el("p", { class: "small", text: "No signature is needed for this " + svc.kind + "." }));
     var tier = s.research ? tierInfo(town, s.research.process_tier) : null;
     pg.appendChild(el("div", { class: "office-use" }, [
       el("div", { class: "ou-title", text: "For office use only" }),
-      el("div", { class: "fgrid" }, [formField("Received by", ""), formField("Date received", s.submitted_at ? fmtDate(s.submitted_at) : ""), formField("Fee paid", ""), formField("Application complete", ""), formField("Decision body", tier ? tier.decider : ""), formField("Staff reference", s.ref)]),
+      el("div", { class: "fgrid" }, [formField("Received by", ""), formField("Date received", s.submitted_at ? fmtDate(s.submitted_at) : ""), formField("Fee paid", ""), formField("Application complete", ""), formField("Decision body", svc ? svc.decider : tier ? tier.decider : ""), formField("Staff reference", s.ref)]),
     ]));
     pg.appendChild(el("p", { class: "small foot", text: office.formFooter || "" }));
     return pg;

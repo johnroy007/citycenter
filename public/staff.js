@@ -314,13 +314,15 @@
     } else {
       pane.appendChild(el("h3", { text: "Basic facts" }));
       var ftb = el("tbody");
-      [["Name of applicant", "applicant_name"], ["Application type", "application_type"], ["Address of property", "property_address"], ["Existing zone", "existing_zone"], ["Requested zoning", "requested_zoning"], ["General Plan designation", "general_plan_designation"], ["Proposed use", "proposed_use"]].forEach(function (row) {
+      var isSvc = current.packet && current.packet.packet_type === "service_request";
+      (isSvc ? [["Name", "applicant_name"], ["Request type", "application_type"], ["Location", "property_address"], ["Request", "proposed_use"]] : [["Name of applicant", "applicant_name"], ["Application type", "application_type"], ["Address of property", "property_address"], ["Existing zone", "existing_zone"], ["Requested zoning", "requested_zoning"], ["General Plan designation", "general_plan_designation"], ["Proposed use", "proposed_use"]]).forEach(function (row) {
         var v = sum.facts[row[1]] || "not stated";
         ftb.appendChild(el("tr", null, [el("th", { text: row[0] }), el("td", { class: /^not (stated|available)/i.test(v) ? "blank" : "", text: v })]));
       });
       pane.appendChild(el("table", { class: "kv facts" }, [ftb]));
-      pane.appendChild(el("h3", { text: "Development standards: proposed vs required" }));
-      if (sum.standards && sum.standards.length) {
+      if (!isSvc) pane.appendChild(el("h3", { text: "Development standards: proposed vs required" }));
+      if (isSvc) { /* a service request has no dimensional standards */ }
+      else if (sum.standards && sum.standards.length) {
         var stb = el("tbody");
         sum.standards.forEach(function (x) { stb.appendChild(el("tr", null, [el("td", { text: x.standard }), el("td", { text: x.proposed }), el("td", { text: x.required }), el("td", null, [chip(x.status)])])); });
         pane.appendChild(el("table", { class: "standards" }, [el("thead", null, [el("tr", null, [el("th", { text: "Standard" }), el("th", { text: "Proposed" }), el("th", { text: "Required" }), el("th", { text: "" })])]), stb]));
@@ -348,6 +350,11 @@
       var skStep = (s.steps || []).find(function (x) { return x.name === "sketch" && x.status === "done"; });
       box.appendChild(drawingWithOutline("/api/sessions/" + encodeURIComponent(s.ref) + "/sketch", skStep ? skStep.output : null));
       if (skStep && skStep.output) { var o = skStep.output; box.appendChild(el("p", { class: "small", text: "Read by Muse Spark as " + String(o.drawing_type || "").replace(/_/g, " ") + ", " + o.readability + ". SAM 3.1 outlines drawn on the image." + (o.building_code_site_plan_note ? " " + o.building_code_site_plan_note : "") })); if (o.dimensions && o.dimensions.length) box.appendChild(el("ul", null, o.dimensions.map(function (d) { return el("li", { text: d.what + ": " + d.value_text }); }))); }
+    } });
+    if (s.pin) tabs.push({ label: "Map pin", render: function (box) {
+      box.appendChild(el("div", { text: [s.pin.road ? "Near " + s.pin.road : "", s.pin.address ? "closest address " + s.pin.address : "", s.pin.lat.toFixed(5) + ", " + s.pin.lon.toFixed(5)].filter(Boolean).join(" · ") }));
+      if (s.pin.note) box.appendChild(el("div", { class: "small", text: "Resident's note: " + s.pin.note }));
+      box.appendChild(el("img", { src: "/api/map/area.svg?lon=" + s.pin.lon + "&lat=" + s.pin.lat + "&m=150&pin=" + s.pin.lon + "," + s.pin.lat, alt: "Map showing the marked spot", style: "width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px" }));
     } });
     if (s.parcel) tabs.push({ label: "Parcel & map", render: function (box) {
       box.appendChild(el("div", { text: (s.parcel.address || "") + " · " + (s.parcel.id || "") + " · zone " + (s.parcel.zone || "?") + (s.parcel.zoneName ? " (" + s.parcel.zoneName + ")" : "") + " · " + (s.parcel.areaAcres || "?") + " acres" + (s.parcel.straddlesZones ? " · touches " + s.parcel.zonesTouched.join(", ") : "") + (s.parcel.assumed ? " · ASSUMED among several parcels at this address" : "") }));
@@ -485,7 +492,7 @@
     secondBtn.addEventListener("click", async function () { await runStep("second-read", secondBtn, "Second read with Muse Wonder…"); });
     head.lastChild.appendChild(buildBtn); if (cons.length) head.lastChild.appendChild(secondBtn);
     if (!cons.length) {
-      pane.appendChild(el("p", { class: "small", text: current.busy ? "The resident-side desk is still working on this conversation…" : current.packet ? "The agent lists every point a planner checks for this application, each with the requirement, the exact quote and what the packet says. You approve, deny, ask for information, or set aside each one." : "This conversation has no packet yet." }));
+      pane.appendChild(el("p", { class: "small", text: current.busy ? "The resident-side desk is still working on this conversation…" : current.packet ? "The agent lists every point staff check for this application, each with the requirement, the exact quote and what the packet says. You approve, deny, ask for information, or set aside each one." : "This conversation has no packet yet." }));
       if (current.packet && !current.busy && !generating && ["submitted", "needs_info", "in_review", "ready", "answered"].includes(current.status)) runStep("considerations", buildBtn, "Listing the points with Muse Spark and the code tools… about a minute.");
       return;
     }

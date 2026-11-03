@@ -37,7 +37,11 @@
   var STEP_LABEL = { sketch: "Reading your drawing", route: "Finding the right desk", understand: "Understanding your request", locate: "Finding your parcel on the county map", research: "Reading the city code", draft: "Preparing your paperwork" };
   var STEP_MODEL = { sketch: "Muse Spark · image", route: "Muse Spark · structured", understand: "Muse Spark · structured", locate: "county GIS (no AI)", research: "Muse Spark · tools", draft: "Muse Spark · structured" };
   var STATUS_LABEL = { open: "Talking", ready: "Paperwork ready to submit", referred: "Referred to another desk", submitted: "Submitted to planning", needs_info: "Staff asked for more", in_review: "Forwarded for decision", answered: "Staff answered", error: "Problem" };
-  function statusLabel(s) { return s.changed_since_submit ? "Updated; not resubmitted yet" : (STATUS_LABEL[s.status] || s.status); }
+  function isService(s) { return !!(s && s.packet && s.packet.packet_type === "service_request"); }
+  function needsPin(s) { return !!(s && s.research && s.research.service && s.research.service.location === "pin"); }
+  function signatureFree(s) { return isService(s) && s.packet.signature_required === false; }
+  function deskName(s) { return s.department && s.department !== "planning" ? characterFor(s.department).name : "the planning department"; }
+  function statusLabel(s) { return s.changed_since_submit ? "Updated; not resubmitted yet" : s.status === "submitted" && isService(s) ? "Submitted to " + deskName(s) : (STATUS_LABEL[s.status] || s.status); }
   var CHANNEL_LABEL = { welcome: "Welcome", map: "Parcel Map", code: "Code Review", submissions: "Information You Uploaded", paperwork: "Submission Paperwork" };
 
   // ---------- voice out (browser) ----------
@@ -307,19 +311,24 @@
       row.appendChild(b); any = true;
     }
     (m.quick_replies || []).forEach(function (q) { chip(q, function () { sendMessage(q); }); });
-    if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && s.parcel && !s.submitted_at) {
-      chip("Sign and submit", function () { openSignPanel(); }, "primary");
+    if (m.offers_pin && s && !s.submitted_at) chip("Mark it on the map", function () { state.channel = "map"; state.manual = true; renderScreen(state.session); renderRemote(state.session); }, "primary");
+    if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && (s.parcel || isService(s)) && !s.submitted_at) {
+      if (signatureFree(s)) chip("Send it", function () { sendWithoutSignature(); }, "primary");
+      else chip("Sign and submit", function () { openSignPanel(); }, "primary");
       chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; renderScreen(state.session); renderRemote(state.session); });
-      chip("I want to change something", function () { $("text").placeholder = "Tell " + characterFor("planning").character + " what to change…"; $("text").focus(); });
+      chip("I want to change something", function () { $("text").placeholder = "Tell " + characterFor(s.department || "planning").character + " what to change…"; $("text").focus(); });
+    } else if (s && isService(s) && !s.submitted_at && (m.questions || []).length) {
+      chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; renderScreen(state.session); renderRemote(state.session); });
     }
     if (m.offers_submit && s && s.submitted_at && s.changed_since_submit) {
-      chip("Sign and resubmit", function () { openSignPanel(); }, "primary");
+      if (signatureFree(s)) chip("Send the update", function () { sendWithoutSignature(); }, "primary");
+      else chip("Sign and resubmit", function () { openSignPanel(); }, "primary");
     }
     return any ? row : null;
   }
   function chatItem(m, opts) {
     opts = opts || {};
-    var li = el("li", { class: "msg " + m.role + (m.letter ? " has-letter" : "") });
+    var li = el("li", { class: "msg " + m.role + (m.letter ? " has-letter" : "") + (m.emergency ? " emergency" : "") });
     var dept = m.role === "desk" ? (m.department || departmentForCharacter(m.character) || "planning") : null;
     var avatar;
     if (m.role === "desk" && !m.letter) {
@@ -341,7 +350,7 @@
   // Every visit starts at the front desk, so Marlowe's greeting is always the first line.
   function greetingText() {
     var d = characterFor("front_desk");
-    return "Hello, I'm " + d.character + ", the AI assistant at the " + (town ? town.name + " " : "") + "Virtual City Help Desk. Tell me what you're trying to do with your property, or ask me anything. I'll find the right desk, pull up your parcel, read the city code, and prepare the paperwork. City staff make every decision.";
+    return "Hello, I'm " + d.character + ", the AI assistant at the " + (town ? town.name + " " : "") + "Virtual City Help Desk. Tell me what you need, or ask me anything. I'll find the right department, read the city code, and prepare the paperwork. City staff make every decision.";
   }
   function greetingItem(at) { return chatItem({ role: "desk", department: "front_desk", character: characterFor("front_desk").character, text: greetingText(), at: at }); }
   function renderChat(s) {
@@ -358,7 +367,7 @@
   // The TV changes channel when new work appears, unless the resident is mid-edit.
   function contentSig(s) {
     return {
-      map: s.parcel ? s.parcel.id : null,
+      map: s.pin ? s.pin.lat + "," + s.pin.lon : s.parcel ? s.parcel.id : needsPin(s) ? "needs-pin" : null,
       code: s.research ? (s.research.process_tier + "|" + (s.research.applicable_sections || []).length + "|" + (s.steps || []).filter(function (x) { return x.name === "research" && x.status === "done"; }).length + "|" + s.updated_at) : null,
       submissions: (s.has_sketch ? "sketch" : "") + "|" + (s.understanding ? JSON.stringify(s.understanding).length : 0),
       paperwork: s.packet ? (s.packet.title + "|" + (s.packet.documents || []).length + "|" + s.updated_at) : null,
@@ -382,8 +391,8 @@
   }
   function hasContent(s, c) {
     if (!s) return false;
-    if (c === "map") return !!s.parcel;
-    if (c === "code") return !!(s.research && s.department === "planning");
+    if (c === "map") return !!(s.parcel || s.pin || needsPin(s));
+    if (c === "code") return !!s.research;
     if (c === "submissions") return !!(s.has_sketch || s.understanding || (s.messages && s.messages.length));
     if (c === "paperwork") return !!s.packet;
     return false;
@@ -441,10 +450,11 @@
     outer.className = "screen ch-" + state.channel;
     applyZoom();
     if (state.channel === "welcome" || !s) return renderWelcome(screen);
+    if (state.channel === "map" && (s.pin || needsPin(s))) return renderPinMap(screen, s);
     if (state.channel === "map") return hasContent(s, "map") ? renderParcel(screen, s) : renderEmpty(screen, "No parcel yet", "Tell " + characterFor(s.department || "front_desk").character + " the property address or tax parcel number and the county map will zoom in here.");
-    if (state.channel === "code") return hasContent(s, "code") ? renderResearch(screen, s) : renderEmpty(screen, "No code review yet", "Once the planner has read the city code for your request, the review appears here with every section quoted.");
+    if (state.channel === "code") return hasContent(s, "code") ? renderResearch(screen, s) : renderEmpty(screen, "No code review yet", "Once the desk has read the city code for your request, the review appears here with every section quoted.");
     if (state.channel === "submissions") return renderSubmissions(screen, s);
-    if (state.channel === "paperwork") return hasContent(s, "paperwork") ? renderPaperwork(screen, s) : renderEmpty(screen, "No paperwork yet", "When the planner has what the code asks for, the application is drafted here, in the city's format, for you to review.");
+    if (state.channel === "paperwork") return hasContent(s, "paperwork") ? renderPaperwork(screen, s) : renderEmpty(screen, "No paperwork yet", "When the desk has what it needs, the paperwork is drafted here, in a city-style format, for you to review.");
   }
   function renderEmpty(screen, title, text) {
     screen.classList.add("is-empty");
@@ -453,7 +463,8 @@
   function renderWelcome(screen) {
     var w = el("div", { class: "welcome" }, [
       el("h1", { text: "Welcome to the " + (town ? town.name : "city") + " help desk." }),
-      el("p", { text: "Tell me what you're trying to do, in your own words. I'll find the right desk, pull up your parcel on the county map, read the real city code, and prepare the paperwork. City staff make every decision." }),
+      el("p", { text: "Tell me what you need, in your own words: a permit, a pothole, a utility bill, a pavilion for a party. I'll find the right department, read the city code, and prepare the paperwork. City staff make every decision." }),
+      el("p", { class: "notice" }, [(town && town.wording.exampleCity || "") + " ", el("a", { href: "/about", text: "How this site works" })]),
       el("div", { class: "examples", id: "welcomeExamples" }),
       el("p", { class: "small", text: "This screen shows the work as it happens. Use the remote to look at the parcel map, the code review, what you've given us, and the paperwork." }),
       el("p", { class: "small", text: "This is a public demo: the staff workspace is open to everyone, so anything you type here can be seen there. Please use made-up names and details." }),
@@ -461,11 +472,70 @@
       el("p", { class: "small", id: "demoNote", text: "" }),
     ]);
     screen.appendChild(w);
-    [["I want to split my lot and sell the back half to my son.", "lot split"], ["Can I keep a rooster at my house?", "rooster"], ["I need a building permit for a mother-in-law suite.", "casita"], ["My bank needs a zoning verification letter.", "bank letter"]].forEach(function (x) {
+    [["I want to split my lot and sell the back half to my son.", "lot split"], ["There's a big pothole on my street.", "pothole"], ["I need a burn permit for my weed pile.", "burn"], ["Why is my water bill so high?", "bill"], ["I'd like to reserve a park pavilion.", "pavilion"], ["We need police standby at our festival.", "standby"]].forEach(function (x) {
       var b = el("button", { type: "button", class: "quiet", text: x[0] });
       b.addEventListener("click", function () { $("text").value = x[0]; $("text").focus(); });
       $("welcomeExamples").appendChild(b);
     });
+  }
+
+  // ---------- the clickable map: a resident marks a spot on a real street ----------
+  function pinWindow(v) {
+    var dLat = v.m / 110574, dLon = dLat * (1000 / 750) / Math.cos(v.lat * Math.PI / 180);
+    return [v.lon - dLon, v.lat - dLat, v.lon + dLon, v.lat + dLat];
+  }
+  function pinImageSrc(v, spot) {
+    return "/api/map/area.svg?lon=" + v.lon.toFixed(6) + "&lat=" + v.lat.toFixed(6) + "&m=" + Math.round(v.m) + (spot ? "&pin=" + spot.lon.toFixed(6) + "," + spot.lat.toFixed(6) : "");
+  }
+  function renderPinMap(screen, s) {
+    $("tvLabel").textContent = "Mark the Spot";
+    $("tvModel").textContent = "state street and parcel layers · no AI";
+    var saved = s.pin;
+    if (!state.pinView) {
+      var c = saved ? [saved.lon, saved.lat] : town.mapCenter;
+      state.pinView = { lon: c[0], lat: c[1], m: saved ? 150 : 500 };
+    }
+    var v = state.pinView;
+    var spot = function () { return state.pinDraft || saved || null; };
+    screen.appendChild(el("p", { class: "lead", text: saved && !state.pinDraft ? "Spot marked" + (saved.road ? " near " + saved.road : "") + (saved.address ? ", closest address " + saved.address : "") + ". Click the map to move it." : "Click the map to mark the spot. Drag to move around." }));
+    var img = el("img", { class: "pinpic", alt: "Street map. Click to mark the spot.", draggable: "false", src: pinImageSrc(v, spot()) });
+    var wrap = el("div", { class: "pinmap" }, [img]);
+    function zoom(f) { v.m = Math.min(3600, Math.max(60, v.m * f)); img.src = pinImageSrc(v, spot()); }
+    var zin = el("button", { type: "button", class: "quiet", text: "Zoom in" }), zout = el("button", { type: "button", class: "quiet", text: "Zoom out" });
+    zin.addEventListener("click", function () { zoom(0.6); });
+    zout.addEventListener("click", function () { zoom(1 / 0.6); });
+    screen.appendChild(el("div", { class: "mapviews" }, [zin, zout]));
+    screen.appendChild(wrap);
+    var down = null;
+    wrap.addEventListener("pointerdown", function (e) { e.preventDefault(); wrap.setPointerCapture(e.pointerId); down = { x: e.clientX, y: e.clientY }; });
+    wrap.addEventListener("pointerup", function (e) {
+      if (!down) return;
+      var r = img.getBoundingClientRect(), box = pinWindow(v), dx = e.clientX - down.x, dy = e.clientY - down.y;
+      down = null;
+      if (Math.abs(dx) + Math.abs(dy) > 6) {
+        v.lon -= dx / r.width * (box[2] - box[0]);
+        v.lat += dy / r.height * (box[3] - box[1]);
+      } else {
+        state.pinDraft = { lon: box[0] + (e.clientX - r.left) / r.width * (box[2] - box[0]), lat: box[3] - (e.clientY - r.top) / r.height * (box[3] - box[1]) };
+        go.disabled = false;
+      }
+      img.src = pinImageSrc(v, spot());
+    });
+    var note = el("input", { type: "text", id: "pinNote", maxlength: "300", placeholder: "Anything that helps the crew find it (optional)" });
+    var go = el("button", { type: "button", text: "Use this spot" });
+    go.disabled = !state.pinDraft;
+    var msg = el("div", { class: "small" });
+    go.addEventListener("click", async function () {
+      go.disabled = true;
+      try {
+        await api("/api/sessions/" + encodeURIComponent(state.ref) + "/pin?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ lon: state.pinDraft.lon, lat: state.pinDraft.lat, note: note.value }) });
+        state.pinDraft = null;
+        poll();
+      } catch (e) { msg.textContent = e.message; go.disabled = false; }
+    });
+    screen.appendChild(el("div", { class: "actions" }, [note, go]));
+    screen.appendChild(msg);
+    screen.appendChild(el("p", { class: "small", text: "Prefer words? Just tell " + characterFor(s.department || "front_desk").character + " the closest address in the chat." }));
   }
 
   function renderParcel(screen, s) {
@@ -570,8 +640,38 @@
   }
 
   function tierInfo(id) { return (town && town.processTiers || []).find(function (t) { return t.id === id; }); }
+  // A department desk's research: the answer, the real code it read, and the sample procedure, kept visibly apart.
+  function renderDeskResearch(screen, s) {
+    var r = s.research;
+    var svc = r.service ? (town.services || []).find(function (x) { return x.id === r.service.id; }) : null;
+    $("tvModel").textContent = "Muse Spark · " + (r.tool_log ? r.tool_log.length : 0) + " tool calls on the code and the service catalog";
+    screen.appendChild(el("div", { class: "tier" }, [el("div", null, [el("div", { class: "small", text: "What " + characterFor(r.department).character + " found" }), el("div", { class: "big", text: svc ? svc.name : characterFor(r.department).name }), el("div", { class: "small", text: svc ? svc.decider + " decides" : "" }), el("div", { style: "margin-top:6px", text: r.process_explanation })])]));
+    if ((r.applicable_sections || []).length) {
+      screen.appendChild(el("h3", { text: "Real city code (quotes checked against the code text)" }));
+      r.applicable_sections.forEach(function (x) {
+        var q = el("div", { class: "quote" }, [x.quote ? el("span", { text: "“" + x.quote + "”" }) : el("span", { class: "small", text: "(no verified quote; " + x.why + ")" })]);
+        q.appendChild(el("span", { class: "cite" }, [el("a", { href: x.url || "#", target: "_blank", rel: "noopener", text: "Section " + x.section + (x.title ? " " + x.title : "") }), " · " + (x.quote_verified ? "quote verified" : "paraphrase") + " · " + x.why]));
+        screen.appendChild(q);
+      });
+    }
+    if (svc) {
+      var box = el("div", { class: "sample" }, [el("div", { class: "sample-tag", text: "Sample procedure · example city, not law" })]);
+      box.appendChild(el("ol", null, (svc.procedure || []).map(function (p) { return el("li", { text: p }); })));
+      if (svc.timing) box.appendChild(el("p", null, [el("b", { text: "Sample timing: " }), svc.timing]));
+      if (svc.fees) box.appendChild(el("p", null, [el("b", { text: "Sample fees: " }), svc.fees]));
+      if ((svc.sources || []).length) box.appendChild(el("p", { class: "small" }, ["Written after reading: "].concat(svc.sources.reduce(function (acc, x, i) { if (i) acc.push("; "); acc.push(el("a", { href: x.url, target: "_blank", rel: "noopener", text: x.government })); return acc; }, []))));
+      screen.appendChild(box);
+    }
+    if (r.tool_log && r.tool_log.length) {
+      var det = el("details", null, [el("summary", { class: "small", text: "What the desk looked up (" + r.tool_log.length + " tool calls)" })]);
+      det.appendChild(el("ul", { class: "toollog" }, r.tool_log.map(function (x) { return el("li", { text: x.summary || x.tool }); })));
+      screen.appendChild(det);
+    }
+    screen.appendChild(el("p", { class: "small", text: town ? town.wording.staffDecide : "" }));
+  }
   function renderResearch(screen, s) {
     var r = s.research;
+    if (r.desk) return renderDeskResearch(screen, s);
     $("tvModel").textContent = "Muse Spark · " + (r.tool_log ? r.tool_log.length : 0) + " tool calls on the real code";
     var t = tierInfo(r.process_tier);
     screen.appendChild(el("div", { class: "tier" }, [el("div", null, [el("div", { class: "small", text: "Process the code provides" }), el("div", { class: "big", text: t ? t.label : r.process_tier }), el("div", { class: "small", text: t ? "Decided by " + t.decider : "" }), el("div", { style: "margin-top:6px", text: r.process_explanation })])]));
@@ -621,23 +721,28 @@
     });
     screen.appendChild(pages);
     var actions = el("div", { class: "actions" });
-    var hasDocs = s.parcel && p.documents && p.documents.length && p.packet_type !== "referral";
+    var hasDocs = (s.parcel || isService(s)) && p.documents && p.documents.length && p.packet_type !== "referral";
+    var blanks = isService(s) ? (p.documents[0].fields || []).filter(function (f) { return f.required && !String(f.value || "").trim(); }).map(function (f) { return f.label; }) : [];
     var canSubmit = ["open", "ready"].includes(s.status) && hasDocs && !s.submitted_at;
     var canResubmit = !!s.submitted_at && s.changed_since_submit && hasDocs;
     if (s.submitted_at && !s.changed_since_submit && !state.editing) actions.appendChild(el("span", { class: "small", text: "Submitted " + fmt(s.submitted_at) + (s.resubmit_count ? " (update " + s.resubmit_count + ")" : "") + ". You can keep talking or edit; any change can be resubmitted." }));
     if ((canSubmit || canResubmit) && !state.editing && !state.signing) {
-      var submit = el("button", { type: "button", text: canResubmit ? "Sign and resubmit" : "Sign and submit to the planning department" });
-      submit.addEventListener("click", function () { openSignPanel(); });
-      actions.appendChild(submit);
+      if (blanks.length) actions.appendChild(el("span", { class: "small", text: "Still needed before this can be sent: " + blanks.join(", ") + "." }));
+      else {
+        var free = signatureFree(s);
+        var submit = el("button", { type: "button", text: canResubmit ? (free ? "Send the update" : "Sign and resubmit") : (free ? "Send to " + deskName(s) : "Sign and submit to " + deskName(s)) });
+        submit.addEventListener("click", function () { if (free) sendWithoutSignature(); else openSignPanel(); });
+        actions.appendChild(submit);
+      }
     }
     if (state.signing && !state.editing) screen.insertBefore(signPanel(s), screen.firstChild);
     if (hasDocs && !state.editing && !s.busy) {
       var edit = el("button", { type: "button", class: "secondary", text: "Edit it myself" });
       edit.addEventListener("click", function () { state.editing = true; renderScreen(state.session); });
       actions.appendChild(edit);
-      actions.appendChild(el("span", { class: "small", text: "Or just tell " + characterFor("planning").character + " what to change." }));
+      actions.appendChild(el("span", { class: "small", text: "Or just tell " + characterFor(s.department || "planning").character + " what to change." }));
     }
-    if (canResubmit && !state.editing && !state.signing) screen.insertBefore(el("div", { class: "notice warn", text: "You have made changes since you submitted. Sign the updated application and resubmit to send it to the planning office." }), screen.firstChild);
+    if (canResubmit && !state.editing && !state.signing) screen.insertBefore(el("div", { class: "notice warn", text: signatureFree(s) ? "You have made changes since you sent this. Send the update so staff see it." : "You have made changes since you submitted. Sign the updated application and resubmit to send it to " + deskName(s) + "." }), screen.firstChild);
     if (state.editing) {
       var save = el("button", { type: "button", text: "Save my edits" });
       save.addEventListener("click", async function () {
@@ -656,6 +761,13 @@
     screen.appendChild(actions);
     if (s.submitted_at && !s.changed_since_submit) screen.appendChild(el("p", { class: "small", text: "Staff will write back in this conversation." }));
     if (p.questions && p.questions.length && !s.submitted_at) screen.appendChild(el("div", { class: "notice warn" }, [el("b", { text: "Still needed: " }), p.questions.join(" ")]));
+  }
+
+  async function sendWithoutSignature() {
+    try {
+      await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" });
+      poll();
+    } catch (e) { $("formMsg").textContent = e.message; }
   }
 
   // ---------- signing panel (draw or type, then submit) ----------
@@ -763,7 +875,7 @@
     demoNextTurn();
   }
   function resetVisit() {
-    state.ref = null; state.key = null; state.session = null; state.lastMsgCount = 0; state.lastParcelId = null; state.channel = "welcome"; state.seen = { map: null, code: null, submissions: null, paperwork: null }; state.fresh = {};
+    state.ref = null; state.key = null; state.session = null; state.lastMsgCount = 0; state.lastParcelId = null; state.pinView = null; state.pinDraft = null; state.channel = "welcome"; state.seen = { map: null, code: null, submissions: null, paperwork: null }; state.fresh = {};
     $("chat").textContent = ""; $("chat").appendChild(greetingItem(new Date().toISOString())); $("refline").textContent = "New visit"; $("statusChip").textContent = "";
     history.replaceState(null, "", "/");
     renderScreen(null); renderRemote(null);
@@ -783,7 +895,7 @@
       }, 40);
       return;
     }
-    if (d.turn >= d.example.turns.length) { $("demoStatus").textContent = "Example finished. If " + characterFor("planning").character + " still has questions, answer them yourself in the box below, edit the paperwork, or press Submit."; return; }
+    if (d.turn >= d.example.turns.length) { $("demoStatus").textContent = "Example finished. If " + characterFor((state.session && state.session.department) || "planning").character + " still has questions, answer them yourself in the box below, edit the paperwork, or press Submit."; return; }
     var text = d.example.turns[d.turn];
     $("demoStatus").textContent = d.example.persona + " is typing (turn " + (d.turn + 1) + " of " + d.example.turns.length + ")…";
     var box = $("text"); box.value = ""; var i = 0;

@@ -10,9 +10,11 @@ const { loadTown } = require("./lib/townconfig");
 const { loadCode } = require("./lib/codestore");
 const { loadGis } = require("./lib/gis");
 const { createTools } = require("./lib/tools");
+const { loadServices, createServiceTools } = require("./lib/services");
 const { openStore } = require("./lib/store");
 const { createClient, MetaError } = require("./lib/meta");
 const { runTurn } = require("./lib/desk");
+const { missingRequired } = require("./lib/servicedesk");
 const review = require("./lib/review");
 const { validateImage } = require("./lib/sketch");
 const signature = require("./lib/signature");
@@ -38,10 +40,13 @@ const town = loadTown();
 const code = loadCode(town);
 const gis = loadGis(town);
 const { tools } = createTools({ code, gis, town });
+const services = loadServices(town);
+// The department desks read the code and the service catalog; the zoning tools stay with the planner.
+const deskTools = [...tools.filter((t) => ["search_code", "get_section", "lookup_parcel"].includes(t.name)), ...createServiceTools(services)];
 const store = openStore(null, { refPrefix: town.refPrefix });
 store.clearBusy();
 const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage(u), canCall: () => store.callsToday().n < DAILY_CAP });
-const ctx = { store, client, town, code, gis, tools, model: MODEL };
+const ctx = { store, client, town, code, gis, tools, services, deskTools, model: MODEL };
 // Any two- or three-letter prefix is accepted, so references made before the town's prefix changed (HC-...) keep working.
 const REF_RE = /^[A-Z]{2,3}-\d{4}-\d{4}$/;
 // A visit code is the reference plus the access key in one string, e.g. TC-2026-0107-xzUHULux. Residents type only that.
@@ -155,6 +160,9 @@ function publicSession(s, { staff }) {
   return JSON.parse(JSON.stringify(out).split(`${s.ref}-${s.view_key}`).join("[visit code hidden]").split(s.view_key).join("[hidden]"));
 }
 
+// Who reads a submission, in a sentence's subject.
+const officeLine = (s) => (review.isService(s) ? review.officeOf(s, town) + " staff" : "The planning office");
+
 function startTurn(ref) {
   runningTurns++;
   runTurn(ref, ctx)
@@ -197,6 +205,8 @@ function townPublic() {
     notes: town.notes,
     office: town.office || {},
     packetTypes: town.packetTypes || {},
+    services: services.publicList(),
+    mapCenter: gis.townCenter,
     code: { citation: town.code.citation, bookUrl: town.code.bookUrl, sections: code.count, fetchedAt: code.meta.fetchedAt },
     gis: { counts: gis.counts, credits: gis.credits, fetchedAt: gis.fetchedAt },
     models: { desk: MODEL, review: REVIEW_MODEL, second_read: SECOND_READ_MODEL, voice: "muse-voice-transcribe-1.0", image: "muse-image-1.0" },
@@ -215,6 +225,7 @@ async function handle(req, res) {
   if (req.method === "GET" && p === "/") return serveStatic(res, "index.html");
   if (req.method === "GET" && p === "/staff") return serveStatic(res, "staff.html");
   if (req.method === "GET" && p === "/trust-gap") return serveStatic(res, "trust-gap.html");
+  if (req.method === "GET" && p === "/about") return serveStatic(res, "about.html");
   if (req.method === "GET" && p === "/privacy") return serveStatic(res, "privacy.html");
   if (req.method === "GET" && p === "/favicon.ico") return serveStatic(res, "favicon.svg");
   if (req.method === "GET" && p.startsWith("/public/")) return serveStatic(res, p.slice("/public/".length));
@@ -225,12 +236,25 @@ async function handle(req, res) {
   }
   if (req.method === "GET" && p === "/api/town") return sendJson(res, 200, townPublic());
   if (req.method === "GET" && p === "/api/demo") return sendJson(res, 200, DEMO);
+  if (req.method === "GET" && p === "/api/sources") return sendJson(res, 200, { sources: services.sources, services: services.services.map((s) => ({ id: s.id, name: s.name, department: s.department, sources: s.sources || [] })), departments: town.departments.map((d) => ({ id: d.id, name: d.name })) });
 
   // Map and parcels (read-only, from the cached public layers)
   if (req.method === "GET" && p === "/api/map/city.svg") {
     if (!citySvgCache) citySvgCache = gis.renderSvg({ width: 1000, height: 750 });
     res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
     return res.end(citySvgCache);
+  }
+  // The clickable map: a picture of the window around a point. The page works out the same window, so a click maps back to a place.
+  if (req.method === "GET" && p === "/api/map/area.svg") {
+    if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
+    const num = (k) => { const v = url.searchParams.get(k); return v === null || v === "" ? NaN : Number(v); };
+    const span = Math.min(3600, Math.max(40, num("m") || 900));
+    const lon = num("lon"), lat = num("lat");
+    const center = Number.isFinite(lon) && Number.isFinite(lat) && gis.inCity(lon, lat) ? [lon, lat] : gis.townCenter;
+    const pinParts = String(url.searchParams.get("pin") || "").split(",").map(Number);
+    const pin = pinParts.length === 2 && pinParts.every(Number.isFinite) && gis.inCity(pinParts[0], pinParts[1]) ? pinParts : null;
+    res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
+    return res.end(gis.renderSvg({ center, meters: span, width: 1000, height: 750, pin }));
   }
   m = p.match(/^\/api\/map\/parcel\/([^/]+)\.svg$/);
   if (req.method === "GET" && m) {
@@ -266,7 +290,7 @@ async function handle(req, res) {
     const buf = await sec.readBody(req, MAX_AUDIO_BYTES);
     if (buf.length < 1000 || buf.slice(0, 4).toString() !== "RIFF") return sendError(res, 400, "Expected a WAV recording.");
     try {
-      const out = await client.transcribeWav(buf, { keywords: [town.shortName, "zoning", "parcel", "casita", "lot split", "variance", "rooster", "setback"] });
+      const out = await client.transcribeWav(buf, { keywords: [town.shortName, "zoning", "parcel", "casita", "lot split", "variance", "rooster", "setback", "pothole", "pavilion", "hydrant", "burn permit"] });
       return sendJson(res, 200, out);
     } catch (e) {
       const [s, msg] = errorFrom(e);
@@ -292,7 +316,7 @@ async function handle(req, res) {
 
   // Resident: read, message, submit, sketch. The visit code is required for everything except the drawing and the
   // signature image, which the (open) staff workspace shows. Only the visit code can read or change a visit here.
-  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature))?$/);
+  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature|pin))?$/);
   if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
     let ref = decodeURIComponent(m[1]).trim();
@@ -370,6 +394,21 @@ async function handle(req, res) {
       startTurn(ref);
       return sendJson(res, 202, { ok: true });
     }
+    if (req.method === "POST" && action === "pin") {
+      // The resident marked a spot on the map. The desk's next turn reads it like anything else they said.
+      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many messages. Please slow down.");
+      if (s.busy) return sendError(res, 409, "The desk is still working on your last message.");
+      if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
+      const body = await readJson(req, MAX_JSON_BYTES);
+      const lon = Number(body.lon), lat = Number(body.lat);
+      if (!Number.isFinite(lon) || !Number.isFinite(lat) || !gis.inCity(lon, lat)) return sendError(res, 400, "That spot is outside " + town.name + ". Please mark a place inside the city.");
+      const note = typeof body.note === "string" ? body.note.trim().slice(0, 300) : "";
+      const near = gis.nearest(lon, lat);
+      store.updateSession(ref, { pin: { lon, lat, address: near.address, road: near.road, note, from: "map" } });
+      store.addMessage(ref, { role: "resident", text: "I marked the spot on the map" + (near.road ? " near " + near.road : "") + "." + (note ? " " + note : "") });
+      startTurn(ref);
+      return sendJson(res, 202, { ok: true, near });
+    }
     if (req.method === "POST" && action === "packet") {
       // Resident edits their own packet directly (no model). Only field values and narratives can change.
       if (s.busy) return sendError(res, 409, "The desk is still working. Wait for it to finish, then edit.");
@@ -393,7 +432,9 @@ async function handle(req, res) {
     if (req.method === "POST" && action === "submit") {
       if (s.busy) return sendError(res, 409, "The desk is still working. Wait for the packet, then submit.");
       if (!s.packet || !s.packet.documents || !s.packet.documents.length) return sendError(res, 400, "There is no prepared packet to submit yet.");
-      if (!s.signature || s.signature.doc_hash !== signature.docHash(s.packet)) {
+      const blanks = s.packet.packet_type === "service_request" ? s.packet.documents.flatMap(missingRequired) : [];
+      if (blanks.length) return sendError(res, 400, "Please fill in: " + blanks.join(", ") + ".");
+      if (s.packet.signature_required !== false && (!s.signature || s.signature.doc_hash !== signature.docHash(s.packet))) {
         res.writeHead(409, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
         return res.end(JSON.stringify({ error: s.signature ? "The application changed since you signed it. Please sign the current version, then submit." : "Please sign the application first.", code: "needs_signature" }));
       }
@@ -404,11 +445,12 @@ async function handle(req, res) {
         const n = (s.resubmit_count || 0) + 1;
         store.updateSession(ref, { status: "submitted", submitted_at: ts, changed_since_submit: false, resubmit_count: n });
         store.addStaffAction(ref, { action: "resubmitted", note: `Resident resubmitted with updates (update ${n}).`, payload: { previous_status: s.status, previous_submitted_at: s.submitted_at } });
-        store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Resubmitted with your updates (update ${n}). Your visit code is still ${ref}-${s.view_key}. The planning office will see the updated application and write back here.` });
+        store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Resubmitted with your updates (update ${n}). Your visit code is still ${ref}-${s.view_key}. ${officeLine(s)} will see the update and write back here.` });
         return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts, resubmit_count: n });
       }
       store.updateSession(ref, { status: "submitted", submitted_at: ts, changed_since_submit: false });
-      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `Submitted and signed by ${s.signature.name}. Your visit code is ${ref}-${s.view_key}; keep it to come back to this visit. The planning office will review it and write back here. You can keep talking to me or edit the paperwork; press Resubmit to send any updates.` });
+      const sent = s.signature && s.packet.signature_required !== false ? `Submitted and signed by ${s.signature.name}.` : "Sent.";
+      store.addMessage(ref, { role: "desk", department: s.department, character: s.character, text: `${sent} Your visit code is ${ref}-${s.view_key}; keep it to come back to this visit. ${officeLine(s)} will review it and write back here. You can keep talking to me or edit the paperwork; press Resubmit to send any updates.` });
       return sendJson(res, 200, { ok: true, status: "submitted", submitted_at: ts });
     }
     return notFound(res);
@@ -501,7 +543,7 @@ async function handle(req, res) {
       }
       if (req.method === "POST" && action === "considerations") {
         if (s.busy) return sendError(res, 409, "The resident-side desk is still working on this one.");
-        const out = await review.buildConsiderations(client, s, { town, code, tools, model: REVIEW_MODEL });
+        const out = await review.buildConsiderations(client, s, { town, code, tools, services, deskTools, model: REVIEW_MODEL });
         store.saveReview(ref, out, out.model);
         store.addStaffAction(ref, { action: "considerations_built", payload: { model: out.model, count: out.considerations.length } });
         return sendJson(res, 200, { review: store.getSession(ref).review });
@@ -556,7 +598,7 @@ async function handle(req, res) {
         const next = { request_info: "needs_info", accept_complete: "in_review", answer: "answered", refer: "referred" }[decision] || s.status;
         store.addStaffAction(ref, { action: "letter_saved", payload: { subject, body: text, decision } });
         store.updateSession(ref, { status: next });
-        store.addMessage(ref, { role: "desk", department: "planning", character: "Planning & Zoning staff", text: `${subject}\n\n${text}\n\nDrafted with AI from the city staff's review, then sent by staff.`, letter: true });
+        store.addMessage(ref, { role: "desk", department: review.isService(s) ? s.department : "planning", character: review.officeOf(s, town) + " staff", text: `${subject}\n\n${text}\n\nDrafted with AI from the city staff's review, then sent by staff.`, letter: true });
         if (s.review) store.setReviewPart(ref, "letter", { ...stored, subject, body: text, decision, sent_at: new Date().toISOString() });
         return sendJson(res, 200, { ok: true, status: next });
       }

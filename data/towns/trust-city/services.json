@@ -1,0 +1,2110 @@
+{
+  "note": "City services of the example city. Procedures, fees and timing are original samples, not the rules of any real city; `sections` are real sections of the published code; `sources` name the real public pages read while writing each sample (see sources.json).",
+  "services": [
+    {
+      "id": "building_permit",
+      "department": "building",
+      "name": "Residential building permit",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The Building Official",
+      "sections": [
+        "152-7-13"
+      ],
+      "summary": "Permit to build, add on to, or remodel a home or accessory building.",
+      "keywords": [
+        "build",
+        "addition",
+        "remodel",
+        "garage",
+        "shed",
+        "deck",
+        "plans",
+        "contractor"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Property address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Type of work",
+          "required": true,
+          "hint": "new home, addition, remodel, garage, shed, deck"
+        },
+        {
+          "label": "Square footage of the work",
+          "required": true
+        },
+        {
+          "label": "Estimated cost of the work",
+          "required": false
+        },
+        {
+          "label": "Contractor name and license number",
+          "required": false,
+          "hint": "or 'owner-builder'"
+        },
+        {
+          "label": "Are plans ready?",
+          "required": true,
+          "hint": "yes or no"
+        }
+      ],
+      "procedure": [
+        "Planning & Zoning checks the project against the zoning rules first.",
+        "Submit the application with a site plan and building plans.",
+        "The Building Official reviews the plans and may ask for changes.",
+        "Pay the permit fee, then post the permit at the job site.",
+        "Call for each required inspection before covering the work."
+      ],
+      "timing": "Plan review usually takes about 10 working days for a complete residential submittal.",
+      "fees": "Permit fees are based on the value of the work; see the fee schedule.",
+      "review_points": [
+        "Zoning compliance has been checked by Planning & Zoning.",
+        "A site plan shows the structure and its distances from property lines.",
+        "Building plans are complete enough to review.",
+        "The contractor's license is on file, or the owner is building the work."
+      ],
+      "sources": []
+    },
+    {
+      "id": "building_inspection",
+      "department": "building",
+      "name": "Building inspection request",
+      "kind": "request",
+      "signature": false,
+      "location": "address",
+      "decider": "The Building Inspector",
+      "sections": [
+        "152-7-13"
+      ],
+      "summary": "Schedule an inspection for work under an open building permit.",
+      "keywords": [
+        "inspection",
+        "inspector",
+        "footing",
+        "framing",
+        "final",
+        "rough"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Job site address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Building permit number",
+          "required": true
+        },
+        {
+          "label": "Type of inspection",
+          "required": true,
+          "hint": "footing, foundation, framing, rough plumbing, rough electrical, insulation, final"
+        },
+        {
+          "label": "Preferred date",
+          "required": true
+        },
+        {
+          "label": "Will someone be on site?",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Request the inspection at least one working day ahead.",
+        "Keep the approved plans and permit card on site.",
+        "Leave the work uncovered until it has been inspected.",
+        "The inspector leaves a result; any correction needs a re-inspection."
+      ],
+      "timing": "Requests received by 3 p.m. are usually scheduled for the next working day.",
+      "fees": "Re-inspections may carry a fee.",
+      "review_points": [
+        "The permit number matches an open permit.",
+        "The inspection type is the next one due.",
+        "The requested date gives at least one working day of notice."
+      ],
+      "sources": []
+    },
+    {
+      "id": "demolition_permit",
+      "department": "building",
+      "name": "Demolition permit",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The Building Official",
+      "sections": [
+        "91-63",
+        "91-81"
+      ],
+      "summary": "Permit to tear down a building or structure.",
+      "keywords": [
+        "demolish",
+        "demolition",
+        "tear down",
+        "remove building",
+        "asbestos"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Property address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Structure to be removed",
+          "required": true
+        },
+        {
+          "label": "Year built, if known",
+          "required": false
+        },
+        {
+          "label": "Contractor name",
+          "required": false
+        },
+        {
+          "label": "Are utilities disconnected?",
+          "required": true,
+          "hint": "water, sewer, gas, power"
+        },
+        {
+          "label": "Where debris will be taken",
+          "required": true
+        }
+      ],
+      "procedure": [
+        "Have every utility shut off and capped by the utility provider.",
+        "Have older buildings checked for asbestos before work starts.",
+        "Submit the application and pay the fee.",
+        "Haul debris to an approved site; burning it on site is not an option.",
+        "Call for a final inspection when the lot is cleared."
+      ],
+      "timing": "Review usually takes about 5 working days.",
+      "fees": "See the fee schedule.",
+      "review_points": [
+        "Utility disconnections are confirmed.",
+        "An asbestos check is on file for older buildings.",
+        "A debris disposal site is named."
+      ],
+      "sources": []
+    },
+    {
+      "id": "utility_new_service",
+      "department": "utilities",
+      "name": "Start or stop utility service",
+      "kind": "request",
+      "signature": true,
+      "location": "address",
+      "decider": "The Utility Department",
+      "sections": [
+        "52-6",
+        "52-7",
+        "52-8"
+      ],
+      "summary": "Start, transfer or stop water, sewer and trash service at an address.",
+      "keywords": [
+        "start service",
+        "stop service",
+        "move",
+        "moving",
+        "new account",
+        "disconnect",
+        "connect",
+        "turn on water"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Service address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Start or stop?",
+          "required": true
+        },
+        {
+          "label": "Date needed",
+          "required": true
+        },
+        {
+          "label": "Own or rent?",
+          "required": true
+        },
+        {
+          "label": "Forwarding address for the final bill",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Give at least two working days' notice.",
+        "Provide photo identification; renters also show a lease.",
+        "Staff read the meter on the start or stop date.",
+        "The first or final bill is sent to the address on the account."
+      ],
+      "timing": "Service usually starts or stops within two working days.",
+      "fees": "Deposits and reconnect charges come from the fee schedule.",
+      "review_points": [
+        "No delinquent debt to the city is on the applicant's record.",
+        "Proof of identity and of occupancy is on file.",
+        "The date gives enough notice."
+      ],
+      "sources": []
+    },
+    {
+      "id": "utility_billing",
+      "department": "utilities",
+      "name": "Utility billing question",
+      "kind": "request",
+      "signature": false,
+      "location": "address",
+      "decider": "Utility billing staff",
+      "sections": [
+        "52-2",
+        "52-3",
+        "52-4",
+        "52-5",
+        "52-8"
+      ],
+      "summary": "A question about a bill, a late charge, a high bill or a payment.",
+      "keywords": [
+        "bill",
+        "billing",
+        "water bill",
+        "high bill",
+        "late fee",
+        "late charge",
+        "payment",
+        "shutoff",
+        "leak adjustment",
+        "due date"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Service address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Account number",
+          "required": false,
+          "hint": "if known"
+        },
+        {
+          "label": "What is your question?",
+          "required": true
+        },
+        {
+          "label": "Bill date in question",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Billing staff pull the account and meter reads.",
+        "A high bill is checked against past use, and a re-read of the meter can be requested.",
+        "If a leak is the cause, staff explain the sample leak adjustment: a repaired leak may qualify for a one-time credit with a plumber's receipt.",
+        "Staff write back with what they found."
+      ],
+      "timing": "Staff usually answer within 3 working days.",
+      "fees": "",
+      "review_points": [
+        "The account matches the service address.",
+        "Recent meter reads were compared with past use.",
+        "If a leak is claimed, proof of repair is on file."
+      ],
+      "sources": []
+    },
+    {
+      "id": "utility_outage",
+      "department": "utilities",
+      "name": "Report a utility outage or water leak",
+      "kind": "report",
+      "signature": false,
+      "location": "pin",
+      "decider": "The Utility Department on-call crew",
+      "sections": [
+        "51-75",
+        "130-90"
+      ],
+      "summary": "Report no water, low pressure, a broken main, or a sewer backup. Gas smells are a 911 call.",
+      "keywords": [
+        "outage",
+        "no water",
+        "water main",
+        "main break",
+        "leak",
+        "low pressure",
+        "sewer backup",
+        "flooding"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Location",
+          "required": true,
+          "auto": "location",
+          "hint": "the map pin or the closest address"
+        },
+        {
+          "label": "What is happening?",
+          "required": true,
+          "hint": "no water, low pressure, leak, sewer backup"
+        },
+        {
+          "label": "When did it start?",
+          "required": false
+        },
+        {
+          "label": "Are neighbors affected?",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "The report goes to the on-call crew.",
+        "A crew checks the main and the meter.",
+        "If the problem is on the private side of the meter, staff say so and a plumber is needed.",
+        "Staff post a notice if a repair will shut off water for an area."
+      ],
+      "timing": "The crew usually responds the same day.",
+      "fees": "",
+      "review_points": [
+        "The location can be found from the pin or address.",
+        "The kind of problem is clear.",
+        "Anything urgent was passed to the on-call crew."
+      ],
+      "sources": []
+    },
+    {
+      "id": "hydrant_flow_test",
+      "department": "utilities",
+      "name": "Hydrant flow test request",
+      "kind": "application",
+      "signature": true,
+      "location": "pin",
+      "decider": "The Utility Department",
+      "sections": [
+        "130-89",
+        "54-74"
+      ],
+      "summary": "Ask the city to test the flow and pressure at a fire hydrant, usually for sprinkler design.",
+      "keywords": [
+        "flow test",
+        "hydrant",
+        "fire flow",
+        "sprinkler design",
+        "pressure test"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Company",
+          "required": false
+        },
+        {
+          "label": "Location",
+          "required": true,
+          "auto": "location",
+          "hint": "the hydrant nearest the site"
+        },
+        {
+          "label": "Project name",
+          "required": true
+        },
+        {
+          "label": "Why the test is needed",
+          "required": true,
+          "hint": "for example sprinkler design"
+        },
+        {
+          "label": "Preferred date",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Only city crews open a hydrant; no one else may operate one.",
+        "Staff pick the test and flow hydrants and schedule a date.",
+        "Crews run the test and record static, residual and flow readings.",
+        "The results are sent in writing."
+      ],
+      "timing": "Tests are usually scheduled within 10 working days, outside peak water use.",
+      "fees": "A test fee comes from the fee schedule.",
+      "review_points": [
+        "The test and flow hydrants are identified.",
+        "The purpose is stated.",
+        "The date avoids peak water use and any water restriction."
+      ],
+      "sources": []
+    },
+    {
+      "id": "road_hazard",
+      "department": "public_works",
+      "name": "Report a pothole or road hazard",
+      "kind": "report",
+      "signature": false,
+      "location": "pin",
+      "decider": "The Public Works crew lead",
+      "sections": [
+        "54-7"
+      ],
+      "summary": "Report a pothole, road damage, debris, a missing sign or another hazard in the street. Use the map to mark the spot.",
+      "keywords": [
+        "pothole",
+        "road",
+        "street",
+        "hazard",
+        "debris",
+        "sign down",
+        "sidewalk",
+        "crack",
+        "sinkhole"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Location",
+          "required": true,
+          "auto": "location",
+          "hint": "the map pin or the closest address"
+        },
+        {
+          "label": "What is the hazard?",
+          "required": true,
+          "hint": "pothole, debris, missing sign, damaged sidewalk"
+        },
+        {
+          "label": "Size or how bad it is",
+          "required": false
+        },
+        {
+          "label": "Is it blocking traffic?",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "The report goes on the crew's work list.",
+        "A crew lead looks at the spot and ranks it by safety.",
+        "Dangerous hazards are marked or blocked first.",
+        "Repairs are scheduled by priority and weather."
+      ],
+      "timing": "Staff usually inspect within 2 working days.",
+      "fees": "",
+      "review_points": [
+        "The spot is on a city street, not a state highway or private road.",
+        "The hazard is clear enough for a crew to find.",
+        "Anything dangerous has been flagged."
+      ],
+      "sources": []
+    },
+    {
+      "id": "street_light",
+      "department": "public_works",
+      "name": "Report a street light out",
+      "kind": "report",
+      "signature": false,
+      "location": "pin",
+      "decider": "The Public Works crew lead",
+      "sections": [],
+      "summary": "Report a street light that is out, flickering or damaged.",
+      "keywords": [
+        "street light",
+        "streetlight",
+        "light out",
+        "pole",
+        "flickering"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Location",
+          "required": true,
+          "auto": "location",
+          "hint": "the map pin or the closest address"
+        },
+        {
+          "label": "Pole number, if you can see it",
+          "required": false
+        },
+        {
+          "label": "What is wrong?",
+          "required": true,
+          "hint": "out, flickering, on all day, damaged"
+        }
+      ],
+      "procedure": [
+        "Staff confirm who owns the pole.",
+        "City lights go on the repair list; lights owned by the power company are passed to it."
+      ],
+      "timing": "Repairs usually take 5 to 10 working days.",
+      "fees": "",
+      "review_points": [
+        "The pole can be identified.",
+        "It is known who owns the light."
+      ],
+      "sources": []
+    },
+    {
+      "id": "storm_drain",
+      "department": "public_works",
+      "name": "Report a storm drain problem",
+      "kind": "report",
+      "signature": false,
+      "location": "pin",
+      "decider": "The Public Works crew lead",
+      "sections": [
+        "50-26",
+        "91-111"
+      ],
+      "summary": "Report a blocked storm drain, standing water, or something being dumped into a drain.",
+      "keywords": [
+        "storm drain",
+        "drain",
+        "flooding",
+        "standing water",
+        "culvert",
+        "dumping"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Location",
+          "required": true,
+          "auto": "location",
+          "hint": "the map pin or the closest address"
+        },
+        {
+          "label": "What is happening?",
+          "required": true,
+          "hint": "blocked, flooding, dumping"
+        },
+        {
+          "label": "When did you see it?",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "A crew checks the drain and clears it if needed.",
+        "Dumping reports are shared with Code Enforcement."
+      ],
+      "timing": "Staff usually inspect within 2 working days, sooner during storms.",
+      "fees": "",
+      "review_points": [
+        "The drain can be found from the pin.",
+        "Any dumping was passed to Code Enforcement."
+      ],
+      "sources": []
+    },
+    {
+      "id": "right_of_way_permit",
+      "department": "public_works",
+      "name": "Excavation permit (work in the street)",
+      "kind": "application",
+      "signature": true,
+      "location": "pin",
+      "decider": "The Public Works Director",
+      "sections": [
+        "54-4",
+        "54-5"
+      ],
+      "summary": "Permit to dig in a public street, sidewalk or easement.",
+      "keywords": [
+        "excavation",
+        "dig",
+        "trench",
+        "right of way",
+        "curb cut",
+        "encroachment",
+        "street cut",
+        "driveway approach"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Contractor name",
+          "required": true
+        },
+        {
+          "label": "Location",
+          "required": true,
+          "auto": "location",
+          "hint": "where the digging will happen"
+        },
+        {
+          "label": "Purpose of the work",
+          "required": true
+        },
+        {
+          "label": "Size of the excavation",
+          "required": true,
+          "hint": "length, width and depth"
+        },
+        {
+          "label": "Start and end dates",
+          "required": true
+        },
+        {
+          "label": "Traffic control plan?",
+          "required": false,
+          "hint": "yes or no"
+        }
+      ],
+      "procedure": [
+        "Submit the written, signed application with the size and purpose of the work.",
+        "Show proof of insurance and a traffic control plan.",
+        "Call 811 to have utilities marked before digging.",
+        "Keep safe passage and proper signs in place while working.",
+        "Call for an inspection before backfilling and paving."
+      ],
+      "timing": "Review usually takes about 5 working days.",
+      "fees": "A permit fee and any deposit come from the fee schedule.",
+      "review_points": [
+        "The application is written and signed, with the size of the excavation.",
+        "A traffic control plan follows the signing standard the code names.",
+        "Insurance is on file."
+      ],
+      "sources": []
+    },
+    {
+      "id": "police_report",
+      "department": "police",
+      "name": "Non-emergency police report",
+      "kind": "report",
+      "signature": false,
+      "location": "address",
+      "decider": "A police officer",
+      "sections": [],
+      "summary": "Report something that already happened, with no danger now and no known suspect: lost property, minor theft, vandalism.",
+      "keywords": [
+        "police report",
+        "stolen",
+        "theft",
+        "lost",
+        "vandalism",
+        "non-emergency",
+        "suspicious"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Where it happened",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "What happened?",
+          "required": true
+        },
+        {
+          "label": "When did it happen?",
+          "required": true
+        },
+        {
+          "label": "Property involved and its value",
+          "required": false
+        },
+        {
+          "label": "Do you know who did it?",
+          "required": true,
+          "hint": "if yes, an officer needs to talk with you"
+        }
+      ],
+      "procedure": [
+        "This form is for past events with no danger now. Anything happening right now is a 911 call.",
+        "An officer reads the report and may call you.",
+        "A report with a known suspect, or a crime against a person, is handled by an officer in person.",
+        "You get a report number once it is accepted."
+      ],
+      "timing": "An officer usually reviews reports within 3 working days.",
+      "fees": "",
+      "review_points": [
+        "The event is in the past with no danger now.",
+        "It happened inside the city.",
+        "No known suspect or crime against a person means this form fits; otherwise an officer follows up."
+      ],
+      "sources": []
+    },
+    {
+      "id": "police_records",
+      "department": "police",
+      "name": "Police records request",
+      "kind": "request",
+      "signature": true,
+      "location": "none",
+      "decider": "The Police Records Clerk",
+      "sections": [
+        "5-1",
+        "5-2",
+        "5-5"
+      ],
+      "summary": "Ask for a copy of a police report or another police record.",
+      "keywords": [
+        "police report copy",
+        "accident report",
+        "records request",
+        "police records",
+        "incident report"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Case or report number",
+          "required": false
+        },
+        {
+          "label": "Date of the event",
+          "required": true
+        },
+        {
+          "label": "Location of the event",
+          "required": false
+        },
+        {
+          "label": "People involved",
+          "required": false
+        },
+        {
+          "label": "Your connection to the case",
+          "required": true,
+          "hint": "for example involved party, attorney, insurer"
+        },
+        {
+          "label": "Records you want",
+          "required": true
+        }
+      ],
+      "procedure": [
+        "Describe the record clearly enough for staff to find it.",
+        "Show identification when you pick up the record.",
+        "Staff review the record under the state's records law; parts may be withheld.",
+        "If the request is denied, the letter explains how to appeal."
+      ],
+      "timing": "State law generally gives a government office up to 10 working days to respond.",
+      "fees": "Copy costs come from the fee schedule.",
+      "review_points": [
+        "The record is described clearly.",
+        "The requester's connection to the case is stated.",
+        "Any part withheld is identified under the records law."
+      ],
+      "sources": []
+    },
+    {
+      "id": "police_standby",
+      "department": "police",
+      "name": "Police standby for an event",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The Chief of Police",
+      "sections": [
+        "71-116",
+        "54-6"
+      ],
+      "summary": "Ask for officers to be on site at a private or community event.",
+      "keywords": [
+        "police standby",
+        "off-duty officer",
+        "security",
+        "event",
+        "festival",
+        "crowd",
+        "traffic control",
+        "parade"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Organization",
+          "required": false
+        },
+        {
+          "label": "Event name",
+          "required": true
+        },
+        {
+          "label": "Event location",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Date and hours",
+          "required": true
+        },
+        {
+          "label": "Expected attendance",
+          "required": true
+        },
+        {
+          "label": "Will alcohol be served?",
+          "required": true
+        },
+        {
+          "label": "Why officers are needed",
+          "required": true,
+          "hint": "for example crowd, traffic, money handling"
+        }
+      ],
+      "procedure": [
+        "Apply at least 14 days before the event.",
+        "The Chief decides how many officers are needed, or whether any are available.",
+        "The event host pays for officer time at the posted rate.",
+        "A parade or anything on a street also needs a city permit.",
+        "Officers follow police rules at all times, not the host's instructions."
+      ],
+      "timing": "Apply at least 14 days ahead; staff usually answer within 5 working days.",
+      "fees": "Officers are billed by the hour with a sample minimum of 3 hours; see the fee schedule.",
+      "review_points": [
+        "The request arrived at least 14 days ahead.",
+        "Attendance, alcohol and hours are stated.",
+        "Any needed event or parade permit is noted.",
+        "Officer availability has been checked."
+      ],
+      "sources": []
+    },
+    {
+      "id": "police_house_watch",
+      "department": "police",
+      "name": "House watch while you are away",
+      "kind": "request",
+      "signature": true,
+      "location": "address",
+      "decider": "The patrol supervisor",
+      "sections": [],
+      "summary": "Ask officers to check on your home while you are out of town.",
+      "keywords": [
+        "house watch",
+        "vacation check",
+        "out of town",
+        "vacation",
+        "away"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Home address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Leaving date",
+          "required": true
+        },
+        {
+          "label": "Return date",
+          "required": true
+        },
+        {
+          "label": "Emergency contact name and phone",
+          "required": true
+        },
+        {
+          "label": "Who else may be at the home?",
+          "required": false
+        },
+        {
+          "label": "Lights or vehicles left on or parked",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Officers drive by or walk around as patrol time allows.",
+        "A check is not a guarantee of protection.",
+        "Tell the department if you come home early."
+      ],
+      "timing": "Requests should arrive at least 2 days before you leave. Sample limit: 30 days.",
+      "fees": "",
+      "review_points": [
+        "The dates are clear and within the limit.",
+        "An emergency contact is listed."
+      ],
+      "sources": []
+    },
+    {
+      "id": "fire_alarm_inspection",
+      "department": "fire",
+      "name": "Fire alarm inspection request",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The Fire Marshal",
+      "sections": [
+        "131-1",
+        "131-3",
+        "72-9"
+      ],
+      "summary": "Schedule a fire department inspection of a fire alarm system: new, changed or annual.",
+      "keywords": [
+        "fire alarm",
+        "alarm inspection",
+        "alarm test",
+        "panel",
+        "fire inspection",
+        "false alarm"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Business or building name",
+          "required": true
+        },
+        {
+          "label": "Building address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Type of inspection",
+          "required": true,
+          "hint": "new system, change to a system, annual"
+        },
+        {
+          "label": "Alarm company and technician",
+          "required": false
+        },
+        {
+          "label": "Preferred date",
+          "required": true
+        }
+      ],
+      "procedure": [
+        "New or changed systems need approved plans before work starts.",
+        "The alarm contractor tests the system first.",
+        "A technician must be present for the inspection.",
+        "The Fire Marshal witnesses the test and records the result.",
+        "Tell the monitoring company before a test so no false alarm is sent."
+      ],
+      "timing": "Inspections are usually scheduled within 5 working days.",
+      "fees": "An inspection fee comes from the fee schedule. False alarm charges are set under section 131-3.",
+      "review_points": [
+        "The building and system are identified.",
+        "A technician will be on site.",
+        "Plans are on file for a new or changed system.",
+        "The monitoring company has been told."
+      ],
+      "sources": []
+    },
+    {
+      "id": "burn_permit",
+      "department": "fire",
+      "name": "Open burn permit",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The Fire Chief",
+      "sections": [
+        "91-80",
+        "91-81"
+      ],
+      "summary": "Permit for an open burn such as a weed or brush pile.",
+      "keywords": [
+        "burn",
+        "burning",
+        "burn permit",
+        "weeds",
+        "brush",
+        "ditch",
+        "bonfire",
+        "open burn",
+        "fire pit"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Burn location",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "What will be burned?",
+          "required": true,
+          "hint": "for example yard waste, ditch weeds"
+        },
+        {
+          "label": "Size of the pile",
+          "required": true
+        },
+        {
+          "label": "Planned date",
+          "required": true
+        },
+        {
+          "label": "Water or tools on hand",
+          "required": true
+        },
+        {
+          "label": "Distance to buildings or fences",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Only clean yard and ditch waste may be burned: no trash, tires, or construction waste.",
+        "Check the burn day status before lighting; burning stops on days with poor air or high wind.",
+        "An adult stays with the fire with water or tools at hand until it is fully out.",
+        "Sample seasons: state rules generally close open burning for part of the year, so ask about current dates.",
+        "The department can cancel a permit at any time."
+      ],
+      "timing": "Staff usually answer within 2 working days and may visit the site first.",
+      "fees": "",
+      "review_points": [
+        "The material is allowed to be burned.",
+        "The date is in an open burn period.",
+        "Distances from buildings and fences are safe.",
+        "Water or tools will be on hand."
+      ],
+      "sources": []
+    },
+    {
+      "id": "fire_info_request",
+      "department": "fire",
+      "name": "Fire records or information request",
+      "kind": "request",
+      "signature": false,
+      "location": "none",
+      "decider": "The Fire Department records officer",
+      "sections": [
+        "5-1",
+        "5-2"
+      ],
+      "summary": "Ask for a fire incident report, inspection record, or information such as response times.",
+      "keywords": [
+        "response time",
+        "fire report",
+        "incident report",
+        "fire records",
+        "statistics",
+        "information request",
+        "insurance"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "What you want",
+          "required": true,
+          "hint": "for example a fire incident report, response times"
+        },
+        {
+          "label": "Date or date range",
+          "required": true
+        },
+        {
+          "label": "Address or area involved",
+          "required": false
+        },
+        {
+          "label": "How you will use it",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Describe the record or data you want.",
+        "Staff pull it from department records.",
+        "Records are reviewed under the state's records law; medical details are withheld.",
+        "Trust City has no real response data: any figures here would be samples."
+      ],
+      "timing": "State law generally gives a government office up to 10 working days to respond.",
+      "fees": "Copy costs come from the fee schedule.",
+      "review_points": [
+        "The record or data is described clearly.",
+        "Private or medical details are withheld."
+      ],
+      "sources": []
+    },
+    {
+      "id": "fireworks_display",
+      "department": "fire",
+      "name": "Fireworks display permit",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The Fire Marshal",
+      "sections": [
+        "112-4"
+      ],
+      "summary": "Permit for a public fireworks show run by a licensed operator.",
+      "keywords": [
+        "fireworks",
+        "display",
+        "pyrotechnics",
+        "show"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Sponsoring group",
+          "required": true
+        },
+        {
+          "label": "Display location",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Date and time",
+          "required": true
+        },
+        {
+          "label": "Licensed operator name and license number",
+          "required": true
+        },
+        {
+          "label": "Insurance company",
+          "required": true
+        },
+        {
+          "label": "Expected crowd",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Apply at least 30 days before the show.",
+        "Only a state-licensed display operator may run it.",
+        "Show proof of insurance naming the city.",
+        "The Fire Marshal inspects the site and the set-up.",
+        "Fire restrictions can cancel a permit."
+      ],
+      "timing": "Apply at least 30 days ahead.",
+      "fees": "A permit fee comes from the fee schedule.",
+      "review_points": [
+        "The operator's license is on file.",
+        "Insurance is on file.",
+        "The site and safe distances have been reviewed.",
+        "No fire restriction is in effect."
+      ],
+      "sources": []
+    },
+    {
+      "id": "pavilion_reservation",
+      "department": "parks",
+      "name": "Park pavilion reservation",
+      "kind": "application",
+      "signature": true,
+      "location": "none",
+      "decider": "The Parks and Recreation Coordinator",
+      "sections": [
+        "130-91"
+      ],
+      "summary": "Reserve a park pavilion or field for a party, reunion or group.",
+      "keywords": [
+        "pavilion",
+        "reserve",
+        "reservation",
+        "park",
+        "party",
+        "reunion",
+        "field",
+        "bowery",
+        "picnic"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Park or pavilion",
+          "required": true
+        },
+        {
+          "label": "Date",
+          "required": true
+        },
+        {
+          "label": "Start and end time",
+          "required": true
+        },
+        {
+          "label": "Number of people",
+          "required": true
+        },
+        {
+          "label": "Type of event",
+          "required": true
+        },
+        {
+          "label": "Will there be amplified music, bounce houses or vendors?",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Reservations are first come, first served.",
+        "A deposit holds the date and is returned if the site is left clean.",
+        "Cancel at least 14 days ahead for a refund.",
+        "Parks close at dark unless the city gives a permit to stay.",
+        "Large groups or events open to the public may need a special event permit."
+      ],
+      "timing": "Staff usually confirm within 3 working days.",
+      "fees": "Sample rates: $40 for a half day, plus a $50 refundable deposit. Residents pay less than non-residents at many cities.",
+      "review_points": [
+        "The date is open.",
+        "The group size fits the pavilion.",
+        "The hours end by dark or a permit is requested.",
+        "Extras are noted, and a special event permit is flagged if needed."
+      ],
+      "sources": []
+    },
+    {
+      "id": "special_event",
+      "department": "parks",
+      "name": "Special event permit",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The City Manager's designee, with Police, Fire and Public Works",
+      "sections": [
+        "112-3",
+        "71-116",
+        "152-7-16"
+      ],
+      "summary": "Permit for a festival, race, parade, market or other event on public property.",
+      "keywords": [
+        "special event",
+        "festival",
+        "race",
+        "parade",
+        "5k",
+        "market",
+        "street closure",
+        "concert",
+        "vendors"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Sponsoring group",
+          "required": true
+        },
+        {
+          "label": "Event name",
+          "required": true
+        },
+        {
+          "label": "Location or route",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Date and hours",
+          "required": true
+        },
+        {
+          "label": "Expected attendance",
+          "required": true
+        },
+        {
+          "label": "Street closures needed?",
+          "required": true
+        },
+        {
+          "label": "Vendors, food or alcohol?",
+          "required": true
+        },
+        {
+          "label": "Insurance company",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Apply at least 45 days before the event.",
+        "Police, Fire, Public Works and Parks each review it.",
+        "A site map or route is required.",
+        "Larger events need insurance naming the city.",
+        "Food vendors need their own health and business approvals."
+      ],
+      "timing": "Apply at least 45 days ahead.",
+      "fees": "An application fee and any city service costs come from the fee schedule.",
+      "review_points": [
+        "A site map or route is attached.",
+        "Each department has reviewed it.",
+        "Insurance is on file.",
+        "Parade, street or vendor rules are covered."
+      ],
+      "sources": []
+    },
+    {
+      "id": "recreation_signup",
+      "department": "parks",
+      "name": "Recreation program sign-up",
+      "kind": "request",
+      "signature": true,
+      "location": "none",
+      "decider": "The Parks and Recreation Coordinator",
+      "sections": [],
+      "summary": "Sign someone up for a city recreation program or ask about one.",
+      "keywords": [
+        "recreation",
+        "sign up",
+        "register",
+        "class",
+        "league",
+        "soccer",
+        "swim",
+        "youth",
+        "refund"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Participant's name",
+          "required": true
+        },
+        {
+          "label": "Participant's age",
+          "required": true
+        },
+        {
+          "label": "Program",
+          "required": true
+        },
+        {
+          "label": "Emergency contact",
+          "required": true
+        },
+        {
+          "label": "Medical or access needs",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Sign up before the deadline for the program.",
+        "A parent or guardian signs for anyone under 18.",
+        "Refunds are given before a program starts, minus a small processing charge."
+      ],
+      "timing": "Staff usually confirm within 3 working days.",
+      "fees": "Program fees vary; sample programs run $25 to $60.",
+      "review_points": [
+        "The program has space.",
+        "The age fits the program.",
+        "A guardian signed for anyone under 18."
+      ],
+      "sources": []
+    },
+    {
+      "id": "code_complaint",
+      "department": "enforcement",
+      "name": "Code complaint",
+      "kind": "report",
+      "signature": false,
+      "location": "address",
+      "decider": "The Code Enforcement Officer",
+      "sections": [
+        "91-5",
+        "91-6",
+        "91-8",
+        "91-9"
+      ],
+      "summary": "Report weeds, junk, a nuisance or other property conditions.",
+      "keywords": [
+        "complaint",
+        "weeds",
+        "junk",
+        "nuisance",
+        "trash",
+        "abandoned",
+        "inoperable vehicle",
+        "neighbor"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Address of the problem",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "What is the problem?",
+          "required": true
+        },
+        {
+          "label": "How long has it been going on?",
+          "required": false
+        },
+        {
+          "label": "Photos available?",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "The officer reads the report and checks the site.",
+        "Reports are described as what was seen; only the officer finds whether a violation exists.",
+        "If there is one, the owner gets a notice and a chance to fix it first.",
+        "Your report is a government record; ask staff how the records law treats your name."
+      ],
+      "timing": "An officer usually checks the site within 5 working days.",
+      "fees": "",
+      "review_points": [
+        "The property is identified.",
+        "The condition is described as it was seen.",
+        "The section that may apply is named.",
+        "A site visit is scheduled."
+      ],
+      "sources": []
+    },
+    {
+      "id": "animal_complaint",
+      "department": "enforcement",
+      "name": "Animal complaint",
+      "kind": "report",
+      "signature": false,
+      "location": "address",
+      "decider": "The Animal Control Officer",
+      "sections": [
+        "90-120",
+        "90-123",
+        "90-6"
+      ],
+      "summary": "Report a barking dog, a loose animal or another animal problem. A dangerous animal on the loose is a 911 call.",
+      "keywords": [
+        "barking",
+        "dog",
+        "loose dog",
+        "stray",
+        "animal",
+        "cat",
+        "bite",
+        "animal control"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Address of the animal",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Kind of animal",
+          "required": true
+        },
+        {
+          "label": "What is happening?",
+          "required": true
+        },
+        {
+          "label": "Dates and times",
+          "required": true
+        }
+      ],
+      "procedure": [
+        "The officer reads the report and may visit.",
+        "For barking, the code sets a measure of how long and how often: keep a dated log.",
+        "The owner usually gets a warning first.",
+        "A bite goes to the officer the same day."
+      ],
+      "timing": "An officer usually responds within 2 working days.",
+      "fees": "",
+      "review_points": [
+        "The address and animal are identified.",
+        "Dates and times are given.",
+        "Any bite was handled the same day."
+      ],
+      "sources": []
+    },
+    {
+      "id": "dog_license",
+      "department": "enforcement",
+      "name": "Dog license",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The Animal Control Officer",
+      "sections": [
+        "90-33",
+        "90-34",
+        "90-35"
+      ],
+      "summary": "License a dog in the city.",
+      "keywords": [
+        "dog license",
+        "dog tag",
+        "license my dog",
+        "rabies",
+        "vaccination"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Home address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Dog's name",
+          "required": true
+        },
+        {
+          "label": "Breed and color",
+          "required": true
+        },
+        {
+          "label": "Age",
+          "required": true
+        },
+        {
+          "label": "Spayed or neutered?",
+          "required": true
+        },
+        {
+          "label": "Rabies vaccination date",
+          "required": true
+        }
+      ],
+      "procedure": [
+        "Bring proof of rabies vaccination.",
+        "Pay the license fee.",
+        "Put the tag on the dog's collar."
+      ],
+      "timing": "Licenses are usually issued the same day.",
+      "fees": "Fees are set under section 90-34 and the fee schedule.",
+      "review_points": [
+        "A vaccination certificate is on file.",
+        "The dog is old enough to need a license.",
+        "The fee is paid."
+      ],
+      "sources": []
+    },
+    {
+      "id": "public_records_request",
+      "department": "recorder",
+      "name": "Public records request",
+      "kind": "request",
+      "signature": true,
+      "location": "none",
+      "decider": "The City Recorder",
+      "sections": [
+        "5-1",
+        "5-2",
+        "5-5"
+      ],
+      "summary": "Ask for a copy of a city record under the state's records law.",
+      "keywords": [
+        "records request",
+        "GRAMA",
+        "public records",
+        "documents",
+        "copies",
+        "minutes"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Mailing address",
+          "required": true
+        },
+        {
+          "label": "Records you want",
+          "required": true,
+          "hint": "describe them as exactly as you can"
+        },
+        {
+          "label": "Date range",
+          "required": false
+        },
+        {
+          "label": "Ask for a fee waiver?",
+          "required": false
+        },
+        {
+          "label": "Is this urgent, and why?",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "A written request names the records with reasonable detail.",
+        "The Recorder finds the record and reviews it under the records law.",
+        "You get the record, or a letter saying what is withheld and why.",
+        "A denial can be appealed; section 5-5 explains how."
+      ],
+      "timing": "State law generally gives a government office up to 10 working days to respond, and less for some urgent requests.",
+      "fees": "Costs are set under section 5-2 and the fee schedule.",
+      "review_points": [
+        "The request describes the record reasonably.",
+        "The requester's name and address are present.",
+        "Any denial explains the appeal right."
+      ],
+      "sources": []
+    },
+    {
+      "id": "business_license",
+      "department": "recorder",
+      "name": "Business license",
+      "kind": "application",
+      "signature": true,
+      "location": "address",
+      "decider": "The City Manager or designee",
+      "sections": [
+        "110-1",
+        "110-2",
+        "110-5"
+      ],
+      "summary": "License a business in the city, including a business at home.",
+      "keywords": [
+        "business license",
+        "open a business",
+        "shop",
+        "home business",
+        "license renewal"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Business name",
+          "required": true
+        },
+        {
+          "label": "Business address",
+          "required": true,
+          "auto": "location"
+        },
+        {
+          "label": "Type of business",
+          "required": true
+        },
+        {
+          "label": "Owner's name",
+          "required": true
+        },
+        {
+          "label": "State tax ID, if you have one",
+          "required": false
+        },
+        {
+          "label": "Number of employees",
+          "required": false
+        }
+      ],
+      "procedure": [
+        "Register the business with the state first.",
+        "Planning & Zoning checks that the use fits the zone; a home business has its own rules.",
+        "Fire and Building may inspect the space.",
+        "The City Manager or designee approves the license.",
+        "Licenses are renewed each year."
+      ],
+      "timing": "Review usually takes about 10 working days.",
+      "fees": "Fees are set under section 110-5 and the fee schedule.",
+      "review_points": [
+        "Zoning has been checked.",
+        "State registration is on file.",
+        "Inspections are noted."
+      ],
+      "sources": []
+    },
+    {
+      "id": "public_meetings",
+      "department": "recorder",
+      "name": "Meeting agenda or minutes request",
+      "kind": "request",
+      "signature": false,
+      "location": "none",
+      "decider": "The City Recorder",
+      "sections": [
+        "30-4",
+        "30-6"
+      ],
+      "summary": "Find a City Council meeting, agenda or minutes, or ask to speak at a meeting.",
+      "keywords": [
+        "meeting",
+        "agenda",
+        "minutes",
+        "city council",
+        "public comment",
+        "planning commission meeting"
+      ],
+      "fields": [
+        {
+          "label": "Your name",
+          "required": true,
+          "auto": "name"
+        },
+        {
+          "label": "Phone",
+          "required": true,
+          "auto": "phone"
+        },
+        {
+          "label": "Email",
+          "auto": "email"
+        },
+        {
+          "label": "Which meeting or body?",
+          "required": true
+        },
+        {
+          "label": "Date",
+          "required": false
+        },
+        {
+          "label": "What do you need?",
+          "required": true,
+          "hint": "agenda, minutes, recording, a spot to speak"
+        }
+      ],
+      "procedure": [
+        "State law requires public notice of each meeting and its agenda.",
+        "Agendas are posted before each meeting and on the state's public notice website.",
+        "Approved minutes are kept by the Recorder.",
+        "To speak, ask the Recorder to be added to the agenda."
+      ],
+      "timing": "Agendas are posted at least 24 hours before a meeting.",
+      "fees": "",
+      "review_points": [
+        "The meeting is identified.",
+        "The request is sent to the right body."
+      ],
+      "sources": []
+    }
+  ]
+}

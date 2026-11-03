@@ -86,14 +86,14 @@ module.exports = [
     ],
   },
   {
-    id: "channels",
+    id: "channels", min: 12,
     clip: "resident", segs: [{ from: "ch:map", to: "ch:code", w: 1 }, { from: "ch:code", to: "ch:submissions", w: 1 }, { from: "ch:submissions", to: "ch:paperwork", w: 1 }, { from: "ch:paperwork", to: "sign-open", w: 1.2 }],
-    say: "Every quote is checked, word for word, against the code. SAM 3.1 outlines his drawing. Then Juniper fills out a city-style application.",
+    say: "Quotes are checked, word for word, against the code. SAM 3.1 outlines his drawing. Then Juniper fills out a city-style application.",
     callouts: [
-      { at: 0.4, dur: 4, model: "Real public data", text: "Washington County zoning · UGRC SGID parcels (data modified) · owner names are fictional" },
-      { at: 4.6, dur: 4, model: "Verified quotes", text: "every quote is matched to the stored code text" },
-      { at: 9, dur: 4, model: "SAM 3.1", text: "outlines the shapes in the resident's drawing" },
-      { at: 13.2, dur: 5, model: "Muse Spark · structured output", text: "fills in a city-style application" },
+      { at: 0.2, dur: 2.5, model: "Real public data", text: "Washington County zoning · UGRC SGID parcels (data modified) · owner names are fictional" },
+      { at: 3.0, dur: 2.5, model: "Verified quotes", text: "quotes are matched to the stored code text" },
+      { at: 5.9, dur: 2.5, model: "SAM 3.1", text: "outlines the shapes in the resident's drawing" },
+      { at: 8.8, dur: 2.9, model: "Muse Spark · structured output", text: "fills in a city-style application" },
     ],
   },
   {

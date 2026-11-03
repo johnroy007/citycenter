@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CityCenter: Virtual City Help Desk</title>
-<link rel="stylesheet" href="/public/app.css?v=20261103a">
+<link rel="stylesheet" href="/public/app.css?v=20261103d">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body class="resident">
@@ -13,6 +13,7 @@
   <nav>
     <button type="button" class="quiet" id="muteBtn" title="Read replies aloud (browser voice)">🔊 Voice on</button>
     <button type="button" class="quiet" id="demoBtn" title="Worked examples for judges">▶ Examples</button>
+    <a href="/about">Information</a>
     <a href="/trust-gap">Local Government Trust Gap Model</a>
     <a href="/staff">Staff</a>
     <a href="/privacy">Privacy</a>
@@ -41,7 +42,7 @@
     <ol class="chat" id="chat"></ol>
     <details class="lookup-box"><summary class="small">Come back to an earlier visit</summary>
       <form id="lookup" class="row" style="margin-top:8px">
-        <input type="text" id="lookupRef" placeholder="Visit code, e.g. HC-2026-0107-xzUHULux" aria-label="Visit code" style="max-width:280px">
+        <input type="text" id="lookupRef" placeholder="Visit code, e.g. TC-2026-0107-xzUHULux" aria-label="Visit code" style="max-width:280px">
         <button type="submit" class="secondary">Open</button>
       </form>
     </details>
@@ -93,7 +94,7 @@
   </div>
 </main>
 <footer class="credits" id="credits"></footer>
-<script src="/public/form.js?v=20261103c"></script>
-<script src="/public/resident.js?v=20261103c"></script>
+<script src="/public/form.js?v=20261103d"></script>
+<script src="/public/resident.js?v=20261103d"></script>
 </body>
 </html>

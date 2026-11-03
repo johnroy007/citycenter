@@ -3,32 +3,24 @@
 > Handoff log. Every agent (Claude or Codex, any laptop) reads this at the start of a task and updates it at the end. Newest log entries at the top. The day-by-day plan and rules digest live in the private notebook `C:\Users\John Barlow\Projects\citycenter-notes`.
 
 ## Status
-**Feature-complete and live. Submission due 2026-11-04, 9 PM ET.** The live site runs end to end through the Cloudflare relay: the office scene (history, characters, TV with remote, zoom and map views), consent before every hand-off, eleven desks with their own characters (Planning is the working one; the rest say they are not built out yet), tappable replies, resident accounts and a single visit code, electronic signature before submission, resubmission after changes, and the four-step staff workspace (submitted documents as the real form, code summary with verified quotes, point-by-point review, auto-generated return letter that freezes once edited). 32 offline unit tests pass; the HTTP journey passes locally and on Render; 13 worked examples are seeded on the live site with signatures.
+**Feature-complete and live. Submission due 2026-11-04, 9 PM ET.** The live site runs end to end with direct Meta calls (the Cloudflare relay is off): the office scene, consent before every hand-off, eleven desks with their own characters (Planning is the working one; the rest say they are not built out yet), electronic signature, resubmission, and the four-step staff workspace. No sign-in anywhere. 35 offline unit tests pass. The queue was reset on 2026-11-03: 13 fresh worked examples plus video visits TC-2026-0114 and 0115.
 
-- **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (open to everyone, no sign-in since 2026-11-03). If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` (still needs the staff passcode: sign in with `POST /api/staff/login`): `api_base` must be the worker address and `models` must list 9.
+- **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (open to everyone, no sign-in since 2026-11-03). If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` (needs the staff passcode: sign in with `POST /api/staff/login`): `via_relay` should be false, `models` should list 9, and `direct` should be all 200.
 - **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff. Stop any old `node server.js` first.
-- **Demo video:** a full 2:55 cut exists (built 2026-11-02 from the live Trust City site, visit TC-2026-0138), with a stand-in computer voice. It is at `video/out/citycenter-demo.mp4` on John's laptop only (git-ignored, 60 MB); rebuild it anywhere with `node video/capture.js` then `node video/build.js`. See `video/README.md`.
-- **Last updated:** 2026-11-03 by Claude Code on John's laptop (computer name JOHN): pre-submission audit done, no code changed; findings are in the private notebook.
+- **Demo video:** final 2:59 cut at 2560x1440 from the live site, visit TC-2026-0115. It is in John's Downloads as `CityCenter-demo.mp4` and `CityCenter-demo-captions.srt`. John still has to upload it. Rebuild with `node video/capture.js` then `GOOGLE_TTS_VOICE=en-US-Chirp3-HD-Charon node video/build.js`.
+- **Last updated:** 2026-11-03 by Claude Code on John's laptop (computer name JOHN): compliance fixes live; new video built.
 
 ## RESUME POINT
-**Start here:** the pre-submission audit is finished and its fixes wait on John. Read `notes/audit-2026-11-03.md` in the private notebook (`C:\Users\John Barlow\Projects\citycenter-notes`) before changing the app, the video or the submission form. Keep its details out of this public repo.
+**Start here:** the compliance fixes are live and the corrected video is in John's Downloads. What is left is John's: upload the video, then submit before 2026-11-04 9 PM ET. Audit details and the rights inventory are in the private notebook (`citycenter-notes`, file `notes/audit-2026-11-03.md`); keep them out of this public repo. The form answers and the YouTube description are in that notebook's `notes/submission-draft.md`.
 
-**First:** the live demo examples were written while the town was still called Hildale, so their stored conversations and paperwork still say the old name (and use HC- references). Once John says yes, run `node scripts/seed-remote.js https://citycenter-puh5.onrender.com --fresh` (it deletes the old demo visits and replays all 13; roughly $3 to $5 of model calls; John's own visits are kept). Then tell the video session (citycenter-84) that the reseed is done, if it is still running. After that, the earlier plan stands:
+If the app changes again before the deadline: deploy with `npm run deploy`, re-record with `node video/capture.js` (about 10 minutes, a few cents, drives the live site; it plays `video/turn1.wav` into a fake microphone), build with the command above (must stay at or under 3:00), look at stills, and copy the .mp4 and .srt from `video/out/` to John's Downloads. The Google voice key lives only in the git-ignored `.env.google-tts.local` on John's main laptop.
 
-Nothing is half-built. **The final video is done (2026-11-03, afternoon):** re-recorded on the live app after the logins were removed and the Trust Gap Model page was added (the capture hides that page's top-bar link, per John), visit TC-2026-0140, voice one, 2:59. It is in John's Downloads as `CityCenter-demo.mp4` + `CityCenter-demo-captions.srt`, ready for YouTube. If the app changes again before the deadline, repeat these steps:
-1. Deploy the app changes (`npm run deploy` after pushing) and check the live site.
-2. Re-record the screens: `node video/capture.js` (about 10 minutes, a few cents; drives the live site; staff passcode from `.env`). If a screen changed so a step can't be found, update `video/capture.js` (selectors and markers) and, if needed, the matching lines and callouts in `video/scenes.js`.
-3. Build with John's chosen voice: `GOOGLE_TTS_VOICE=en-US-Chirp3-HD-Charon node video/build.js` (opening statement is in Kore, set in `video/scenes.js`). It must come out at or under 3:00; the builder speeds the voice up to fit, up to 12%.
-4. Watch stills of each scene, then copy `video/out/citycenter-demo.mp4` and `.srt` to John's Downloads as `CityCenter-demo.mp4` and `CityCenter-demo-captions.srt`, and send him a WebM preview (VS Code's player has no sound for MP4).
-The Google key lives only in the git-ignored `.env.google-tts.local` on John's main laptop; on another laptop, John makes or copies a key from Google Cloud console > APIs & Services > Credentials. Then the README check and the Devpost/Cerebral Valley form (with the YouTube link), all before 2026-11-04 9 PM ET.
-
-How the hosting works, for whoever picks this up: the app's Meta client reads `META_API_BASE` and `META_RELAY_SECRET` and sends every call to the Cloudflare Worker `citycenter-relay` in John's Cloudflare account (code in `relay/worker.js`). Check it with `node scripts/probe-relay.js <worker address>` from the laptop or `/api/staff/diag` on the live site. Change Render settings by editing the git-ignored `.env.render-vars.local` and running `node scripts/render-env.js --file .env.render-vars.local`. Deploys after a push need `npm run deploy`. Fallbacks: `relay/deno.js` on Deno Deploy; `npm run tunnel` from the laptop.
+How the hosting works: the app calls Meta directly from Render. Do not turn the relay back on without asking Meta (see AGENTS.md). Deploys after a push need `npm run deploy`. Change Render settings by editing `.env.render-vars.local` and running `node scripts/render-env.js --file .env.render-vars.local`.
 
 ## Waiting on John
-- **Say yes to replacing the live demo examples** (see RESUME POINT). The automatic safety check would not let Claude delete live data without John's OK.
-- **Fresh-eyes pass of the live site** (resident, then staff) and a list of changes.
-- **Pre-submission audit (2026-11-03):** read `notes/audit-2026-11-03.md` in the private notebook and decide which fixes to make. The video is on YouTube (https://youtu.be/W1uqXMMd6Iw); the link goes in the form once John decides whether to replace it.
-- **Submission package before 2026-11-04 9 PM ET:** check the README, fill the form. The town is now shown as Trust City everywhere (John, 2026-11-02), which settles the naming question.
+- **Upload the final video** from Downloads to YouTube, with the captions file and the description in the notebook's `notes/submission-draft.md`. It gets a new link; the old one is https://youtu.be/W1uqXMMd6Iw.
+- **Open questions from the private audit:** see that notebook file. They are for John and the organizers.
+- **Submit before 2026-11-04 9 PM ET**, using the new video link and the notebook's drafted answers.
 - **Optional:** three photographed hand sketches to replace the computer-generated ones in `public/sketches/`; corrections to the decisions list below; Discord housekeeping from the notebook.
 - **After the community vote closes (winner announced 2026-11-16):** cancel the Render Starter instance (~$7/month) and delete the Cloudflare worker. Not before: the public gallery runs until then.
 
@@ -44,7 +36,7 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - **Demo examples:** 7 worked examples in `data/demo.json` (lot split with a drawing, casita, daycare, rooster, restaurant, bank letter, barking dogs).
 - **Ambiguous addresses:** county data lists one street address on several parcels; the desk picks the one with a dwelling (then the largest), says so, and asks the resident to confirm.
 - **Voice:** in through Muse Voice Transcribe (hold the microphone), out through the browser's own speech voice with a mute toggle (Meta has no text-to-speech model).
-- **Test drawings:** the three computer-generated sketches from Oct 27 are reused for the demo until John supplies photographed ones (`public/sketches/`).
+- **Test drawings:** computer-generated stand-ins (`public/sketches/`). The demo uses `sketch-jessop.png`, drawn to the real lot's size; the video calls it "a sketch", not hand-drawn.
 - **Spend guard:** `DAILY_CALL_CAP` stays at 400 calls/day on the server.
 
 - **Office scene (2026-10-28 midday, John's redesign request):** background is a Muse Image illustration (`public/office/office-bg.webp`, prompt in `public/office/manifest.json`; regenerate with `node scripts/make-office.js`). Layout: conversation history left, character at the counter, TV right with a four-button remote labelled Parcel Map / Code Review / Your Submissions / Submission Paperwork (keys 1 to 4 also work). The TV changes channel by itself when new work appears (parcel found, code read, paperwork drafted); the remote overrides it.
@@ -81,6 +73,13 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-03 (late afternoon) — Claude Code on John's laptop (JOHN) — compliance fixes and final video
+- John read Meta's Model API terms into the task and asked for the compliance changes and a video fix. Done and live: visit codes and signer addresses no longer reach the open staff side, and signer addresses are no longer stored; desk characters are labelled as AI; new `/privacy` page with end-user terms, 18+ and limits; state data credited under its license with `data/towns/trust-city/NOTICE.md`; README rewritten for judges.
+- Relay off: direct calls from Render worked 16 of 16 times, so `META_API_BASE` and `META_RELAY_SECRET` were removed from Render, and the code no longer steers calls to chosen Meta addresses. The Cloudflare worker can be deleted.
+- Bugs fixed on the way: visits stuck on working after a restart; Muse Wonder's section cut-off and its occasional empty read; SAM prompts now find the lot and the house.
+- Live queue reset: 39 old visits backed up to the git-ignored `data/runtime/live-backup-2026-11-03.json`, then deleted; 13 examples replayed with no errors.
+- Video rebuilt at 2560x1440: true full-size frames (Chrome ignored the emulated scale), corrected script, a real microphone take, a sketch that matches the lot. 35 unit tests pass.
 
 ### 2026-11-03 (afternoon, later) — Claude Code on John's laptop (JOHN) — final requirements recheck
 - John asked for a last check against the event requirements. Rechecked the live site, repo and video; nothing has changed since the audit and no code changed. John then pasted the Details page, and it was checked line by line. Results are in the private notebook audit. The site must stay up through the community vote (2026-11-16), so the shutdown item moved to that date.

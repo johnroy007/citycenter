@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CityCenter: Information</title>
+<link rel="stylesheet" href="/public/app.css?v=20261103d">
+<link rel="stylesheet" href="/public/about.css?v=20261103d">
+<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+</head>
+<body class="about">
+<header class="top">
+  <div class="brand">CityCenter <span>Information</span></div>
+  <nav>
+    <a href="/">Resident counter</a>
+    <a href="/staff">Staff</a>
+    <a href="/privacy">Privacy</a>
+    <a href="https://github.com/johnroy007/citycenter" rel="noopener">Source</a>
+  </nav>
+</header>
+
+<main class="info">
+  <h1>About Trust City</h1>
+  <div class="tabs" role="tablist" aria-label="Information sections">
+    <button type="button" role="tab" id="tab-about" aria-controls="panel-about" aria-selected="true">How this site works</button>
+    <button type="button" role="tab" id="tab-sources" aria-controls="panel-sources" aria-selected="false">Sources</button>
+    <button type="button" role="tab" id="tab-qa" aria-controls="panel-qa" aria-selected="false">Q&amp;A</button>
+  </div>
+
+  <section id="panel-about" role="tabpanel" aria-labelledby="tab-about">
+    <div class="three">
+      <article>
+        <h2>1. This is an example city</h2>
+        <p>Trust City is not a real place. No one here works for a real city, nothing you send reaches a real government, and no real official will answer it. The people, owner names, phone numbers and signatures are invented.</p>
+      </article>
+      <article>
+        <h2>2. It works the way a real city would</h2>
+        <p>Every department has a desk. You can ask a question, report a problem or apply for a permit, and the paperwork goes to a staff workspace for review, the way it would at a city office. The desk characters are AI assistants. Only real city officials could make decisions, so the desks never predict or decide anything.</p>
+      </article>
+      <article>
+        <h2>3. Where the material comes from</h2>
+        <p>The city code and maps are real public records of Hildale, Utah, shown under the Trust City name. Procedures, forms, fees and timelines are original samples, written after reading what many real cities publish. The <a href="#sources" id="toSources">Sources</a> tab lists them.</p>
+      </article>
+    </div>
+    <h2>How to tell real material from sample material</h2>
+    <ul>
+      <li><b>Real city code</b> is quoted with a section number and a link. Each quote is checked by the program against the published text.</li>
+      <li><b>Sample procedures</b> appear in a dashed box marked "Sample procedure". They are not the law of any city, and their fees and timelines are examples only.</li>
+      <li>Hildale City did not make this site, has not reviewed it, and is not responsible for it. Do not rely on anything here for a real property or a real permit. Contact your own city.</li>
+    </ul>
+    <p class="notice"><b>In an emergency, call 911.</b> This site cannot send help.</p>
+  </section>
+
+  <section id="panel-sources" role="tabpanel" aria-labelledby="tab-sources" hidden>
+    <p>Where the example material came from. "Public record" means a government published it for the public. "Open license" appears only where we confirmed the publisher's license; other public records may still have limits on reuse, so check with the publisher before reusing them.</p>
+    <div class="filters">
+      <label for="deptFilter">Department</label>
+      <select id="deptFilter"><option value="">All departments</option></select>
+      <span class="small" id="sourceCount"></span>
+    </div>
+    <div class="tablewrap">
+      <table class="sources">
+        <thead><tr><th>Used for</th><th>Department</th><th>Source</th><th>What it is</th><th>Status</th><th>How it was used</th></tr></thead>
+        <tbody id="sourceRows"></tbody>
+      </table>
+    </div>
+    <p class="small">Full data credits and the state's license terms are in the project's <a href="https://github.com/johnroy007/citycenter/blob/main/data/towns/trust-city/NOTICE.md" rel="noopener">data notice</a>.</p>
+  </section>
+
+  <section id="panel-qa" role="tabpanel" aria-labelledby="tab-qa" hidden>
+    <h2>Questions and answers</h2>
+    <p class="qa-empty">Coming soon. Questions and answers about Trust City will appear here.</p>
+  </section>
+</main>
+<script src="/public/about.js?v=20261103d"></script>
+</body>
+</html>

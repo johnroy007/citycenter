@@ -30,7 +30,7 @@ How the hosting works, for whoever picks this up: the app's Meta client reads `M
 - **Pre-submission audit (2026-11-03):** read `notes/audit-2026-11-03.md` in the private notebook and decide which fixes to make. The video is on YouTube (https://youtu.be/W1uqXMMd6Iw); the link goes in the form once John decides whether to replace it.
 - **Submission package before 2026-11-04 9 PM ET:** check the README, fill the form. The town is now shown as Trust City everywhere (John, 2026-11-02), which settles the naming question.
 - **Optional:** three photographed hand sketches to replace the computer-generated ones in `public/sketches/`; corrections to the decisions list below; Discord housekeeping from the notebook.
-- **After judging:** cancel the Render Starter instance (~$7/month) and delete the Cloudflare worker.
+- **After the community vote closes (winner announced 2026-11-16):** cancel the Render Starter instance (~$7/month) and delete the Cloudflare worker. Not before: the public gallery runs until then.
 
 ## Decisions Claude made on John's behalf (change any of these; say the word)
 Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can override.
@@ -83,7 +83,7 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 ## Log
 
 ### 2026-11-03 (afternoon, later) — Claude Code on John's laptop (JOHN) — final requirements recheck
-- John asked for a last check against the event requirements. Rechecked the live site, repo and video; nothing has changed since the audit and no code changed. The Details page needs John's Cerebral Valley login, so it is still unread. Results are in the private notebook audit.
+- John asked for a last check against the event requirements. Rechecked the live site, repo and video; nothing has changed since the audit and no code changed. John then pasted the Details page, and it was checked line by line. Results are in the private notebook audit. The site must stay up through the community vote (2026-11-16), so the shutdown item moved to that date.
 
 ### 2026-11-03 (afternoon) — Claude Code on John's laptop (JOHN) — pre-submission audit
 - John asked for an audit of the program and video: will it work for judges, are the claims true, does it meet the rules. Tested the live site end to end, read the Official Rules, and reviewed the video. No code changed. Test visits TC-2026-0141 to 0143 are labeled as examples, so the demo reset clears them. Findings and proposed fixes are in the private notebook.

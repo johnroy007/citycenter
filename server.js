@@ -219,6 +219,7 @@ async function handle(req, res) {
 
   if (req.method === "GET" && p === "/") return serveStatic(res, "index.html");
   if (req.method === "GET" && p === "/staff") return serveStatic(res, "staff.html");
+  if (req.method === "GET" && p === "/trust-gap") return serveStatic(res, "trust-gap.html");
   if (req.method === "GET" && p === "/favicon.ico") return serveStatic(res, "favicon.svg");
   if (req.method === "GET" && p.startsWith("/public/")) return serveStatic(res, p.slice("/public/".length));
 

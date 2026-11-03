@@ -1,0 +1,41 @@
+/* Local Government Trust Gap Model page (/trust-gap). */
+body.trustgap { height: auto; }
+.tg { --tg-text2: #52514e; --tg-muted: #898781; --tg-accent: #185FA5; --tg-danger: #A32D2D; --tg-success: #3B6D11; --tg-surface: #f5f4f0; --tg-border: rgba(11,11,11,0.10);
+  max-width: 760px; margin: 24px auto 40px; padding: 22px 24px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); line-height: 1.5; }
+.tg h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+.tg .sub { font-size: 14px; color: var(--tg-text2); margin: 0 0 1rem; }
+.tg .row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
+.tg .row label { font-size: 14px; color: var(--tg-text2); width: 240px; flex: none; }
+.tg .row input { flex: 1; min-width: 0; }
+.tg .row .v { font-size: 14px; font-weight: 600; min-width: 40px; text-align: right; }
+.tg .accent { color: var(--tg-accent); }
+.tg .rule { border-top: 1px solid var(--tg-border); margin: 14px 0 12px; }
+.tg .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 1.25rem 0; }
+.tg .mc { background: var(--tg-surface); border-radius: 8px; padding: 12px 14px; }
+.tg .mc .l { font-size: 13px; color: var(--tg-text2); }
+.tg .mc .n { font-size: 24px; font-weight: 600; }
+.tg .mc .s { font-size: 12px; color: var(--tg-muted); }
+.tg .shortfalls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-bottom: 1rem; font-size: 13px; color: var(--tg-text2); }
+.tg .sl { margin-bottom: 6px; }
+.tg .sv { font-weight: 600; color: var(--ink); }
+.tg .bar { height: 10px; border-radius: 4px; background: var(--tg-surface); position: relative; overflow: hidden; }
+.tg .bar.need { margin-top: 4px; }
+.tg .bar span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+.tg .bar .have { background: #2a78d6; }
+.tg .bar .req { background: #b4b2a9; }
+.tg .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; font-size: 12px; color: var(--tg-text2); }
+.tg .legend > span { display: flex; align-items: center; gap: 6px; }
+.tg .sw { width: 16px; }
+.tg .sw.potential { border-top: 2px dashed #898781; }
+.tg .sw.today { border-top: 2px dotted #eb6834; }
+.tg .sw.current { border-top: 2px solid #2a78d6; }
+.tg .sw.gap { width: 12px; height: 12px; border-radius: 2px; background: #791F1F; }
+.tg .chartbox { position: relative; width: 100%; height: 300px; }
+.tg .chartbox canvas { display: block; width: 100%; height: 100%; }
+.tg .note { font-size: 12px; color: var(--tg-muted); margin: 8px 0 0; }
+@media (max-width: 560px) {
+  .tg { margin: 12px 8px 24px; padding: 16px; }
+  .tg .row { flex-wrap: wrap; gap: 4px 12px; }
+  .tg .row label { width: 100%; }
+  .tg .shortfalls { grid-template-columns: 1fr; }
+}

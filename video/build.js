@@ -80,8 +80,16 @@ async function buildScene(sc, d, idx) {
     base = "base";
     if (sc.title) overlays.push({ file: await overlay({ mode: "title", text: sc.title }, path.join(dir, "title.png")), a: 0.7, b: d - 0.25 });
   } else if (sc.card) {
-    const spec = sc.card === "close" ? { mode: "close", bg: "file:///" + path.join(HERE, "..", "public", "office", "office-bg.webp").replace(/\\/g, "/") } : { mode: sc.card, decide: "Only real City Officials can make decisions." };
+    const spec = sc.card === "close" ? { mode: "close", bg: "file:///" + path.join(HERE, "..", "public", "office", "office-bg.webp").replace(/\\/g, "/") } : sc.card === "models" ? { mode: "models", rows: sc.rows.map((r) => [r.model, r.text]), reveal: 0 } : { mode: sc.card, decide: "Only real City Officials can make decisions." };
     const png = await overlay(spec, path.join(dir, "card.png"));
+    if (sc.card === "models") {
+      // Light up each model's row as the voice says its name (timed by where the name falls in the narration).
+      for (let k = 1; k <= sc.rows.length; k++) {
+        const pos = Math.max(0, sc.say.indexOf(sc.rows[k - 1].say || sc.rows[k - 1].model));
+        const a = PRE + (sc._narr || d - PRE - POST) * pos / sc.say.length - 0.15;
+        overlays.push({ file: await overlay({ ...spec, reveal: k }, path.join(dir, "reveal-" + k + ".png")), a: Math.max(0.05, a), b: d, hold: true });
+      }
+    }
     inputs.push("-loop", "1", "-framerate", String(FPS), "-t", d.toFixed(3), "-i", png);
     chains.push(`[0:v]scale=3840:2160:flags=lanczos,zoompan=z='1.0+0.025*on/${frames}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${W}x${H}:fps=${FPS},setsar=1[base]`);
     base = "base";
@@ -121,7 +129,7 @@ async function buildScene(sc, d, idx) {
   overlays.forEach((o, i) => {
     inputs.push("-loop", "1", "-framerate", String(FPS), "-t", d.toFixed(3), "-i", o.file);
     const n = i + 1, fi = Math.min(0.3, (o.b - o.a) / 3);
-    chains.push(`[${n}:v]format=rgba,fade=t=in:st=${o.a.toFixed(3)}:d=${fi.toFixed(2)}:alpha=1,fade=t=out:st=${(o.b - fi).toFixed(3)}:d=${fi.toFixed(2)}:alpha=1[o${n}]`);
+    chains.push(`[${n}:v]format=rgba,fade=t=in:st=${o.a.toFixed(3)}:d=${fi.toFixed(2)}:alpha=1${o.hold ? "" : `,fade=t=out:st=${(o.b - fi).toFixed(3)}:d=${fi.toFixed(2)}:alpha=1`}[o${n}]`);
     chains.push(`[${cur}][o${n}]overlay=0:0:enable='between(t,${o.a.toFixed(3)},${o.b.toFixed(3)})'[v${n}]`);
     cur = `v${n}`;
   });
@@ -167,6 +175,7 @@ function captionsFor(sc, start, narrSeconds) {
   const srt = [];
   const durs = list.map((sc) => {
     const d = Math.max(sc.min || 3, PRE + narr[sc.id].seconds + POST);
+    sc._narr = narr[sc.id].seconds;
     sc._captions = captionsFor(sc, PRE, narr[sc.id].seconds);
     sc._captions.forEach((c) => srt.push({ a: t + c.a, b: t + c.b, text: c.text }));
     t += d;

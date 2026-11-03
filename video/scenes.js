@@ -8,7 +8,26 @@
 // Scene length = the narration's length plus a little air (or `min` seconds if longer), so the voice drives the timing.
 "use strict";
 
+const INTRO_VOICE = "en-US-Chirp3-HD-Kore"; // a second voice for the opening statement (Google voice five)
+
 module.exports = [
+  // ---------- Opening statement, in a second voice: built during the event, and the Meta models it uses (about 30 s) ----------
+  {
+    id: "built", card: "built", fadeIn: 0.6, voice: INTRO_VOICE,
+    say: "CityCenter was built entirely during, and for, the Meta Global AI Developer Hackathon, from October twenty-sixth to November fourth, twenty twenty-six.",
+  },
+  {
+    id: "models", card: "models", fadeOut: 0.5, voice: INTRO_VOICE,
+    say: "It runs on Meta's models. Muse Spark understands each request, searches the city code and county maps with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 outlines drawings. Muse Voice Transcribe lets residents talk instead of type. Muse Wonder gives staff a second read. And Muse Image drew the characters and this video's art.",
+    rows: [
+      { model: "Muse Spark", text: "understands requests · searches the code and county maps with tool calls · fills in forms · prepares staff reviews" },
+      { model: "SAM 3.1", text: "outlines the shapes in residents' drawings" },
+      { model: "Muse Voice Transcribe", text: "residents talk instead of typing" },
+      { model: "Muse Wonder", text: "a second read for staff" },
+      { model: "Muse Image", text: "drew the characters, the office and this video's art" },
+    ],
+  },
+
   // ---------- Act 1: the problem (about 70 s). Opening words are John's. ----------
   {
     id: "open", art: "town", fadeIn: 0.8,
@@ -33,12 +52,12 @@ module.exports = [
   {
     id: "fair", art: "fair",
     title: "Fairness takes process: predictable rules, transparency, accountability.",
-    say: "But fairness takes a heavy, technical process. Predictable rules, transparency, and accountability, treating every person the same, while accounting for every difference.",
+    say: "But fairness takes a heavy, technical process: predictable rules, transparency and accountability, treating everyone the same while accounting for every difference.",
   },
   {
     id: "personal", art: "personal",
     title: "When the process gets personal, trust breaks down.",
-    say: "When that process is too hard for both sides, it gets personal. And when it's personal, people wonder if they were treated the same as everyone else.",
+    say: "When that process is too hard for both sides, it gets personal, and people wonder if they were treated the same as everyone else.",
   },
   {
     id: "idea", art: "together", fadeOut: 0.5,
@@ -59,7 +78,7 @@ module.exports = [
   {
     id: "details",
     clip: "resident", segs: [{ from: "juniper-asks", to: "typed2", w: 1 }, { from: "sent2", to: "drafted", w: 1.4 }],
-    say: "He gives his address and a hand-drawn sketch. The planner finds his parcel on the county's real zoning map, and searches all eight hundred sixty-five sections of the city's code, with tools.",
+    say: "He gives his address and a hand-drawn sketch. The planner finds his parcel on the county's zoning map and searches all eight hundred sixty-five sections of the city's code.",
     callouts: [
       { at: 0.5, dur: 5, model: "Muse Voice Transcribe", text: "residents can hold the mic and talk instead of typing" },
       { at: 6, dur: 7, model: "Muse Spark · tool calls", text: "county parcel and zoning layers · 865 sections of the city's code" },
@@ -97,7 +116,7 @@ module.exports = [
   {
     id: "staff3",
     clip: "staff", segs: [{ from: "step3-click", to: "point-open", w: 0.8 }, { from: "point-open", to: "second-click", w: 1.6 }, { from: "second-click", to: "step4-click", w: 0.8 }],
-    say: "Third: point by point. The requirement, the exact quote, and what the application says. The planner decides each point, in their own words. Muse Wonder gives a second read.",
+    say: "Third: point by point, the requirement, the exact quote, and what the application says. The planner decides each point. Muse Wonder gives a second read.",
     callouts: [
       { at: 0.5, dur: 6, model: "Muse Spark · tool calls", text: "lists every point a planner checks, with the exact code" },
       { at: 9.5, dur: 5, model: "Muse Wonder", text: "a second read of the list against the code" },
@@ -116,6 +135,6 @@ module.exports = [
   },
   {
     id: "close", card: "close", fadeOut: 1.2,
-    say: "CityCenter. Meta's AI carries the process, so residents can just be residents, and every neighbor gets the same fair process.",
+    say: "CityCenter. Meta's AI carries the process, so every neighbor gets the same fair process.",
   },
 ];

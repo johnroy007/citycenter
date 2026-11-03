@@ -93,7 +93,7 @@ async function narration(scene, workDir) {
   if (!src) {
     src = path.join(workDir, scene.id + ".tts.wav");
     const stamp = path.join(workDir, scene.id + ".tts.txt");
-    const gv = googleVoice();
+    const gv = googleVoice() && (scene.voice || googleVoice());
     const want = (gv ? "google:" + gv : "windows") + " | " + scene.say;
     if (!fs.existsSync(src) || !fs.existsSync(stamp) || fs.readFileSync(stamp, "utf8") !== want) {
       if (gv) await googleTts(scene.say, src, gv); else tts(scene.say, src);

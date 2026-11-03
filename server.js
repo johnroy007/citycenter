@@ -39,6 +39,7 @@ const code = loadCode(town);
 const gis = loadGis(town);
 const { tools } = createTools({ code, gis, town });
 const store = openStore(null, { refPrefix: town.refPrefix });
+store.clearBusy();
 const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage(u), canCall: () => store.callsToday().n < DAILY_CAP });
 const ctx = { store, client, town, code, gis, tools, model: MODEL };
 // Any two- or three-letter prefix is accepted, so references made before the town's prefix changed (HC-...) keep working.

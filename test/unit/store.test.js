@@ -6,6 +6,15 @@ const fs = require("fs");
 const path = require("path");
 const { openStore } = require("../../lib/store");
 
+test("a visit left busy by a restart is released", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-busy-"));
+  const store = openStore(dir, { refPrefix: "TC" });
+  const { ref } = store.createSession({ town: "t", text: "hello", sketch: null, demoId: null, residentId: null });
+  store.updateSession(ref, { busy: true });
+  assert.equal(store.clearBusy(), 1);
+  assert.equal(store.getSession(ref).busy, false);
+});
+
 test("store round-trips a session, messages, steps, review states and usage", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-store-"));
   const s = openStore(dir, { refPrefix: "HC" });

@@ -8,7 +8,7 @@
 - **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (passcode in Render's dashboard / John's `.env`). If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` signed in as staff: `api_base` must be the worker address and `models` must list 9.
 - **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff. Stop any old `node server.js` first.
 - **Demo video:** a full 2:55 cut exists (built 2026-11-02 from the live Trust City site, visit TC-2026-0138), with a stand-in computer voice. It is at `video/out/citycenter-demo.mp4` on John's laptop only (git-ignored, 60 MB); rebuild it anywhere with `node video/capture.js` then `node video/build.js`. See `video/README.md`.
-- **Last updated:** 2026-11-02 (evening) by Claude Code on John's laptop (computer name JOHN)
+- **Last updated:** 2026-11-03 by Claude Code on John's laptop (computer name JOHN): added the Local Government Trust Gap Model page.
 
 ## RESUME POINT
 **First:** the live demo examples were written while the town was still called Hildale, so their stored conversations and paperwork still say the old name (and use HC- references). Once John says yes, run `node scripts/seed-remote.js https://citycenter-puh5.onrender.com --fresh` (it deletes the old demo visits and replays all 13; roughly $3 to $5 of model calls; John's own visits are kept). Then tell the video session (citycenter-84) that the reseed is done, if it is still running. After that, the earlier plan stands:
@@ -74,6 +74,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-03 — Claude Code on John's laptop (JOHN) — Local Government Trust Gap Model page
+John asked for the trust-gap model he built in a Claude chat (downloaded as `trust-gap-model.html`) to be a tab on the site. It is now at `/trust-gap` (https://citycenter-puh5.onrender.com/trust-gap), linked as **Local Government Trust Gap Model** in the top bar of the resident and staff pages. Rebuilt to fit the site's security policy: same math, wording and layout, but the chart is drawn on a plain canvas (the original loaded Chart.js and an icon font from outside servers, which the site blocks), and styles live in `public/trust-gap.css`. One wording change: "City Center" became "CityCenter" to match the brand. The top bar now keeps its buttons on one line and hides the small subtitle on screens narrower than 1180 px so the longer tab fits. Checked in a browser locally and live: numbers match the original at several settings, no errors from the new page, fits phone and laptop widths. 33 unit tests pass. Deployed. Note: the top bar now shows the new tab, so the demo video's screen captures would show it too if re-recorded.
 
 ### 2026-11-03 — Claude Code on John's laptop — recorder page, Google voice option
 - The recorder page would not load because the recorder program was not running; started it (it must be running for http://localhost:3100 to open).

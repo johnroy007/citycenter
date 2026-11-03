@@ -141,8 +141,9 @@
       if (!a.submitted_at !== !b.submitted_at) return a.submitted_at ? -1 : 1; // not-yet-submitted rows always go last
       r = byDate(a.submitted_at || "", b.submitted_at || "");
     } else {
-      var va = col === "dept" ? deptName(a.department) : requestText(a), vb = col === "dept" ? deptName(b.department) : requestText(b);
-      r = va.localeCompare(vb, undefined, { sensitivity: "base" });
+      // Department name, or the request title (the application type only breaks ties).
+      var va = col === "dept" ? deptName(a.department) : String(a.title || a.preview || ""), vb = col === "dept" ? deptName(b.department) : String(b.title || b.preview || "");
+      r = va.localeCompare(vb, undefined, { sensitivity: "base" }) || (col === "request" ? requestText(a).localeCompare(requestText(b)) : 0);
     }
     return r * sign || newest;
   }

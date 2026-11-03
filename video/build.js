@@ -152,7 +152,7 @@ function captionsFor(sc, start, narrSeconds) {
   const list = ONLY ? scenes.filter((s) => ONLY.includes(s.id)) : scenes;
   log("Narration:");
   const narr = {};
-  for (const sc of list) { narr[sc.id] = narration(sc, path.join(WORK, "voice")); log(`  ${sc.id.padEnd(9)} ${narr[sc.id].seconds.toFixed(1).padStart(5)} s  (${narr[sc.id].source})`); }
+  for (const sc of list) { narr[sc.id] = await narration(sc, path.join(WORK, "voice")); log(`  ${sc.id.padEnd(9)} ${narr[sc.id].seconds.toFixed(1).padStart(5)} s  (${narr[sc.id].source})`); }
   const sumN = list.reduce((s, sc) => s + narr[sc.id].seconds, 0);
   const tot = () => list.reduce((s, sc) => s + Math.max(sc.min || 3, PRE + narr[sc.id].seconds + POST), 0);
   if (!ONLY && tot() > MAX_TOTAL) { POST = 0.35; PRE = 0.25; }

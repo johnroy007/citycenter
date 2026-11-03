@@ -36,8 +36,8 @@ module.exports = [
   },
   {
     id: "local", art: "local",
-    title: "About 91,000 local governments in the U.S. That's where most people meet their government.",
-    say: "There are about ninety-one thousand local governments in the United States. That's where trust is won or lost. Could AI help build it there first?",
+    title: "About 91,000 local governments in the U.S. That's where most people interact with their government.",
+    say: "There are about ninety-one thousand local governments in the United States. That's where trust is won or lost, because that's where people actually interact with their government. Could AI help build trust there first?",
   },
   {
     id: "official", art: "official",
@@ -57,12 +57,12 @@ module.exports = [
   {
     id: "personal", art: "personal",
     title: "When the process gets personal, trust breaks down.",
-    say: "When that process is too hard for both sides, it gets personal, and people wonder if they were treated the same as everyone else.",
+    say: "When that process is too hard and too technical for both sides, it gets personal, and people wonder if they were treated the same as everyone else.",
   },
   {
     id: "idea", art: "together", fadeOut: 0.5,
     title: "CityCenter: residents get to be residents. Officials get the tools to treat everyone fairly.",
-    say: "What if Meta's AI let residents just be residents, and gave local officials the tools to treat everyone fairly, without becoming administrative experts? That's CityCenter. It stands in the space between them.",
+    say: "What if Meta's AI let residents just be residents, and gave local officials the tools to treat everyone fairly, without becoming administrative experts? That's CityCenter. It stands in the space between residents and local officials, to build trust and help people.",
   },
 
   // ---------- Act 2: the resident's visit, recorded on the live site (about 55 s) ----------

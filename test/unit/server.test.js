@@ -56,7 +56,7 @@ test("health, town, demo, map and code endpoints answer from the cached public d
   assert.equal(h.staff_portal, true);
   assert.ok(h.code_sections > 300);
   const t = await (await fetch(BASE + "/api/town")).json();
-  assert.equal(t.name, "Hildale City");
+  assert.equal(t.name, "Trust City");
   assert.ok(t.departments.find((d) => d.id === "planning"));
   assert.ok(t.zones["R1-8"]);
   const demo = await (await fetch(BASE + "/api/demo")).json();
@@ -94,7 +94,7 @@ test("a session without an API key is accepted, ends in a clear error; reading n
   const r = await post("/api/sessions", { text: "I want to split my lot at 345 E Jessop Ave and sell half to my son." });
   assert.equal(r.status, 202);
   const { ref, view_key } = await r.json();
-  assert.match(ref, /^HC-\d{4}-\d{4}$/);
+  assert.match(ref, /^TC-\d{4}-\d{4}$/);
   assert.equal((await fetch(`${BASE}/api/sessions/${ref}`)).status, 403);
   assert.equal((await fetch(`${BASE}/api/sessions/${ref}?key=wrong`)).status, 403);
   assert.equal((await fetch(`${BASE}/api/sessions/HC-1999-0001?key=x`)).status, 404);
@@ -123,7 +123,7 @@ test("a session without an API key is accepted, ends in a clear error; reading n
   const q = await (await fetch(BASE + "/api/staff/queue", { headers: { cookie } })).json();
   assert.ok(q.sessions.length >= 1);
   const detail = await (await fetch(`${BASE}/api/staff/sessions/${ref}`, { headers: { cookie } })).json();
-  assert.match(detail.resident_link, /\?ref=HC-/);
+  assert.match(detail.resident_link, /\?ref=TC-/);
   assert.equal(detail.view_key, undefined);
   // Building considerations needs the model: clean error, nothing corrupted.
   let cr = await post(`/api/staff/sessions/${ref}/considerations`, {}, cookie);

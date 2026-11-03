@@ -355,3 +355,24 @@ table.standards td { font-size: 13px; }
   .form-page { box-shadow: none; border: 0; padding: 0; break-after: page; }
   .card { border: 0; box-shadow: none; padding: 0; margin: 0 0 18px; break-inside: avoid; }
 }
+
+/* Staff queue: column heading menus (sort and filter) */
+.qtools .qtip { white-space: nowrap; }
+.qtable thead tr { cursor: default; }
+.qtable th { padding: 0; }
+.thbtn { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 7px 8px; cursor: pointer; font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.thbtn:hover, .thbtn[aria-expanded] { color: var(--ink); background: #eef2f8; }
+.thbtn:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.thbtn.on { color: var(--blue); }
+.thbtn .thmark { font-size: 11px; letter-spacing: 0; }
+.thmenu { position: fixed; z-index: 50; min-width: 220px; max-width: 300px; max-height: 70vh; overflow: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 28px rgba(20,30,50,.18); padding: 8px; font-size: 14px; }
+.thmenu-h { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin: 6px 4px 4px; }
+.thmenu-opt { display: block; width: 100%; text-align: left; background: transparent; border: 0; color: var(--ink); font-weight: 500; padding: 6px 8px; border-radius: 6px; font-size: 14px; }
+.thmenu-opt:hover { background: #eef2f8; }
+.thmenu-opt.on { color: var(--blue); font-weight: 600; }
+.thmenu input[type=search] { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.thmenu-check { display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-radius: 6px; cursor: pointer; }
+.thmenu-check:hover { background: #f3f6fb; }
+.thmenu .small { padding: 2px 6px; }
+.thmenu-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.thmenu-foot button { padding: 5px 10px; font-size: 13px; }

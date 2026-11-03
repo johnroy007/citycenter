@@ -1,5 +1,5 @@
 {
-  "note": "Worked examples for the judges' demo mode. The resident side plays these lines; the help desk answers live through Meta's models. People and owner names are invented; addresses are real Hildale parcels from the public parcel layer.",
+  "note": "Worked examples for the judges' demo mode. The resident side plays these lines; the help desk answers live through Meta's models. People and owner names are invented; addresses are real Trust City parcels from the public parcel layer.",
   "examples": [
     {
       "id": "lot-split-son",

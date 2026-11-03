@@ -1,16 +1,17 @@
 {
-  "name": "Hildale City",
-  "shortName": "Hildale",
+  "name": "Trust City",
+  "shortName": "Trust City",
+  "sourceName": "Hildale",
   "state": "Utah",
   "county": "Washington County",
-  "refPrefix": "HC",
+  "refPrefix": "TC",
   "timezone": "America/Denver",
   "code": {
     "adapter": "municipalcodeonline",
     "printUrl": "https://hildale.municipalcodeonline.com/book/print?type=ordinances",
     "bookUrl": "https://hildale.municipalcodeonline.com/book?type=ordinances",
     "landUseTitle": "TITLE XV LAND DEVELOPMENT",
-    "citation": "Hildale City Code",
+    "citation": "Trust City Code",
     "landUseChapterPrefix": "152-",
     "keyChapters": {
       "procedures": "CHAPTER 7 ADMINISTRATIVE AND DEVELOPMENT REVIEW PROCEDURES",
@@ -29,7 +30,7 @@
     "zoning": {
       "url": "https://agisprodvm.washco.utah.gov/arcgis/rest/services/Zoning/MapServer/4",
       "zoneField": "ZONINGCODE",
-      "credit": "Zoning: Washington County GIS (Hildale layer)"
+      "credit": "Zoning: Washington County GIS (Trust City layer)"
     },
     "parcels": {
       "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington/FeatureServer/0",
@@ -247,7 +248,7 @@
       "role": "building official",
       "live": false,
       "handles": "building permits, inspections, construction plans, anything on private property that involves structures, plumbing or electrical",
-      "contact": "Hildale City Building Department (call the city office)",
+      "contact": "Trust City Building Department (call the city office)",
       "stub": true
     },
     {
@@ -257,7 +258,7 @@
       "role": "utility desk",
       "live": false,
       "handles": "water, sewer and gas service connections, meters, outages and leaks at the meter, utility billing",
-      "contact": "Hildale City Utility Department (call the city office)",
+      "contact": "Trust City Utility Department (call the city office)",
       "stub": true
     },
     {
@@ -268,7 +269,7 @@
       "live": false,
       "stub": true,
       "handles": "streets, potholes, sidewalks, storm drains, street lights, snow and debris in the public right of way",
-      "contact": "Hildale City Public Works (call the city office)"
+      "contact": "Trust City Public Works (call the city office)"
     },
     {
       "id": "police",
@@ -278,7 +279,7 @@
       "live": false,
       "stub": true,
       "handles": "crimes, theft, traffic, suspicious activity, non-emergency police reports (emergencies: call 911)",
-      "contact": "Hildale City Police non-emergency line (call the city office); emergencies 911"
+      "contact": "Trust City Police non-emergency line (call the city office); emergencies 911"
     },
     {
       "id": "fire",
@@ -288,7 +289,7 @@
       "live": false,
       "stub": true,
       "handles": "fire safety inspections, burn permits, fireworks, fire code questions (emergencies: call 911)",
-      "contact": "Hildale Fire Department (call the city office); emergencies 911"
+      "contact": "Trust City Fire Department (call the city office); emergencies 911"
     },
     {
       "id": "parks",
@@ -298,7 +299,7 @@
       "live": false,
       "stub": true,
       "handles": "parks, pavilion and field reservations, recreation programs, trails, community events",
-      "contact": "Hildale City Parks and Recreation (call the city office)"
+      "contact": "Trust City Parks and Recreation (call the city office)"
     },
     {
       "id": "enforcement",
@@ -307,7 +308,7 @@
       "role": "code enforcement officer",
       "live": false,
       "handles": "complaints about neighbors: animals, noise, junk, weeds, work without permits",
-      "contact": "Hildale City Code Enforcement (call the city office)",
+      "contact": "Trust City Code Enforcement (call the city office)",
       "stub": true
     },
     {
@@ -317,7 +318,7 @@
       "role": "city recorder",
       "live": false,
       "handles": "public records, meeting agendas, fee schedule, business licenses",
-      "contact": "Hildale City Recorder, 320 E Newel Ave",
+      "contact": "Trust City Recorder, 320 E Newel Ave",
       "stub": true
     }
   ],
@@ -497,12 +498,12 @@
   },
   "notes": {
     "fictionalOwners": "Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.",
-    "dataCredits": "Code: Hildale City Code (municipalcodeonline.com). Zoning: Washington County GIS. Parcels: State of Utah, SGID."
+    "dataCredits": "Code: Trust City Code (municipalcodeonline.com). Zoning: Washington County GIS. Parcels: State of Utah, SGID."
   },
   "office": {
     "department": "Planning & Zoning Department",
-    "cityLine": "Hildale City",
-    "addressLine": "320 E Newel Ave, Hildale, UT 84784",
+    "cityLine": "Trust City",
+    "addressLine": "320 E Newel Ave, Trust City, UT 84784",
     "phone": "",
     "formFooter": "This application was prepared with the Virtual City Help Desk from the applicant's own words and public records. City staff verify every entry."
   }

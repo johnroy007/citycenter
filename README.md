@@ -1,4 +1,4 @@
-# citycenter: a virtual city help desk
+# CityCenter: a virtual city help desk
 
 A resident walks up to a cartoon counter and says what they want to do with their land. The help desk finds the right department, pulls up the parcel on the county map, reads the city's real code, and prepares the paperwork: a zoning verification request, an application set, or a complaint report. City staff open it in a reviewer workspace that lays out every consideration with the exact code text beside it. **The agent packages and prepares. City staff decide.**
 
@@ -43,9 +43,11 @@ Not Meta, on purpose: the spoken reply uses the browser's own voice (Meta lists 
 
 ## Real data, invented people
 
-- **Code:** Hildale City, Utah's code, pulled from the city's official code host (865 sections, 349 in the Land Use title) and stored verbatim with a link to every section.
-- **Zoning map:** Washington County's official zoning layer for Hildale (426 polygons).
-- **Parcels:** the State of Utah's parcel layer (749 Hildale parcels with boundaries, parcel numbers and addresses). This dataset contains no owner names by state law, and the program never requests any.
+The demo town is called **Trust City**. Its data is the real published data of a small town in Washington County, Utah; only the town's name is changed on screen (the setting is `sourceName` in the town config).
+
+- **Code:** the town's code, pulled from the city's official code host (865 sections, 349 in the Land Use title) and stored verbatim with a link to every section.
+- **Zoning map:** Washington County's official zoning layer for the town (426 polygons).
+- **Parcels:** the State of Utah's parcel layer (749 parcels with boundaries, parcel numbers and addresses). This dataset contains no owner names by state law, and the program never requests any.
 - **People:** every resident, applicant and intention is invented. Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.
 
 The design is generic: `data/towns/<town>.json` names the code host, zoning layer and parcel layer, and `scripts/fetch-code.js` and `scripts/fetch-gis.js` cache them. Another city is a new config plus a reader for its code host (Municipal Code Online is the first; Municode, American Legal and others are planned).
@@ -70,7 +72,7 @@ Refresh the cached public data: `npm run fetch:code` and `npm run fetch:gis`.
 - `server.js` routes; `lib/desk.js` the resident turn; `lib/review.js` the staff side; `lib/tools.js` the agents' tools; `lib/prompts.js` rules and schemas.
 - `lib/codestore.js`, `lib/codeparse.js`, `scripts/fetch-code.js` the code adapter; `lib/gis.js`, `scripts/fetch-gis.js` the map layers.
 - `public/` the counter and the workspace (plain HTML, CSS and JS, rendered with `textContent` only).
-- `data/towns/hildale.json` the town config; `data/towns/hildale/` the cached code and map layers; `data/demo.json` the worked examples.
+- `data/towns/trust-city.json` the town config; `data/towns/trust-city/` the cached code and map layers; `data/demo.json` the worked examples.
 - `test/fixtures/scenarios.json` the 22 scenario cases; `docs/PROGRESS.md` the build log and the list of placeholder decisions.
 - `relay/` a tiny forwarding script (Cloudflare Worker) the hosted copy uses to reach Meta's API, because Meta's service refused most calls from the host's own network. It carries the same calls unchanged; see `relay/README.md`.
 

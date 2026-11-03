@@ -1,5 +1,5 @@
 {
-  "note": "Scenario fixtures for Hildale City. Addresses and parcel ids are real public records; the people, their intentions and owner names are invented. Expectations are what the pipeline should find in the real code; 'tiers' lists acceptable process tiers.",
+  "note": "Scenario fixtures for Trust City. Addresses and parcel ids are real public records; the people, their intentions and owner names are invented. Expectations are what the pipeline should find in the real code; 'tiers' lists acceptable process tiers.",
   "scenarios": [
     {
       "id": "fence-ok",

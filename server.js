@@ -41,9 +41,10 @@ const { tools } = createTools({ code, gis, town });
 const store = openStore(null, { refPrefix: town.refPrefix });
 const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage(u), canCall: () => store.callsToday().n < DAILY_CAP });
 const ctx = { store, client, town, code, gis, tools, model: MODEL };
-const REF_RE = new RegExp(`^${town.refPrefix}-\\d{4}-\\d{4}$`);
-// A visit code is the reference plus the access key in one string, e.g. HC-2026-0107-xzUHULux. Residents type only that.
-const VISIT_CODE_RE = new RegExp(`^(${town.refPrefix}-\\d{4}-\\d{4})-([A-Za-z0-9_-]{6,})$`);
+// Any two- or three-letter prefix is accepted, so references made before the town's prefix changed (HC-...) keep working.
+const REF_RE = /^[A-Z]{2,3}-\d{4}-\d{4}$/;
+// A visit code is the reference plus the access key in one string, e.g. TC-2026-0107-xzUHULux. Residents type only that.
+const VISIT_CODE_RE = /^([A-Z]{2,3}-\d{4}-\d{4})-([A-Za-z0-9_-]{6,})$/;
 const DEMO = fs.existsSync(path.join(__dirname, "data", "demo.json")) ? JSON.parse(fs.readFileSync(path.join(__dirname, "data", "demo.json"), "utf8")) : { examples: [] };
 
 const submitLimiter = sec.createRateLimiter({ limit: 30, windowMs: 60 * 60 * 1000 });
@@ -268,7 +269,7 @@ async function handle(req, res) {
     const buf = await sec.readBody(req, MAX_AUDIO_BYTES);
     if (buf.length < 1000 || buf.slice(0, 4).toString() !== "RIFF") return sendError(res, 400, "Expected a WAV recording.");
     try {
-      const out = await client.transcribeWav(buf, { keywords: ["Hildale", "zoning", "parcel", "casita", "lot split", "variance", "rooster", "setback"] });
+      const out = await client.transcribeWav(buf, { keywords: [town.shortName, "zoning", "parcel", "casita", "lot split", "variance", "rooster", "setback"] });
       return sendJson(res, 200, out);
     } catch (e) {
       const [s, msg] = errorFrom(e);
@@ -309,7 +310,7 @@ async function handle(req, res) {
     const s = store.getSession(ref);
     if (!s) return sendError(res, 404, "No visit with that code.");
     const staff = isStaff(req);
-    if (!staff && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That visit code is not complete. It looks like HC-2026-0107-xxxxxxxx: the reference plus the part after it.");
+    if (!staff && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That visit code is not complete. It looks like " + town.refPrefix + "-2026-0107-xxxxxxxx: the reference plus the part after it.");
     if (req.method === "GET" && !action) {
       if (!staff && !s.resident_id) {
         const resident = residentFromReq(req);

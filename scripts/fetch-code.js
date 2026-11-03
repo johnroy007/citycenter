@@ -1,5 +1,5 @@
 // Pulls a city's published code into data/towns/<town>/code.json so the agent can cite it verbatim.
-// Run: node scripts/fetch-code.js [--town hildale] [--from-file saved.html] [--all]
+// Run: node scripts/fetch-code.js [--town trust-city] [--from-file saved.html] [--all]
 // Keeps every section (complaints about dogs live outside the land use title) and flags the land use ones; --land-use-only drops the rest.
 // Public-record text, fetched once and cached. Never hammer the city's site: one request per run.
 "use strict";
@@ -14,7 +14,7 @@ function arg(name, dflt) {
 }
 
 async function main() {
-  const town = loadTown(arg("--town", process.env.TOWN || "hildale"));
+  const town = loadTown(arg("--town", process.env.TOWN || "trust-city"));
   const fromFile = arg("--from-file", null);
   const keepAll = !process.argv.includes("--land-use-only");
   let html;

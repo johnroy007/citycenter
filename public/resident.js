@@ -238,7 +238,7 @@
     ev.preventDefault();
     var code = $("lookupRef").value.trim().replace(/\s+/g, "");
     var m = code.match(/^([A-Za-z]+-\d{4}-\d{4})-?([A-Za-z0-9_-]{6,})?$/);
-    if (!m || !m[2]) { $("formMsg").textContent = "A visit code looks like HC-2026-0107-xzUHULux: the reference plus the part after it. It was in the desk's message when you submitted, and in this page's address."; return; }
+    if (!m || !m[2]) { $("formMsg").textContent = "A visit code looks like " + ((town && town.refPrefix) || "TC") + "-2026-0107-xzUHULux: the reference plus the part after it. It was in the desk's message when you submitted, and in this page's address."; return; }
     openSession(m[1].toUpperCase(), m[2]);
   });
   function openSession(ref, key) {

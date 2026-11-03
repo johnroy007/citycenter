@@ -9,7 +9,7 @@ const { openStore } = require("../../lib/store");
 test("store round-trips a session, messages, steps, review states and usage", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-store-"));
   const s = openStore(dir, { refPrefix: "HC" });
-  const { ref, viewKey } = s.createSession({ town: "hildale", text: "hello world", sketch: { mime: "image/png", data: Buffer.from([0x89, 0x50, 0x4e, 0x47]) } });
+  const { ref, viewKey } = s.createSession({ town: "trust-city", text: "hello world", sketch: { mime: "image/png", data: Buffer.from([0x89, 0x50, 0x4e, 0x47]) } });
   assert.match(ref, /^HC-\d{4}-\d{4}$/);
   assert.ok(viewKey.length >= 8);
   let app = s.getSession(ref);
@@ -43,7 +43,7 @@ test("store round-trips a session, messages, steps, review states and usage", ()
   assert.equal(list[0].title, "Lot split");
   assert.equal(list[0].preview, "hello world");
   assert.throws(() => s.updateSession(ref, { status: "bogus" }));
-  const second = s.createSession({ town: "hildale", text: "second" });
+  const second = s.createSession({ town: "trust-city", text: "second" });
   assert.notEqual(second.ref, ref);
   s.close();
 });

@@ -10,7 +10,7 @@ const { loadTown } = require("../../lib/townconfig");
 const { loadCode } = require("../../lib/codestore");
 const { loadGis, createGis } = require("../../lib/gis");
 
-const town = loadTown("hildale");
+const town = loadTown("trust-city");
 
 test("no schema has a recommendation, approval, score or likelihood field", () => {
   const all = JSON.stringify(prompts.ALL_SCHEMAS);
@@ -86,7 +86,7 @@ test("zone standards are read from the real standards tables and lot math compar
   assert.equal(Object.keys(lp.parcel).some((k) => /owner/i.test(k)), false);
   // Same house number on another street must not count as a match.
   assert.equal(gis.locate({ address: "345 E Jessop Ave" }).match, "address");
-  assert.equal(gis.locate({ address: "345 East Jessop Avenue, Hildale UT 84784" }).parcel.id, "HD-SHCR-9-1");
+  assert.equal(gis.locate({ address: "345 East Jessop Avenue, Trust City UT 84784" }).parcel.id, "HD-SHCR-9-1");
   assert.equal(gis.locate({ address: "1280 W Field Ave" }).parcel.zone, "M-1");
   assert.equal(gis.locate({ address: "865 N Redwood St" }).parcel.zone, "RA-.5");
   assert.equal(gis.locate({ address: "345 Jessop" }).match, "address", "direction and suffix are optional");

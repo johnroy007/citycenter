@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { parseMunicipalCodeOnline, htmlToText } = require("../../lib/codeparse");
 const { createCodeStore, loadCode, norm } = require("../../lib/codestore");
-const { loadTown } = require("../../lib/townconfig");
+const { loadTown, renameText } = require("../../lib/townconfig");
 
 const SAMPLE_HTML = `
 <div><div class='phx-name '><a class='k-link' href='https://x.example/book?type=ordinances#name=TITLE_XV_LAND_DEVELOPMENT'>TITLE XV LAND DEVELOPMENT</a></div></div>
@@ -59,8 +59,8 @@ test("code store: lookup, search and quote verification", () => {
   assert.equal(norm("“Smart” quotes — and  spaces"), "smart quotes - and spaces");
 });
 
-test("the cached Hildale code loads with the land use chapters the scenarios need", { skip: !fs.existsSync(path.join(__dirname, "..", "..", "data", "towns", "hildale", "code.json")) }, () => {
-  const store = loadCode(loadTown("hildale"));
+test("the cached town code loads with the land use chapters the scenarios need", { skip: !fs.existsSync(path.join(__dirname, "..", "..", "data", "towns", "trust-city", "code.json")) }, () => {
+  const store = loadCode(loadTown("trust-city"));
   assert.ok(store.count > 300, "expected a few hundred land use sections");
   for (const id of ["152-7-7", "152-7-9", "152-7-12", "152-13-3", "152-14-3", "152-37-9", "152-37-15", "152-39-4", "152-41-4", "152-42-4", "152-9-5"]) {
     assert.ok(store.getSection(id), `section ${id} present`);
@@ -70,4 +70,19 @@ test("the cached Hildale code loads with the land use chapters the scenarios nee
   const firstSentence = s.text.split(/\n/).find((l) => l.split(" ").length > 6);
   assert.equal(store.verifyQuote(firstSentence, "152-37-9").verified, true);
   assert.equal(store.verifyQuote("Roosters are welcome everywhere in the city.", "152-37-15").verified, false);
+});
+
+test("the town's stand-in name replaces its source name in the code text, never in web addresses", { skip: !fs.existsSync(path.join(__dirname, "..", "..", "data", "towns", "trust-city", "code.json")) }, () => {
+  const town = loadTown("trust-city");
+  const t = { sourceName: "Springdale", shortName: "Trust City" };
+  assert.equal(renameText(t, "the Springdale City Council and the City of Springdale"), "the Trust City Council and the City of Trust City");
+  assert.equal(renameText(t, "123 SPRINGDALE ST"), "123 TRUST CITY ST");
+  assert.equal(renameText(t, "https://springdale.example.com/book"), "https://springdale.example.com/book");
+  const store = loadCode(town);
+  const text = store.sections.map((s) => s.text + " " + s.title + " " + s.chapterName).join(" ");
+  assert.ok(!new RegExp(town.sourceName, "i").test(text), "no section text, title or chapter still carries the source name");
+  assert.ok(text.includes(town.shortName), "the stand-in name appears in the code");
+  assert.ok(store.sections.every((s) => !s.url || s.url.startsWith("http")), "section links are untouched");
+  const quote = store.sections.map((s) => s.text.split(/\n/).find((l) => l.includes(town.shortName) && l.split(" ").length > 8)).find(Boolean);
+  assert.equal(store.verifyQuote(quote).verified, true, "a quote using the stand-in name still verifies");
 });

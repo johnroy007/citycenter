@@ -49,7 +49,7 @@
     var editing = !!opts.editing;
     var pg = el("article", { class: "form-page" });
     pg.appendChild(el("div", { class: "letterhead" }, [
-      el("div", { class: "seal", text: (town && town.refPrefix ? town.refPrefix : "HC").slice(0, 3).toUpperCase() }),
+      el("div", { class: "seal", text: (town && town.refPrefix ? town.refPrefix : "TC").slice(0, 3).toUpperCase() }),
       el("div", null, [el("div", { class: "city", text: (office.cityLine || (town && town.name) || "City").toUpperCase() }), el("div", { class: "dept", text: office.department || "Planning & Zoning Department" }), el("div", { class: "addr", text: [office.addressLine, office.phone].filter(Boolean).join(" · ") })]),
       el("div", { class: "appno" }, [el("div", { class: "small", text: "Application No." }), el("div", { class: "num", text: s.ref }), el("div", { class: "small", text: "Page " + (di + 1) + " of " + total })]),
     ]));

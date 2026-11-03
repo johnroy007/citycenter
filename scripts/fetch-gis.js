@@ -1,5 +1,5 @@
 // Pulls the town's zoning polygons and parcel boundaries from public ArcGIS services into data/towns/<town>/.
-// Run: node scripts/fetch-gis.js [--town hildale]
+// Run: node scripts/fetch-gis.js [--town trust-city]
 // Only the fields named in the town config are requested. Owner names are never requested, stored or displayed.
 // Fetched once and cached (a few hundred KB). Re-run to refresh.
 "use strict";
@@ -51,7 +51,7 @@ async function queryAll(layerUrl, { where, outFields, geometry = true, pageSize 
 }
 
 async function main() {
-  const town = loadTown(arg("--town", process.env.TOWN || "hildale"));
+  const town = loadTown(arg("--town", process.env.TOWN || "trust-city"));
   const dir = path.join(__dirname, "..", "data", "towns", town.id);
   fs.mkdirSync(dir, { recursive: true });
   const g = town.gis;

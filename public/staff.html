@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>citycenter: reviewer workspace</title>
-<link rel="stylesheet" href="/public/app.css?v=20261102a">
+<title>CityCenter: City Official Reviewer Workspace</title>
+<link rel="stylesheet" href="/public/app.css?v=20261102b">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body class="staff">
 <header class="top">
-  <div class="brand">citycenter <span id="townName">Planning & Zoning · reviewer workspace</span></div>
+  <div class="brand">CityCenter <span>City Official Reviewer Workspace</span></div>
   <nav>
     <a href="/">Resident counter</a>
     <button type="button" class="quiet hidden" id="logout">Sign out</button>
@@ -32,31 +32,14 @@
     <div class="qtools">
       <div class="qtitle"><strong>Queue</strong> <span class="small" id="qCount"></span> <span class="small" id="qSelected"></span></div>
       <input type="search" id="qSearch" placeholder="Search reference, name, address, request…" aria-label="Search the queue">
-      <select id="qStatus" aria-label="Filter by status">
-        <option value="">All statuses</option>
-        <option value="submitted">Submitted</option>
-        <option value="needs_info">Needs info</option>
-        <option value="in_review">Forwarded</option>
-        <option value="answered">Answered</option>
-        <option value="referred">Referred</option>
-        <option value="ready">Ready, not submitted</option>
-        <option value="open">Talking</option>
-        <option value="error">Error</option>
-      </select>
-      <select id="qDept" aria-label="Filter by department"><option value="">All departments</option></select>
-      <select id="qSort" aria-label="Sort">
-        <option value="newest">Newest first</option>
-        <option value="oldest">Oldest first</option>
-        <option value="status">By status</option>
-        <option value="updated">Recently updated</option>
-        <option value="title">By request</option>
-      </select>
+      <span class="small qtip">Click a column heading to sort or filter</span>
+      <button type="button" class="quiet hidden" id="qClear" title="Remove every sort and filter set from the column headers">Clear sort &amp; filters</button>
       <button type="button" class="quiet" id="refresh">Refresh</button>
       <button type="button" class="quiet" id="purgeDemo" title="Delete every conversation that came from the worked examples">Clear demo</button>
       <button type="button" class="quiet" id="qToggle" title="Show more or less of the queue">▲</button>
     </div>
     <div class="qbody">
-      <table class="qtable"><thead><tr><th>Reference</th><th>Request</th><th>Department</th><th>Status</th><th>Submitted</th></tr></thead><tbody id="queue"></tbody></table>
+      <table class="qtable"><thead><tr><th><button type="button" class="thbtn" data-col="ref" aria-haspopup="true" title="Sort and filter by reference">Reference<span class="thmark"></span></button></th><th><button type="button" class="thbtn" data-col="request" aria-haspopup="true" title="Sort and filter by request">Request<span class="thmark"></span></button></th><th><button type="button" class="thbtn" data-col="dept" aria-haspopup="true" title="Sort and filter by department">Department<span class="thmark"></span></button></th><th><button type="button" class="thbtn" data-col="status" aria-haspopup="true" title="Sort and filter by status">Status<span class="thmark"></span></button></th><th><button type="button" class="thbtn" data-col="submitted" aria-haspopup="true" title="Sort and filter by submitted">Submitted<span class="thmark"></span></button></th></tr></thead><tbody id="queue"></tbody></table>
       <p class="small" id="usage"></p>
     </div>
   </section>
@@ -93,7 +76,7 @@
   </div>
 </div>
 
-<script src="/public/form.js?v=20261102a"></script>
-<script src="/public/staff.js?v=20261102a"></script>
+<script src="/public/form.js?v=20261102b"></script>
+<script src="/public/staff.js?v=20261102b"></script>
 </body>
 </html>

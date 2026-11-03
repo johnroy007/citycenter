@@ -101,7 +101,7 @@ const ok = (cond, msg) => {
   const ask = await api(`/api/staff/sessions/${ref}/ask`, { method: "POST", body: JSON.stringify({ question: "What size limit applies to an attached accessory dwelling unit in this zone?", consideration_id: cons[0].id }) });
   ok(ask.answer.length > 30, `agent answered staff: ${ask.answer.slice(0, 200)}`);
   await api(`/api/staff/sessions/${ref}/consideration`, { method: "POST", body: JSON.stringify({ id: cons[0].id, state: "met" }) });
-  await api(`/api/staff/sessions/${ref}/consideration`, { method: "POST", body: JSON.stringify({ add: { title: "Call the fire district about the second kitchen", how_to_verify: "Phone the Hildale Valley Fire District" } }) });
+  await api(`/api/staff/sessions/${ref}/consideration`, { method: "POST", body: JSON.stringify({ add: { title: "Call the fire district about the second kitchen", how_to_verify: "Phone the Trust City Fire District" } }) });
   let d = await api(`/api/staff/sessions/${ref}`);
   ok(d.review.states[cons[0].id].state === "met" && d.review.considerations.some((c) => c.added_by === "staff"), "states saved and a staff consideration added");
   r = await api(`/api/staff/sessions/${ref}/summary`, { method: "POST", body: "{}" });

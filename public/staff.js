@@ -79,7 +79,7 @@
     if (!current) { setQueueMode(qMode === "collapsed" ? "full" : "collapsed"); return; }
     setQueueMode(qMode === "collapsed" ? "half" : "collapsed");
   });
-  ["qSearch", "qStatus", "qDept", "qSort"].forEach(function (id) { $(id).addEventListener("input", renderQueue); $(id).addEventListener("change", renderQueue); });
+  $("qSearch").addEventListener("input", renderQueue);
   $("refresh").addEventListener("click", loadQueue);
   $("purgeDemo").addEventListener("click", async function () {
     if (!confirm("Delete every conversation that was started from the worked examples? Real visits are kept.")) return;
@@ -95,24 +95,146 @@
       renderQueue();
     } catch (e) { if (e.status === 401) return checkSession(); $("usage").textContent = e.message; }
   }
+  // Column heading menus: click a heading for its sort and filter options.
+  // qSort: { col, dir } (null = newest first). qFilter: text for reference/request, ticked values for department/status, a range for submitted.
+  var STATUS_ORDER = ["submitted", "needs_info", "in_review", "answered", "ready", "open", "referred", "error"];
+  var COLS = {
+    ref: { label: "Reference", sorts: [["desc", "Newest first"], ["asc", "Oldest first"]], filter: "text", hint: "Reference contains…" },
+    request: { label: "Request", sorts: [["asc", "A to Z"], ["desc", "Z to A"]], filter: "text", hint: "Request or type contains…" },
+    dept: { label: "Department", sorts: [["asc", "A to Z"], ["desc", "Z to A"]], filter: "list" },
+    status: { label: "Status", sorts: [["asc", "Submitted first (workflow order)"], ["desc", "Reverse workflow order"]], filter: "list" },
+    submitted: { label: "Submitted", sorts: [["desc", "Most recently submitted first"], ["asc", "Earliest submitted first"]], filter: "when" },
+  };
+  var WHEN = [["", "Any time"], ["yes", "Submitted"], ["no", "Not submitted yet"], ["1", "In the last 24 hours"], ["7", "In the last 7 days"], ["30", "In the last 30 days"]];
+  function noFilters() { return { ref: "", request: "", dept: [], status: [], submitted: "" }; }
+  var qSort = null, qFilter = noFilters(), thMenu = null;
+  function listKey(col, s) { return col === "dept" ? (s.department || "") : s.status; }
+  function listLabel(col, v) { return col === "dept" ? (deptName(v) || "No department") : (STATUS_LABEL[v] || v); }
+  function requestText(s) { return String(s.title || s.preview || "") + " " + (s.packet_type || "").replace(/_/g, " "); }
+  function listOptions(col) {
+    var keys = [];
+    queueRows.forEach(function (s) { var v = listKey(col, s); if (keys.indexOf(v) < 0) keys.push(v); });
+    if (col === "status") keys.sort(function (a, b) { return STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b); });
+    else keys.sort(function (a, b) { return listLabel(col, a).localeCompare(listLabel(col, b)); });
+    return keys;
+  }
+  function filterActive(col) { var f = qFilter[col]; return Array.isArray(f) ? f.length > 0 : !!f; }
+  function matchesFilters(s) {
+    if (qFilter.ref && s.ref.toLowerCase().indexOf(qFilter.ref.toLowerCase()) < 0) return false;
+    if (qFilter.request && requestText(s).toLowerCase().indexOf(qFilter.request.toLowerCase()) < 0) return false;
+    if (qFilter.dept.length && qFilter.dept.indexOf(listKey("dept", s)) < 0) return false;
+    if (qFilter.status.length && qFilter.status.indexOf(s.status) < 0) return false;
+    var w = qFilter.submitted;
+    if (w === "yes" && !s.submitted_at) return false;
+    if (w === "no" && s.submitted_at) return false;
+    if (/^\d+$/.test(w) && (!s.submitted_at || Date.now() - new Date(s.submitted_at).getTime() > Number(w) * 864e5)) return false;
+    return true;
+  }
+  function byDate(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
+  function compareRows(a, b) {
+    var newest = -byDate(a.created_at, b.created_at);
+    if (!qSort) return newest;
+    var col = qSort.col, sign = qSort.dir === "desc" ? -1 : 1, r;
+    if (col === "ref") r = byDate(a.created_at, b.created_at);
+    else if (col === "status") r = STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
+    else if (col === "submitted") {
+      if (!a.submitted_at !== !b.submitted_at) return a.submitted_at ? -1 : 1; // not-yet-submitted rows always go last
+      r = byDate(a.submitted_at || "", b.submitted_at || "");
+    } else {
+      var va = col === "dept" ? deptName(a.department) : requestText(a), vb = col === "dept" ? deptName(b.department) : requestText(b);
+      r = va.localeCompare(vb, undefined, { sensitivity: "base" });
+    }
+    return r * sign || newest;
+  }
+  function updateHeadings() {
+    var any = !!qSort;
+    document.querySelectorAll(".thbtn").forEach(function (b) {
+      var col = b.getAttribute("data-col"), mark = "";
+      if (qSort && qSort.col === col) mark += qSort.dir === "asc" ? " ▲" : " ▼";
+      if (filterActive(col)) { mark += " ●"; any = true; }
+      b.querySelector(".thmark").textContent = mark || " ▾";
+      b.classList.toggle("on", !!mark);
+    });
+    $("qClear").classList.toggle("hidden", !any);
+  }
+  function closeThMenu() {
+    if (!thMenu) return;
+    thMenu.remove(); thMenu = null;
+    document.querySelectorAll(".thbtn[aria-expanded]").forEach(function (b) { b.removeAttribute("aria-expanded"); });
+  }
+  function openThMenu(btn) {
+    var col = btn.getAttribute("data-col"), def = COLS[col];
+    if (thMenu && thMenu.getAttribute("data-col") === col) { closeThMenu(); return; }
+    closeThMenu();
+    var m = el("div", { class: "thmenu", role: "dialog", "aria-label": def.label + ": sort and filter", "data-col": col });
+    m.appendChild(el("div", { class: "thmenu-h", text: "Sort" }));
+    def.sorts.forEach(function (o) {
+      var on = !!(qSort && qSort.col === col && qSort.dir === o[0]);
+      var b = el("button", { type: "button", class: "thmenu-opt" + (on ? " on" : ""), text: (on ? "✓ " : "") + o[1] });
+      b.addEventListener("click", function () { qSort = on ? null : { col: col, dir: o[0] }; closeThMenu(); renderQueue(); });
+      m.appendChild(b);
+    });
+    m.appendChild(el("div", { class: "thmenu-h", text: "Filter" }));
+    if (def.filter === "text") {
+      var inp = el("input", { type: "search", placeholder: def.hint, "aria-label": def.hint });
+      inp.value = qFilter[col];
+      inp.addEventListener("input", function () { qFilter[col] = inp.value.trim(); renderQueue(); });
+      inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") closeThMenu(); });
+      m.appendChild(inp);
+    } else if (def.filter === "list") {
+      var opts = listOptions(col);
+      if (!opts.length) m.appendChild(el("div", { class: "small", text: "Nothing in the queue yet." }));
+      opts.forEach(function (v) {
+        var cb = el("input", { type: "checkbox" });
+        cb.checked = qFilter[col].indexOf(v) >= 0;
+        cb.addEventListener("change", function () {
+          qFilter[col] = qFilter[col].filter(function (x) { return x !== v; });
+          if (cb.checked) qFilter[col].push(v);
+          renderQueue();
+        });
+        var n = queueRows.filter(function (s) { return listKey(col, s) === v; }).length;
+        m.appendChild(el("label", { class: "thmenu-check" }, [cb, " " + listLabel(col, v) + " ", el("span", { class: "small", text: "(" + n + ")" })]));
+      });
+      if (opts.length) m.appendChild(el("div", { class: "small", text: "Nothing ticked shows them all." }));
+    } else {
+      WHEN.forEach(function (o) {
+        var rb = el("input", { type: "radio", name: "qWhen" });
+        rb.checked = qFilter.submitted === o[0];
+        rb.addEventListener("change", function () { qFilter.submitted = o[0]; renderQueue(); });
+        m.appendChild(el("label", { class: "thmenu-check" }, [rb, " " + o[1]]));
+      });
+    }
+    var clr = el("button", { type: "button", class: "quiet", text: "Clear this column" });
+    clr.addEventListener("click", function () { qFilter[col] = Array.isArray(qFilter[col]) ? [] : ""; if (qSort && qSort.col === col) qSort = null; closeThMenu(); renderQueue(); });
+    var done = el("button", { type: "button", text: "Done" });
+    done.addEventListener("click", closeThMenu);
+    m.appendChild(el("div", { class: "thmenu-foot" }, [clr, done]));
+    document.body.appendChild(m);
+    var r = btn.getBoundingClientRect();
+    m.style.top = Math.round(r.bottom + 4) + "px";
+    m.style.left = Math.round(Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8))) + "px";
+    btn.setAttribute("aria-expanded", "true");
+    thMenu = m;
+    var box = m.querySelector("input[type=search]"); if (box) box.focus();
+  }
+  document.querySelectorAll(".thbtn").forEach(function (b) {
+    b.addEventListener("click", function (ev) { ev.stopPropagation(); openThMenu(b); });
+  });
+  document.addEventListener("mousedown", function (ev) { if (thMenu && !thMenu.contains(ev.target) && !ev.target.closest(".thbtn")) closeThMenu(); });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeThMenu(); });
+  window.addEventListener("resize", closeThMenu);
+  $("qClear").addEventListener("click", function () { qSort = null; qFilter = noFilters(); closeThMenu(); renderQueue(); });
+
   function renderQueue() {
     var tb = $("queue"); tb.textContent = "";
     var q = $("qSearch").value.trim().toLowerCase();
-    var st = $("qStatus").value, dept = $("qDept").value, sort = $("qSort").value;
     var rows = queueRows.filter(function (s) {
-      if (st && s.status !== st) return false;
-      if (dept && s.department !== dept) return false;
+      if (!matchesFilters(s)) return false;
       if (q) { var hay = (s.ref + " " + (s.title || "") + " " + (s.preview || "") + " " + (s.packet_type || "") + " " + deptName(s.department)).toLowerCase(); if (hay.indexOf(q) < 0) return false; }
       return true;
     });
-    var order = { submitted: 0, needs_info: 1, in_review: 2, answered: 3, ready: 4, open: 5, referred: 6, error: 7 };
-    rows.sort(function (a, b) {
-      if (sort === "oldest") return a.created_at < b.created_at ? -1 : 1;
-      if (sort === "updated") return a.updated_at < b.updated_at ? 1 : -1;
-      if (sort === "title") return String(a.title || a.preview).localeCompare(String(b.title || b.preview));
-      if (sort === "status") return (order[a.status] - order[b.status]) || (a.created_at < b.created_at ? 1 : -1);
-      return a.created_at < b.created_at ? 1 : -1;
-    });
+    rows.sort(compareRows);
+    updateHeadings();
     rows.forEach(function (s) {
       var tr = el("tr", { class: current && current.ref === s.ref ? "selected" : "" }, [
         el("td", null, [el("div", null, [el("strong", { text: s.ref })]), el("div", { class: "small", text: fmtShort(s.created_at) + (s.has_sketch ? " · drawing" : "") + (s.demo_id ? " · example" : "") + (s.has_account ? " · account" : "") })]),
@@ -594,8 +716,6 @@
   (async function boot() {
     try {
       town = await api("/api/town");
-      $("townName").textContent = town.name + " · Planning & Zoning · reviewer workspace";
-      (town.departments || []).forEach(function (d) { $("qDept").appendChild(el("option", { value: d.id, text: d.name })); });
     } catch (e) {}
     var ok = await checkSession();
     var ref = new URLSearchParams(location.search).get("ref");

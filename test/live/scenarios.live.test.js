@@ -1,4 +1,4 @@
-// LIVE tests: real Meta API calls against the real Hildale code (roughly 10 to 25 cents per scenario).
+// LIVE tests: real Meta API calls against the real town code (shown as Trust City) (roughly 10 to 25 cents per scenario).
 // Run all:  npm run test:live
 // Run some: SCENARIOS=fence-ok,lot-split-ok npm run test:live
 // Skipped automatically when MODEL_API_KEY is not set.
@@ -25,7 +25,7 @@ const fixtures = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "fixtures
 let ctx = null;
 const usage = { calls: 0, p: 0, c: 0 };
 if (HAVE_KEY) {
-  const town = loadTown("hildale");
+  const town = loadTown("trust-city");
   const code = loadCode(town);
   const gis = loadGis(town);
   const { tools } = createTools({ code, gis, town });
@@ -48,7 +48,7 @@ const lower = (o) => JSON.stringify(o).toLowerCase();
 
 for (const sc of fixtures) {
   test(`${sc.id}: ${sc.title}`, { skip: !HAVE_KEY }, async () => {
-    const { ref } = ctx.store.createSession({ town: "hildale", text: sc.text });
+    const { ref } = ctx.store.createSession({ town: "trust-city", text: sc.text });
     let s = await runTurn(ref, ctx);
     const last = s.messages[s.messages.length - 1];
     if (last && last.role === "desk" && last.asks_consent) {
@@ -84,7 +84,7 @@ for (const sc of fixtures) {
 
 test("staff workspace: considerations, a question, and a letter for a lot split", { skip: !HAVE_KEY || (only.length && !only.includes("staff")) }, async () => {
   const sc = fixtures.find((x) => x.id === "lot-split-ok") || JSON.parse(fs.readFileSync(path.join(__dirname, "..", "fixtures", "scenarios.json"), "utf8")).scenarios.find((x) => x.id === "lot-split-ok");
-  const { ref } = ctx.store.createSession({ town: "hildale", text: sc.text });
+  const { ref } = ctx.store.createSession({ town: "trust-city", text: sc.text });
   await runTurn(ref, ctx);
   let s = ctx.store.getSession(ref);
   const cons = await review.buildConsiderations(ctx.client, s, { ...ctx });

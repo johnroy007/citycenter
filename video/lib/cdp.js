@@ -16,7 +16,8 @@ const CHROME_PATHS = [
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function launch({ width = 1440, height = 810, scale = 4 / 3, port = 9333, headless = true } = {}) {
+// The scale must be set when Chrome starts: the screencast ignores a scale set through Emulation and sends small frames.
+async function launch({ width = 1440, height = 810, scale = 2, port = 9333, headless = true, args: extraArgs = [] } = {}) {
   const exe = CHROME_PATHS.find((p) => fs.existsSync(p));
   if (!exe) throw new Error("Chrome or Edge not found; set CHROME_PATH");
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "cc-video-"));
@@ -24,7 +25,7 @@ async function launch({ width = 1440, height = 810, scale = 4 / 3, port = 9333, 
     `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
     "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--mute-audio",
     "--autoplay-policy=no-user-gesture-required", "--force-color-profile=srgb",
-    `--window-size=${width},${height}`, "about:blank",
+    `--window-size=${width},${height}`, `--force-device-scale-factor=${scale}`, ...extraArgs, "about:blank",
   ];
   if (headless) args.unshift("--headless=new");
   const proc = spawn(exe, args, { stdio: "ignore" });
@@ -39,7 +40,7 @@ async function launch({ width = 1440, height = 810, scale = 4 / 3, port = 9333, 
   const b = new Browser(ws, proc, profile);
   await b.send("Page.enable");
   await b.send("Runtime.enable");
-  await b.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: scale, mobile: false });
+  await b.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 0, mobile: false });
   b.size = { width, height, scale };
   return b;
 }

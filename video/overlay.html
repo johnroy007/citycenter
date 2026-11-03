@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>citycenter video overlays</title>
-<!-- Rendered by video/build.js with headless Chrome at 1440x810 (x4/3 = 1920x1080) on a transparent background. -->
+<!-- Rendered by video/build.js with headless Chrome at 1440x810, scaled to the video's size, on a transparent background. -->
 <style>
   :root { --ink: #1f2a37; --muted: #5f6b7a; --blue: #1f5fbf; --teal: #0f766e; --cream: #fbf7ef; --navy: #141c2b; }
   html, body { margin: 0; width: 1440px; height: 810px; overflow: hidden; background: transparent; font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); }
@@ -21,6 +21,7 @@
   .card.light { background: var(--cream); }
   .card .bg { position: absolute; inset: -30px; background-size: cover; background-position: center; filter: blur(14px) saturate(0.9); opacity: 0.35; }
   .card > *:not(.bg) { position: relative; }
+  .card .credit { font-size: 15px; color: var(--muted); margin: 14px 0 0; }
   .card h1 { font-family: Georgia, serif; font-weight: 600; font-size: 54px; line-height: 1.15; margin: 0 0 30px; }
   .nots { display: flex; gap: 26px; margin: 10px 0 46px; }
   .card.dark h1 { font-size: 66px; }
@@ -100,6 +101,7 @@
       const a = el("span"); a.appendChild(el("strong", null, "Try it: ")); a.appendChild(document.createTextNode("citycenter-puh5.onrender.com")); f.appendChild(a);
       const b = el("span"); b.appendChild(el("strong", null, "Code: ")); b.appendChild(document.createTextNode("github.com/johnroy007/citycenter")); f.appendChild(b);
       c.appendChild(f);
+      c.appendChild(el("p", "credit", "Data sources: UGRC SGID (data modified, CC BY 4.0), Washington County GIS, the town's published code."));
       root.appendChild(c);
     }
     await document.fonts.ready;

@@ -20,7 +20,7 @@ function readEnv(name) {
 }
 
 const TURN1 = "Hi. I want to split my lot and sell the back half to my son so he can build a house.";
-const TURN2 = "I'm Devon Dunmore, 345 E Jessop Ave, 435-555-0104. The lot is just under an acre. The back half would be about 20,000 square feet with 100 feet of width, and the front half keeps my house. Both halves reach the road, and water and sewer are in the street. Here is my sketch.";
+const TURN2 = "I'm Devon Dunmore, 345 E Jessop Ave, 435-555-0104. The lot is just under an acre. The new lot would be about 20,000 square feet with 130 feet of width, and the other half keeps my house. Both halves reach the road, and water and sewer are in the street. Here is my sketch.";
 
 // A visible mouse pointer for viewers (headless screenshots have none).
 const CURSOR_JS = `
@@ -51,7 +51,7 @@ async function setup(b) {
   await b.send("Page.addScriptToEvaluateOnNewDocument", { source: `document.addEventListener("DOMContentLoaded", () => { const st = document.createElement("style"); st.textContent = 'a[href="/trust-gap"]{display:none!important}'; document.head.appendChild(st); });` });
   b.on((m) => { if (m.method === "Page.javascriptDialogOpening") b.send("Page.handleJavaScriptDialog", { accept: true }).catch(() => {}); });
   b.cursor = async () => { try { await b.eval(CURSOR_JS); await b.eval(MASK_JS); } catch {} };
-  b.viewport = async (width, height, scale) => { await b.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: scale, mobile: false }); b.size = { width, height, scale }; };
+  b.viewport = async (width, height) => { await b.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 0, mobile: false }); b.size = { ...b.size, width, height }; };
   // Move the visible pointer, then click for real.
   b.tap = async (selector, { pause = 650 } = {}) => {
     await b.cursor();

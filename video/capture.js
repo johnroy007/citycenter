@@ -44,6 +44,32 @@ async function signatureStroke(b) {
   }
 }
 
+// Holds the real microphone button while Chrome plays video/turn1.wav into the fake microphone, so Muse Voice Transcribe
+// does the real work. Falls back to typing when that recording is missing or nothing comes back.
+const VOICE_FILE = path.join(__dirname, "turn1.wav");
+async function speakTurn(b) {
+  if (!fs.existsSync(VOICE_FILE)) return false;
+  const ms = ((fs.statSync(VOICE_FILE).size - 44) / 32000) * 1000 + 900; // 16 kHz, 16-bit, mono
+  await b.cursor();
+  const bx = await b.box("#micBtn");
+  await b.eval(`window.__vcur && window.__vcur(${bx.x}, ${bx.y})`);
+  await sleep(800);
+  await b.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: bx.x, y: bx.y });
+  await b.send("Input.dispatchMouseEvent", { type: "mousePressed", x: bx.x, y: bx.y, button: "left", buttons: 1, clickCount: 1 });
+  b.mark("mic-down");
+  await sleep(ms);
+  await b.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: bx.x, y: bx.y, button: "left", buttons: 0, clickCount: 1 });
+  b.mark("mic-up");
+  try {
+    await b.waitFor(`document.getElementById("text").value.trim().length > 20`, 25000);
+  } catch {
+    return false;
+  }
+  console.log("  heard:", await b.eval(`return document.getElementById("text").value`));
+  await sleep(1800);
+  return true;
+}
+
 const hasChip = (b, text) => b.eval(`return [...document.querySelectorAll("button.qchip")].some(e => e.textContent.includes(${JSON.stringify(text)}))`);
 
 async function resident(b) {
@@ -53,8 +79,10 @@ async function resident(b) {
   const stopTv = await watchTv(b);
   await sleep(2500);
   b.mark("home");
-  await b.tap("#text");
-  await b.type(TURN1, 40);
+  if (!(await speakTurn(b))) {
+    await b.tap("#text");
+    await b.type(TURN1, 40);
+  }
   b.mark("typed1");
   await b.tap("#send");
   b.mark("sent1");
@@ -69,7 +97,7 @@ async function resident(b) {
   const { root } = await b.send("DOM.getDocument", { depth: -1 });
   const { nodeId } = await b.send("DOM.querySelector", { nodeId: root.nodeId, selector: "#image" });
   await b.tap("#attachBtn", { pause: 500 });
-  await b.send("DOM.setFileInputFiles", { nodeId, files: [path.join(ROOT, "public", "sketches", "sketch-clear.png")] });
+  await b.send("DOM.setFileInputFiles", { nodeId, files: [path.join(ROOT, "public", "sketches", "sketch-jessop.png")] });
   await sleep(1800);
   b.mark("attached");
   await b.tap("#text", { pause: 300 });
@@ -124,7 +152,7 @@ async function signAndSubmit(b) {
 
 async function staff(b, ref) {
   const pass = readEnv("STAFF_PASSCODE");
-  await b.viewport(1280, 720, 1.5); // larger text for the dense staff screens; still 1920x1080 frames
+  await b.viewport(1280, 720); // larger text for the dense staff screens; 2560x1440 frames
   await b.goto(BASE + "/staff", 2500);
   const loggedIn = await b.eval(`return !document.getElementById("app").classList.contains("hidden")`);
   if (!loggedIn) {
@@ -212,7 +240,7 @@ async function staff(b, ref) {
 }
 
 async function reply(b, href) {
-  await b.viewport(1440, 810, 4 / 3);
+  await b.viewport(1440, 810);
   await b.goto(href, 4000);
   await b.cursor();
   const stop = await startClip(b, "reply");
@@ -225,7 +253,7 @@ async function reply(b, href) {
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
-  const b = await launch();
+  const b = await launch({ args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream", `--use-file-for-fake-audio-capture=${VOICE_FILE}%noloop`] });
   await setup(b);
   let visit = fs.existsSync(STATE_FILE) ? JSON.parse(fs.readFileSync(STATE_FILE, "utf8")) : {};
   try {

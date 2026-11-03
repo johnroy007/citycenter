@@ -17,7 +17,7 @@ const HERE = __dirname;
 const OUT = path.join(HERE, "out");
 const WORK = path.join(OUT, "build");
 const CAP = path.join(OUT, "capture");
-const FPS = 30, W = 1920, H = 1080;
+const FPS = 30, W = 2560, H = 1440; // YouTube gives 1440p uploads a sharper encode than 1080p
 const MAX_TOTAL = 179.5; // the hackathon asks for a 3-minute video
 let PRE = 0.35, POST = 0.6;
 const ENC = DRAFT ? ["-c:v", "libx264", "-preset", "veryfast", "-crf", "24"] : ["-c:v", "libx264", "-preset", "medium", "-crf", "17", "-tune", "animation"];
@@ -54,7 +54,7 @@ async function overlay(spec, file) {
   const key = JSON.stringify({ ...spec, v: OVERLAY_VERSION });
   if (fs.existsSync(file) && fs.existsSync(file + ".json") && fs.readFileSync(file + ".json", "utf8") === key) return file;
   if (!browser) {
-    browser = await launch({ port: 9334 });
+    browser = await launch({ port: 9334, scale: W / 1440 });
     await browser.send("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });
     await browser.goto("file:///" + path.join(HERE, "overlay.html").replace(/\\/g, "/"), 300);
   }
@@ -129,7 +129,7 @@ async function buildScene(sc, d, idx) {
   overlays.forEach((o, i) => {
     inputs.push("-loop", "1", "-framerate", String(FPS), "-t", d.toFixed(3), "-i", o.file);
     const n = i + 1, fi = Math.min(0.3, (o.b - o.a) / 3);
-    chains.push(`[${n}:v]format=rgba,fade=t=in:st=${o.a.toFixed(3)}:d=${fi.toFixed(2)}:alpha=1${o.hold ? "" : `,fade=t=out:st=${(o.b - fi).toFixed(3)}:d=${fi.toFixed(2)}:alpha=1`}[o${n}]`);
+    chains.push(`[${n}:v]scale=${W}:${H},format=rgba,fade=t=in:st=${o.a.toFixed(3)}:d=${fi.toFixed(2)}:alpha=1${o.hold ? "" : `,fade=t=out:st=${(o.b - fi).toFixed(3)}:d=${fi.toFixed(2)}:alpha=1`}[o${n}]`);
     chains.push(`[${cur}][o${n}]overlay=0:0:enable='between(t,${o.a.toFixed(3)},${o.b.toFixed(3)})'[v${n}]`);
     cur = `v${n}`;
   });

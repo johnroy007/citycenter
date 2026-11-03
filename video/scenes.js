@@ -18,9 +18,9 @@ module.exports = [
   },
   {
     id: "models", card: "models", fadeOut: 0.5, voice: INTRO_VOICE,
-    say: "It runs on Meta's models. Muse Spark understands each request, searches the city code and county maps with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 outlines drawings. Muse Voice Transcribe lets residents talk instead of type. Muse Wonder gives staff a second read. And Muse Image drew the characters and this video's art.",
+    say: "It runs on Meta's models. Muse Spark understands each request, researches the city code with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 outlines drawings. Muse Voice Transcribe lets residents talk instead of type. Muse Wonder gives staff a second read. And Muse Image drew the characters and this video's art.",
     rows: [
-      { model: "Muse Spark", text: "understands requests · searches the code and county maps with tool calls · fills in forms · prepares staff reviews" },
+      { model: "Muse Spark", text: "understands requests · researches the code with tool calls · fills in forms · prepares staff reviews" },
       { model: "SAM 3.1", text: "outlines the shapes in residents' drawings" },
       { model: "Muse Voice Transcribe", text: "residents talk instead of typing" },
       { model: "Muse Wonder", text: "a second read for staff" },
@@ -69,30 +69,31 @@ module.exports = [
   {
     id: "ask", fadeIn: 0.5,
     clip: "resident", segs: [{ from: "home", to: "sent1", w: 1.3 }, { from: "sent1", to: "juniper-asks", w: 1 }],
-    say: "Here's a real visit on the live site. Devon wants to split his lot and sell the back half to his son. He says it in his own words, and the front desk sends him to Planning.",
+    say: "Here's a visit on the live site, with an invented resident. Devon holds the microphone and says he wants to split his lot and sell the back half to his son. The front desk sends him to Planning.",
     callouts: [
-      { at: 0.6, dur: 6, model: "Live site", text: "citycenter-puh5.onrender.com · Trust City" },
-      { at: 6.5, dur: 5.5, model: "Muse Spark", text: "understands the request and finds the right desk" },
+      { at: 0.6, dur: 3.6, model: "Live site", text: "citycenter-puh5.onrender.com · Trust City" },
+      { at: 4.4, dur: 4.2, model: "Muse Voice Transcribe", text: "transcribes his spoken request live (computer voice standing in for Devon)" },
+      { at: 8.8, dur: 4, model: "Muse Spark", text: "understands the request and finds the right desk" },
     ],
   },
   {
     id: "details",
     clip: "resident", segs: [{ from: "juniper-asks", to: "typed2", w: 1 }, { from: "sent2", to: "drafted", w: 1.4 }],
-    say: "He gives his address and a hand-drawn sketch. The planner finds his parcel on the county's zoning map and searches all eight hundred sixty-five sections of the city's code.",
+    say: "He gives his address and a sketch. The desk finds his parcel on the county's zoning map, and the planner researches the city's code, all eight hundred sixty-five sections of it.",
     callouts: [
-      { at: 0.5, dur: 5, model: "Muse Voice Transcribe", text: "residents can hold the mic and talk instead of typing" },
-      { at: 6, dur: 7, model: "Muse Spark · tool calls", text: "county parcel and zoning layers · 865 sections of the city's code" },
+      { at: 0.5, dur: 5, model: "Muse Spark", text: "reads the sketch through image input" },
+      { at: 6, dur: 7, model: "Muse Spark · tool calls", text: "researches 865 sections of the city's code" },
     ],
   },
   {
     id: "channels",
     clip: "resident", segs: [{ from: "ch:map", to: "ch:code", w: 1 }, { from: "ch:code", to: "ch:submissions", w: 1 }, { from: "ch:submissions", to: "ch:paperwork", w: 1 }, { from: "ch:paperwork", to: "sign-open", w: 1.2 }],
-    say: "Every quote is checked, word for word, against the code. SAM 3.1 outlines his drawing. Then Juniper fills out the application, in the city's own form.",
+    say: "Every quote is checked, word for word, against the code. SAM 3.1 outlines his drawing. Then Juniper fills out a city-style application.",
     callouts: [
-      { at: 0.4, dur: 4, model: "Real public data", text: "Washington County zoning · Utah parcel layer · owner names are fictional" },
+      { at: 0.4, dur: 4, model: "Real public data", text: "Washington County zoning · UGRC SGID parcels (data modified) · owner names are fictional" },
       { at: 4.6, dur: 4, model: "Verified quotes", text: "every quote is matched to the stored code text" },
       { at: 9, dur: 4, model: "SAM 3.1", text: "outlines the shapes in the resident's drawing" },
-      { at: 13.2, dur: 5, model: "Muse Spark · structured output", text: "fills in the city's application form" },
+      { at: 13.2, dur: 5, model: "Muse Spark · structured output", text: "fills in a city-style application" },
     ],
   },
   {
@@ -118,7 +119,7 @@ module.exports = [
     clip: "staff", segs: [{ from: "step3-click", to: "point-open", w: 0.8 }, { from: "point-open", to: "second-click", w: 1.6 }, { from: "second-click", to: "step4-click", w: 0.8 }],
     say: "Third: point by point, the requirement, the exact quote, and what the application says. The planner decides each point. Muse Wonder gives a second read.",
     callouts: [
-      { at: 0.5, dur: 6, model: "Muse Spark · tool calls", text: "lists every point a planner checks, with the exact code" },
+      { at: 0.5, dur: 6, model: "Muse Spark · tool calls", text: "lists the points a planner checks, with the exact code" },
       { at: 9.5, dur: 5, model: "Muse Wonder", text: "a second read of the list against the code" },
     ],
   },

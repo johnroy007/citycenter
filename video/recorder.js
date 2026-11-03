@@ -55,7 +55,8 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && url.pathname === "/video.mp4" && fs.existsSync(VIDEO)) {
     const size = fs.statSync(VIDEO).size, range = req.headers.range;
     if (range) {
-      const [a, b] = range.replace("bytes=", "").split("-"); const start = Number(a), end = b ? Number(b) : size - 1;
+      const [a, b] = range.replace("bytes=", "").split("-"); const start = Number(a), end = Math.min(b ? Number(b) : size - 1, size - 1);
+      if (!(start >= 0 && start < size && end >= start)) { res.writeHead(416, { "content-range": `bytes */${size}` }); return res.end(); }
       res.writeHead(206, { "content-type": "video/mp4", "content-range": `bytes ${start}-${end}/${size}`, "accept-ranges": "bytes", "content-length": end - start + 1 });
       return fs.createReadStream(VIDEO, { start, end }).pipe(res);
     }

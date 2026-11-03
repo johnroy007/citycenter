@@ -14,7 +14,7 @@ module.exports = [
   // ---------- Opening statement, in a second voice: built during the event, and the Meta models it uses (about 30 s) ----------
   {
     id: "built", card: "built", fadeIn: 0.6, voice: INTRO_VOICE,
-    say: "CityCenter was built entirely during, and for, the Meta Global AI Developer Hackathon, from October twenty-sixth to November fourth, twenty twenty-six.",
+    say: "CityCenter was built for the Meta Global AI Developer Hackathon, entirely during the dates of the event, October twenty-sixth to November fourth, twenty twenty-six.",
   },
   {
     id: "models", card: "models", fadeOut: 0.5, voice: INTRO_VOICE,

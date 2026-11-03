@@ -16,7 +16,8 @@ Small labels at the top of the screen name the Meta model doing each job. Sped-u
 - `make-art.js`: generates the opening illustrations with Muse Image (`art/`, about $0.01 each). Already done; rerun with `--only <id>` to redraw one.
 - `overlay.html`: the look of titles, labels, cards.
 - `build.js`: assembles `out/citycenter-demo.mp4` and `out/citycenter-demo.srt` (captions for YouTube). `--draft` is faster; `--only open,idea` previews scenes.
-- `recorder.js` + `record.html`: the narration recorder. `node video/recorder.js`, open http://localhost:3100, record each line, press Build. Recordings are saved to `C:\Users\John Barlow\Projects\citycenter-notes\video-voice\` (private, synced through that repo) or `video/voice/` if the notebook isn't on this laptop. Lines without a recording use the Windows computer voice as a stand-in.
+- `recorder.js` + `record.html`: the narration recorder. `node video/recorder.js`, open http://localhost:3100, record each line, press Build. Recordings are saved to `C:\Users\John Barlow\Projects\citycenter-notes\video-voice\` (private, synced through that repo) or `video/voice/` if the notebook isn't on this laptop. Lines without a recording use a Google voice if a key is set, otherwise the Windows computer voice.
+- **Google voice instead of a human recording:** put `GOOGLE_TTS_API_KEY` (Google Cloud, with the Cloud Text-to-Speech API turned on) and optionally `GOOGLE_TTS_VOICE` in the git-ignored `.env.google-tts.local` at the project root. `node video/voice-samples.js` reads the opening in eight voices into `out/voice-samples/` to choose from; then `node video/build.js` uses the chosen voice for every line John has not recorded. Meta's models have no text-to-speech, so this is a non-Meta tool used only for the video, which the contest allows.
 - Optional `music.mp3` in this folder is mixed in quietly (not committed; use something royalty-free such as the YouTube Audio Library).
 
 ## Needs

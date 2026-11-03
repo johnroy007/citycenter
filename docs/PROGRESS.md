@@ -20,7 +20,7 @@ How the hosting works, for whoever picks this up: the app's Meta client reads `M
 ## Waiting on John
 - **Say yes to replacing the live demo examples** (see RESUME POINT). The automatic safety check would not let Claude delete live data without John's OK.
 - **Fresh-eyes pass of the live site** (resident, then staff) and a list of changes.
-- **Record the video narration (about 20 minutes):** run `node video/recorder.js` in the citycenter folder, open http://localhost:3100, read each of the 17 lines, press Build the video, watch it. Then upload it to YouTube (public or unlisted) and put the link in the submission form. Also tell Claude any wording changes to the script.
+- **Video narration, two ways (John chooses):** (a) record it himself: run `node video/recorder.js` in the citycenter folder, open http://localhost:3100, read each of the 17 lines, press Build the video, watch it; or (b) a Google voice: paste a Google Cloud API key (Cloud Text-to-Speech API turned on) into the git-ignored `.env.google-tts.local` at the project root, then Claude runs `node video/voice-samples.js` so John can pick a voice, and `node video/build.js`. Lines he records himself always win over the Google voice. Then upload it to YouTube (public or unlisted) and put the link in the submission form. Also tell Claude any wording changes to the script.
 - **Submission package before 2026-11-04 9 PM ET:** check the README, fill the form. The town is now shown as Trust City everywhere (John, 2026-11-02), which settles the naming question.
 - **Optional:** three photographed hand sketches to replace the computer-generated ones in `public/sketches/`; corrections to the decisions list below; Discord housekeeping from the notebook.
 - **After judging:** cancel the Render Starter instance (~$7/month) and delete the Cloudflare worker.
@@ -74,6 +74,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-03 — Claude Code on John's laptop — recorder page, Google voice option
+- The recorder page would not load because the recorder program was not running; started it (it must be running for http://localhost:3100 to open).
+- Added an optional Google voice for the video narration (`video/lib/media.js`, `video/voice-samples.js`). Meta has no text-to-speech model, and the contest allows non-Meta tools outside the app's core features. Waiting on John's Google Cloud key in `.env.google-tts.local`.
 
 ### 2026-11-02 (evening) — Claude Code on John's laptop — the demo video
 - Built a scripted, repeatable 3-minute video in `video/` (no npm packages): a robot drives Chrome through the live site (resident lot split, signing, the staff's four steps, the letter back), the script lives in `video/scenes.js` (John's "Do you trust your government?" opening, about 91,000 local governments per the 2022 Census of Governments), seven opening illustrations made with Muse Image (`video/art/`), labels naming the Meta model at work, a "▶▶ N× speed" badge on sped-up waits, a stand-in Windows voice, and a captions file. `video/recorder.js` is a local page for John to record each line and rebuild. His recordings save to the notebook (`citycenter-notes/video-voice/`) so they follow him to other laptops.

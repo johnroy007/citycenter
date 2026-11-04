@@ -410,13 +410,23 @@ table.standards td { font-size: 13px; }
 .sk-panel { display: flex; flex-direction: column; gap: 8px; width: min(980px, 100%); max-height: 100%; padding: 14px 18px; overflow: auto; background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
 .sk-panel h2 { margin: 0; font-size: 19px; }
 .sk-tip { margin: 0; }
-.sk-map { font-size: 14px; }
+.sk-mapbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 14px; }
+.sk-find { display: flex; gap: 6px; }
+.sk-find input { flex: 1; min-width: 0; padding: 7px 10px; font-size: 14px; }
+.sk-layers { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.sk-layers label { display: flex; align-items: center; gap: 4px; }
+.sk-note { margin: 0; color: var(--muted); font-size: 13px; }
+.sk-note:empty { display: none; }
+.sk-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.sk-choices:empty { display: none; }
+.sk-swatch { width: 30px; height: 30px; padding: 0; border: 2px solid var(--line); border-radius: 50%; }
+.sk-swatch.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--blue); }
 .sk-tools { display: flex; flex-wrap: wrap; gap: 6px; }
 .sk-tool { padding: 7px 13px; font-size: 14px; background: #fff; color: var(--ink); border-color: var(--line); }
 .sk-tool.on { background: var(--blue); border-color: var(--blue); color: #fff; }
 .sk-small { padding: 7px 11px; font-size: 14px; }
 .sk-stage { flex: 1; min-height: 0; display: flex; justify-content: center; }
-.sk-canvas { display: block; max-width: 100%; max-height: 58vh; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: crosshair; touch-action: none; }
+.sk-canvas { display: block; max-width: 100%; max-height: 52vh; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: crosshair; touch-action: none; }
 .sk-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
 /* Phone version preview */

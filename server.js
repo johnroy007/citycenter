@@ -60,6 +60,7 @@ const messageLimiter = sec.createRateLimiter({ limit: 120, windowMs: 60 * 60 * 1
 const voiceLimiter = sec.createRateLimiter({ limit: 60, windowMs: 60 * 60 * 1000 });
 const loginLimiter = sec.createRateLimiter({ limit: 10, windowMs: 15 * 60 * 1000 });
 const readLimiter = sec.createRateLimiter({ limit: 900, windowMs: 60 * 1000 });
+const aerialLimiter = sec.createRateLimiter({ limit: 60, windowMs: 60 * 1000 });
 let runningTurns = 0;
 let citySvgCache = null;
 
@@ -178,8 +179,41 @@ function planSetbacks(s) {
   if (z.front == null && z.rear == null && z.side == null) return null;
   return { ...z, section: "section " + sec.id, note: z.skipped.length ? `The ${z.skipped.join(" and ")} setback for this zone isn't a single number, so it isn't drawn; see section ${sec.id}.` : "" };
 }
+/** A sketch drawn over a map only lines up with the parcel that map was centered on. */
+function marksFor(s) {
+  const m = s.sketch_marks;
+  return m && m.map && s.parcel && m.map.parcel && m.map.parcel !== s.parcel.id ? { ...m, map: null } : m;
+}
 function buildPlan(s, extraction, answers) {
-  return siteplan.build({ frame: () => siteplan.parcelFrame(gis, s.parcel), parcel: s.parcel, setbacks: planSetbacks(s), extraction, marks: s.sketch_marks, answers, facts: planFacts(s) });
+  return siteplan.build({ frame: () => siteplan.parcelFrame(gis, s.parcel), parcel: s.parcel, setbacks: planSetbacks(s), extraction, marks: marksFor(s), answers, facts: planFacts(s) });
+}
+
+/** The window a map request asks for, or null when it is nowhere near the town. Only plain numbers leave this function. */
+function mapWindow(url) {
+  const num = (k) => Number(url.searchParams.get(k));
+  const lon = num("lon"), lat = num("lat"), meters = num("m"), width = Math.round(num("w")), height = Math.round(num("h"));
+  if (![lon, lat, meters, width, height].every(Number.isFinite)) return null;
+  if (Math.abs(lon - gis.townCenter[0]) > 0.1 || Math.abs(lat - gis.townCenter[1]) > 0.1) return null;
+  if (meters < 15 || meters > 1500 || width < 200 || width > 1400 || height < 200 || height > 1400) return null;
+  return { center: [lon, lat], meters, width, height };
+}
+
+// Aerial pictures come from a public USGS service, kept for a while so the same view isn't fetched twice.
+const aerialCache = new Map();
+async function aerialImage({ center, meters, width, height }) {
+  const box = gis.viewBox(center, meters, width, height).map((n) => n.toFixed(6)).join(",");
+  const key = `${box}|${width}x${height}`;
+  if (aerialCache.has(key)) return aerialCache.get(key);
+  const q = new URLSearchParams({ bbox: box, bboxSR: "4326", imageSR: "4326", size: `${width},${height}`, format: "jpg", f: "image" });
+  try {
+    const r = await fetch(`${town.gis.aerial.url}?${q}`, { signal: AbortSignal.timeout(20000) });
+    if (!r.ok || !String(r.headers.get("content-type")).startsWith("image/")) return null;
+    const img = Buffer.from(await r.arrayBuffer());
+    if (img.length > 4 * 1024 * 1024) return null;
+    if (aerialCache.size >= 60) aerialCache.delete(aerialCache.keys().next().value);
+    aerialCache.set(key, img);
+    return img;
+  } catch { return null; }
 }
 
 function startTurn(ref) {
@@ -203,7 +237,7 @@ function cleanMarks(m) {
   }
   const map = m.map;
   const good = map && Number.isFinite(map.meters) && map.meters > 0 && Array.isArray(map.svg) && map.svg.length === 2 && map.svg.every((n) => Number.isFinite(n) && n > 0) && Array.isArray(map.box) && map.box.length === 4 && map.box.every(Number.isFinite) && map.box[2] > 0;
-  return { items, map: good ? { meters: map.meters, svg: map.svg, box: map.box } : null };
+  return { items, map: good ? { meters: map.meters, svg: map.svg, box: map.box, parcel: typeof map.parcel === "string" ? map.parcel.slice(0, 40) : null } : null };
 }
 
 function parseImage(body, res) {
@@ -296,6 +330,23 @@ async function handle(req, res) {
     const tall = url.searchParams.get("tall") === "1";
     res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
     return res.end(gis.renderSvg({ center, meters: span, width: tall ? 480 : 1000, height: tall ? 600 : 750, pin }));
+  }
+  // The sketch pad's map: one window of the town, in any mix of layers. The aerial picture below covers exactly the same window.
+  if (req.method === "GET" && (p === "/api/map/sketch.svg" || p === "/api/map/aerial.jpg")) {
+    if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
+    const v = mapWindow(url);
+    if (!v) return sendError(res, 400, "That place is outside the town.");
+    if (p === "/api/map/aerial.jpg") {
+      if (!aerialLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
+      const img = await aerialImage(v);
+      if (!img) return sendError(res, 502, "The aerial picture is not available right now.");
+      res.writeHead(200, { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=86400" });
+      return res.end(img);
+    }
+    const layers = String(url.searchParams.get("layers") || "").split(",").filter((l) => ["zoning", "parcels", "streets"].includes(l));
+    const parcelId = url.searchParams.get("parcel");
+    res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
+    return res.end(gis.renderSvg({ center: v.center, meters: v.meters, width: v.width, height: v.height, parcelId: parcelId && gis.getParcel(parcelId) ? parcelId : null, layers, photo: url.searchParams.get("photo") === "1" ? town.gis.aerial.credit : "" }));
   }
   m = p.match(/^\/api\/map\/parcel\/([^/]+)\.svg$/);
   if (req.method === "GET" && m) {
@@ -452,7 +503,8 @@ async function handle(req, res) {
       if (!s.has_sketch) return sendError(res, 400, "Draw or upload a sketch first.");
       try {
         let extraction = { lot: {}, structures: [], lines: [] };
-        if (!(s.sketch_marks && s.sketch_marks.map && s.parcel)) {
+        const marks = marksFor(s);
+        if (!(marks && marks.map && s.parcel)) {
           const reading = (s.steps.find((x) => x.name === "sketch") || {}).output;
           extraction = await siteplan.extractPlan(client, { image: store.getSketch(ref), town, reading, messages: s.messages, parcel: s.parcel, model: MODEL });
         }

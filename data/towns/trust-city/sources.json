@@ -57,6 +57,17 @@
       "how_used": "Real map data, modified"
     },
     {
+      "id": "real-aerial",
+      "government": "U.S. Government (USDA and USGS)",
+      "title": "National Agriculture Imagery Program aerial photos (USGS The National Map)",
+      "url": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer",
+      "kind": "Map data",
+      "used_for": "Aerial photo layer on the sketch pad",
+      "license": "",
+      "reuse": "",
+      "how_used": "Real aerial photos, fetched when a resident asks; not stored"
+    },
+    {
       "id": "src-01",
       "government": "Washington City, Utah",
       "title": "Residential New Construction Permit Submittal Requirements",

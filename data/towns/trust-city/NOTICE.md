@@ -25,6 +25,10 @@ UGRC disclaimer:
 >
 > Neither UGRC nor the State of Utah are responsible for any misuse or misrepresentation of the data. UGRC and the State of Utah are not obligated to provide you with any maintenance or support. The user assumes the entire risk as to the quality and performance of the data. You agree to hold the State of Utah harmless for any claims, liability, costs, and damages relating to your use of the data. You agree that your sole remedy for any dissatisfaction or claims is to discontinue use of the data.
 
+## Aerial photo (not stored here)
+
+The sketch pad's aerial layer shows USDA National Agriculture Imagery Program (NAIP) photos through the USGS National Map (https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer). Credit: USGS, USDA, The National Map: Orthoimagery. It is fetched when a resident asks for it, and only for this town.
+
 ## Zoning (`zoning.geojson`)
 
 Washington County, Utah GIS public zoning layer: https://agisprodvm.washco.utah.gov/arcgis/rest/services/Zoning/MapServer/4. The county's map data is for display only and should be independently verified. The layer publishes no license text; the data remains the county's.

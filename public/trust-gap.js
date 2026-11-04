@@ -20,10 +20,10 @@
     const gap = pot * Math.sqrt((sr / 100) * (so / 100));
     return { T: pot - gap, pot, gap, sr, so, Ce, Oe };
   }
-  // Share of potential trust lost across all process levels 0-100.
-  function area(C, O, A) {
+  // Share of potential trust lost from no process up to process level P.
+  function area(C, O, A, P) {
     let g = 0, p = 0;
-    for (let x = 0; x <= 100; x++) { const m = model(x, C, O, A); g += m.gap; p += m.pot; }
+    for (let x = 0; x <= P; x++) { const m = model(x, C, O, A); g += m.gap; p += m.pot; }
     return g / p * 100;
   }
 
@@ -78,11 +78,11 @@
     const cur = XS.map((x) => model(x, C, O, A).T);
     const today = A > 0 ? XS.map((x) => model(x, C, O, 0).T) : null;
 
-    // Trust gap: the area between potential and current trust.
+    // Trust gap: the area between potential and current trust, up to the process level set above.
     ctx.fillStyle = COLORS.gap;
     ctx.beginPath();
-    XS.forEach((x, i) => (i ? ctx.lineTo(sx(x), sy(pot[i])) : ctx.moveTo(sx(x), sy(pot[i]))));
-    for (let i = XS.length - 1; i >= 0; i--) ctx.lineTo(sx(XS[i]), sy(cur[i]));
+    for (let i = 0; i <= P; i++) (i ? ctx.lineTo(sx(XS[i]), sy(pot[i])) : ctx.moveTo(sx(XS[i]), sy(pot[i])));
+    for (let i = P; i >= 0; i--) ctx.lineTo(sx(XS[i]), sy(cur[i]));
     ctx.closePath();
     ctx.fill();
 
@@ -140,7 +140,7 @@
     $("t").textContent = Math.round(m.T); $("ts").textContent = "of " + Math.round(m.pot) + " possible";
     $("g").textContent = gp === 0 ? "Closed" : gp;
     $("g").style.color = gp === 0 ? "var(--tg-success)" : "var(--tg-danger)";
-    const a0 = area(C, O, 0), aN = area(C, O, A);
+    const a0 = area(C, O, 0, P), aN = area(C, O, A, P);
     $("ga").textContent = aN.toFixed(1) + "%";
     $("ga").style.color = aN < 0.05 ? "var(--tg-success)" : "var(--tg-danger)";
     $("gc").textContent = a0 < 0.05 ? "—" : Math.round((1 - aN / a0) * 100) + "%";

@@ -206,6 +206,8 @@ body.staff table.standards { display: block; overflow-x: auto; }
 .sk-tools { flex-wrap: wrap; }
 .sk-tool, .sk-small { flex: none; min-height: 40px; padding: 7px 12px; font-size: 14px; }
 .sk-label { font-size: 16px; min-height: 42px; }
+.sk-find input { font-size: 16px; }
+.sk-swatch { width: 36px; height: 36px; }
 .sk-canvas { max-height: 100%; }
 .sk-actions button { flex: 1; min-height: 46px; font-size: 16px; }
 .directory { margin: 16px 0 2px; }

@@ -311,3 +311,25 @@ test("site plan: printing goes through a page that fixes the size in real inches
   assert.match(read("resident.js"), /\/site-plan\?ref=/);
   assert.doesNotMatch(read("plan-print.html"), /style="/);
 });
+
+test("a sketch over the map: the first view's middle is the middle of the lot, and layers turn on and off", () => {
+  const { padToFeet } = require("../../lib/siteplan");
+  const toFeet = padToFeet({ meters: 53, svg: [1200, 900], box: [0, 0, 1200, 900] });
+  assert.deepEqual(toFeet([600, 450]).map((n) => Math.round(Math.abs(n))), [0, 0]);
+  // 450 pixels up from the middle is the top of the view: 53 meters is about 174 feet.
+  assert.equal(Math.round(toFeet([600, 0])[1]), 174);
+
+  const { loadGis } = require("../../lib/gis");
+  const gis = loadGis(town);
+  const parcel = gis.locate({ address: "345 E Jessop" }).parcel;
+  const view = { center: parcel.centroid, meters: 53, width: 1200, height: 900, parcelId: parcel.id };
+  const none = gis.renderSvg({ ...view, layers: [] });
+  assert.doesNotMatch(none, /data-zone=/);
+  assert.doesNotMatch(none, /class="roads"/);
+  assert.match(none, /class="target"/, "their lot is always outlined");
+  assert.match(gis.renderSvg({ ...view, layers: ["zoning"] }), /data-zone=/);
+  assert.match(gis.renderSvg({ ...view, layers: ["streets"] }), /class="roads"/);
+  const photo = gis.renderSvg({ ...view, layers: ["parcels"], photo: "Aerial credit" });
+  assert.doesNotMatch(photo, /fill="#f4f1ea"/, "the aerial picture must show through");
+  assert.match(photo, /Aerial credit/);
+});

@@ -164,7 +164,7 @@
     CCSketch.open({
       parcel: state.session && state.session.parcel ? state.session.parcel : null,
       phone: isPhone(),
-      onDone: function (image, marks) { sendMessage($("text").value.trim() || "Here is my site sketch.", image, marks); },
+      onDone: function (image, marks, address) { sendMessage($("text").value.trim() || (address ? "Here is my site sketch for " + address + "." : "Here is my site sketch."), image, marks); },
     });
   }
   $("drawBtn").addEventListener("click", openSketchPad);

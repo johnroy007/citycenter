@@ -187,6 +187,19 @@ function lotOfMarks(marks) {
   return feature ? { parcel: gis.summarize(feature), owner: ownerFor(feature.properties.id) } : {};
 }
 
+/** A map sketch's own facts, added to the resident's message so the desks read them like anything else the resident said. */
+function withDrawing(text, marks, parcel) {
+  if (!marks || !marks.map || !parcel) return text;
+  try {
+    const plan = siteplan.build({ frame: () => siteplan.parcelFrame(gis, parcel), parcel, extraction: { lot: {}, structures: [], lines: [] }, marks, facts: {} });
+    const words = plan.error ? "" : siteplan.drawingWords(plan);
+    return words ? `${text} ${words}` : text;
+  } catch (e) {
+    console.error(`drawing words: ${e.message}`);
+    return text;
+  }
+}
+
 /** A sketch drawn over a map only lines up with the parcel that map was centered on. */
 function marksFor(s) {
   const m = s.sketch_marks;
@@ -461,11 +474,10 @@ async function handle(req, res) {
     const sketch = parseImage(body, res);
     if (sketch === false) return;
     const demoId = typeof body.demo_id === "string" ? body.demo_id.slice(0, 60) : null;
-    const { ref, viewKey } = store.createSession({ town: town.id, text, sketch, demoId, residentId: null });
-    if (sketch) {
-      const marks = cleanMarks(body.marks);
-      if (marks) store.updateSession(ref, { sketch_marks: marks, ...lotOfMarks(marks) });
-    }
+    const marks = sketch ? cleanMarks(body.marks) : null;
+    const lot = lotOfMarks(marks);
+    const { ref, viewKey } = store.createSession({ town: town.id, text: withDrawing(text, marks, lot.parcel), sketch, demoId, residentId: null });
+    if (marks) store.updateSession(ref, { sketch_marks: marks, ...lot });
     startTurn(ref);
     return sendJson(res, 202, { ref, view_key: viewKey });
   }
@@ -545,13 +557,15 @@ async function handle(req, res) {
       if (sketch === false) return;
       if (text.length < 1 && !sketch) return sendError(res, 400, "Type a message or attach a drawing.");
       if (text.length > MAX_TEXT_CHARS) return sendError(res, 400, `Please keep each message under ${MAX_TEXT_CHARS} characters.`);
+      let said = text || "(attached a drawing)";
       if (sketch) {
         store.setSketch(ref, sketch);
         // A new drawing replaces the old plan. Pad sketches also send where each mark sits.
-        const marks = cleanMarks(body.marks);
-        store.updateSession(ref, { site_plan: null, sketch_marks: marks, ...(s.parcel ? {} : lotOfMarks(marks)) });
+        const marks = cleanMarks(body.marks), lot = s.parcel ? {} : lotOfMarks(marks);
+        store.updateSession(ref, { site_plan: null, sketch_marks: marks, ...lot });
+        said = withDrawing(said, marks, lot.parcel || s.parcel);
       }
-      store.addMessage(ref, { role: "resident", text: text || "(attached a drawing)", has_sketch: !!sketch });
+      store.addMessage(ref, { role: "resident", text: said, has_sketch: !!sketch });
       startTurn(ref);
       return sendJson(res, 202, { ok: true });
     }

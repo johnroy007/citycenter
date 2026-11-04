@@ -394,3 +394,18 @@ test("site plan: buildings from the aerial photo are placed, measured to the new
   const through = planFor({ parcel, marks: { map, items: [{ type: "line", a: [450, 440], b: [750, 440], dash: true }] }, buildings });
   assert.ok(through.conflicts.some((c) => /runs through/.test(c.title)));
 });
+
+test("site plan: north is at the top of the page, and a map sketch says what it shows", () => {
+  const { northUp, drawingWords } = require("../../lib/siteplan");
+  for (const n of [[0, 1], [1, 0], [-1, 0], [0, -1], [0.6, 0.8]]) {
+    const up = northUp(n)(n);
+    assert.ok(Math.abs(up[0]) < 1e-9 && up[1] > 0, "north points up from " + n);
+  }
+  const parcel = parcelOf("345 E Jessop Ave");
+  const map = { meters: 100, svg: [1200, 900], box: [0, 0, 1200, 900] };
+  const plan = planFor({ parcel, marks: { map, items: [{ type: "line", a: [600, 330], b: [600, 570], dash: true }] } });
+  assert.match(drawingWords(plan), /split this lot into 2 lots/);
+  const svg = siteplan.renderSvg(plan);
+  assert.match(svg, /JESSOP AVE/);
+  assert.equal(drawingWords(planFor({ parcel, marks: { map, items: [] } })), "");
+});

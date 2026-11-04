@@ -377,6 +377,11 @@ table.standards td { font-size: 13px; }
 }
 @page siteplan { size: 11in 8.5in; margin: 0.45in 0.5in; }
 .print-pack { display: none; }
+.msg.waiting { opacity: .75; }
+.pending-note { text-align: right; font-style: italic; }
+.plan-working { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.spinner { flex: none; box-sizing: border-box; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #d6dde8; border-top-color: var(--blue); animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .checklist { margin: 14px 0 6px; padding: 12px 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
 .checklist-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .checklist-head h3 { margin: 0; font-size: 16px; }

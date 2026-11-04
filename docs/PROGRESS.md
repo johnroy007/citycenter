@@ -90,6 +90,12 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — pending messages, north up, code review follows the sketch
+- **Nothing bounces:** a message sent while the desk works waits in line, shown as Pending, and goes when the desk is free (`state.outbox`, `flushOutbox` in `public/resident.js`). The line lives in the open page, so closing the page loses a waiting message. The plan button does the same (`state.planWaiting`).
+- **Button renamed** Generate Site Sketch.
+- **North up:** the plan page always has north at the top; the scale is chosen for that shape.
+- **Code review follows the sketch:** a map sketch's message now says what it shows, for example that a new lot line splits the lot into two lots of given sizes. A new drawing always gets a fresh code review, even at a desk that is already working. Research no longer lists the address, zone, drawings or the proposal as missing when the visit has them.
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — checklist and full PDF packet
 - **Still needed** on Submission Paperwork is now a checklist with a count. The app ticks what it knows (application prepared, site plan confirmed); the desk's questions can be ticked by hand and are remembered in that browser only, as a reminder (`stillNeeded` in `public/resident.js`). It does not change the application or submission.
 - **Print / save PDF** now carries every attachment ticked on the form. `CCForm.attachments` in `public/form.js` is the one list behind the boxes and the PDF. `printPacket` adds the pages, waits for pictures, then prints. The site plan prints on its own landscape page at true size (`@page siteplan`). Checked by reading a real PDF: 9 pages, plan page 11 x 8.5 in. Only the printing button builds the attachments; a keyboard Ctrl+P prints the application alone.

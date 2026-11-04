@@ -46,7 +46,7 @@
   var town = null;
   var state = {
     ref: null, key: null, timer: null, lastMsgCount: 0, session: null, typing: null, voiceOn: true, editing: false, demo: null,
-    progress: { active: false, shown: 0, nextAt: 0, reveal: null, timer: null }, channel: "welcome", manual: false, seen: { map: null, code: null, submissions: null, paperwork: null }, fresh: {}, lastParcelId: null,
+    outbox: [], flushing: false, planWaiting: false, progress: { active: false, shown: 0, nextAt: 0, reveal: null, timer: null }, channel: "welcome", manual: false, seen: { map: null, code: null, submissions: null, paperwork: null }, fresh: {}, lastParcelId: null,
     zoom: { welcome: 1, map: 1, code: 1, submissions: 1, paperwork: 1 }, expanded: false, mapView: "block",
   };
   try { var z0 = JSON.parse(localStorage.getItem("cc_zoom") || "{}"); Object.keys(z0).forEach(function (k) { if (state.zoom[k] !== undefined && z0[k] >= 0.5 && z0[k] <= 2) state.zoom[k] = z0[k]; }); } catch (e) {}
@@ -245,27 +245,57 @@
   // ---------- sending ----------
   $("text").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); } });
   $("form").addEventListener("submit", function (ev) { ev.preventDefault(); sendMessage($("text").value.trim()); });
-  async function sendMessage(text, imagePayload, marks) {
+  // A message never bounces. It waits in line, shown as pending, and goes the moment the desk is free.
+  function sendMessage(text, imagePayload, marks) {
     var image = imagePayload || pendingImage;
     if (!text && !image) return;
-    $("send").disabled = true;
     $("formMsg").textContent = "";
+    $("text").value = ""; $("text").style.height = ""; pendingImage = null; $("attachBtn").textContent = "📎";
+    state.outbox.push({ text: text, image: image, marks: marks });
+    if (state.session) renderChat(state.session); else showOutbox();
+    flushOutbox();
+  }
+  function showOutbox() {
+    var chat = $("chat");
+    Array.prototype.forEach.call(chat.querySelectorAll(".msg.waiting"), function (n) { n.remove(); });
+    state.outbox.forEach(function (o) {
+      var li = chatItem({ role: "resident", text: o.text || "(attached a drawing)", has_sketch: !!o.image, at: new Date().toISOString() });
+      li.classList.add("waiting");
+      (li.querySelector(".body") || li).appendChild(el("div", { class: "small pending-note", text: "Pending: sends when the desk is free" }));
+      chat.appendChild(li);
+    });
+    chat.scrollTop = chat.scrollHeight;
+  }
+  async function flushOutbox() {
+    if (state.flushing || !state.outbox.length) return;
+    if (state.session && state.session.busy) return; // the next poll comes back here
+    state.flushing = true;
+    var o = state.outbox[0];
     try {
       if (!state.ref) {
-        var data = await api("/api/sessions", { method: "POST", body: JSON.stringify({ text: text, image: image || undefined, marks: marks || undefined, demo_id: state.demo ? state.demo.example.id : undefined }) });
+        var data = await api("/api/sessions", { method: "POST", body: JSON.stringify({ text: o.text, image: o.image || undefined, marks: o.marks || undefined, demo_id: state.demo ? state.demo.example.id : undefined }) });
         state.ref = data.ref; state.key = data.view_key; state.lastMsgCount = 0;
         rememberVisit();
         history.replaceState(null, "", "/?ref=" + encodeURIComponent(state.ref) + "&key=" + encodeURIComponent(state.key));
       } else {
-        await api("/api/sessions/" + encodeURIComponent(state.ref) + "/messages?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ text: text, image: image || undefined, marks: marks || undefined }) });
+        await api("/api/sessions/" + encodeURIComponent(state.ref) + "/messages?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ text: o.text, image: o.image || undefined, marks: o.marks || undefined }) });
       }
-      addPendingResident(text, !!image);
+      state.outbox.shift();
+      showOutbox();
+      addPendingResident(o.text, !!o.image);
       document.body.classList.remove("no-visit"); phoneShow("chat");
-      $("text").value = ""; $("text").style.height = ""; pendingImage = null; $("attachBtn").textContent = "📎";
       think(state.session ? state.session.department : "front_desk", "Let me look into that…");
+      state.flushing = false;
       poll();
-    } catch (e) { $("formMsg").textContent = e.message || "Something went wrong."; }
-    $("send").disabled = false;
+    } catch (e) {
+      state.flushing = false;
+      // Busy or crowded: stay in line and try again. Anything else is a real problem, so give the words back.
+      if (e.status === 409 || e.status === 429 || e.status === 503) { setTimeout(function () { if (state.session && state.session.busy) poll(); else flushOutbox(); }, 2500); return; }
+      state.outbox.shift();
+      showOutbox();
+      $("text").value = o.text || "";
+      $("formMsg").textContent = e.message || "Something went wrong.";
+    }
   }
   // Show the resident's line in the log right away, before the server's copy arrives.
   function addPendingResident(text, hasSketch) {
@@ -295,6 +325,8 @@
       state.session = s;
       render(s);
       if (s.busy) state.timer = setTimeout(poll, 1500);
+      else if (state.outbox.length) flushOutbox();
+      else if (state.planWaiting) makeSitePlan();
       else if (state.demo && state.demo.waiting) demoContinue();
     } catch (e) {
       $("formMsg").textContent = e.message || "Lost contact with the server. Retrying…";
@@ -355,7 +387,7 @@
       chip("Upload a drawing", function () { state.sendOnPick = true; $("image").click(); });
       chip("Skip for now", function () { state.skipSketch = true; renderChat(state.session); });
     }
-    if (s && s.has_sketch && !s.site_plan && m.role === "desk") chip("Make a to-scale site plan", function () { makeSitePlan(); }, "primary");
+    if (s && s.has_sketch && !s.site_plan && m.role === "desk") chip("Generate Site Sketch", function () { makeSitePlan(); }, "primary");
     if (m.offers_plan_check && s && s.site_plan && !s.site_plan.confirmed_at) {
       chip("Looks right", confirmPlan, "primary");
       chip("Change the drawing", function () { openSketchPad(true); });
@@ -418,6 +450,7 @@
     if (s.busy) chat.appendChild(el("li", { class: "msg working" }, [el("span", { class: "avatar dots", text: "…" }), el("div", { class: "body" }, [el("div", { class: "small", text: characterFor(s.department || "front_desk").character + ": " + (state.workingText || "working…") })])]));
     if (s.status === "error") chat.appendChild(el("li", { class: "msg system" }, [el("div", { class: "notice error", text: "The desk hit a problem: " + (s.error || "") + ". Your conversation is saved; send another message to try again." })]));
     if (atBottom || s.messages.length !== state.lastMsgCount) chat.scrollTop = chat.scrollHeight;
+    if (state.outbox.length) showOutbox();
   }
 
   // While a desk works, all four buttons on the remote show a spinner. They turn green strictly left to right, one at a time,
@@ -719,8 +752,14 @@
   async function makeSitePlan() {
     state.channel = "submissions"; state.manual = true; state.planBusy = true; state.planError = "";
     phoneShow("screen"); renderScreen(state.session); renderRemote(state.session);
+    // The desk is mid-reply: stay on "working" and start the moment it is free.
+    if (state.session && state.session.busy) { state.planWaiting = true; return; }
+    state.planWaiting = false;
     try { await api("/api/sessions/" + encodeURIComponent(state.ref) + "/siteplan?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); }
-    catch (e) { state.planError = e.message; }
+    catch (e) {
+      if (e.status === 409 || e.status === 429) { state.planWaiting = true; setTimeout(poll, 2500); return; }
+      state.planError = e.message;
+    }
     state.planBusy = false; state.lockOnce = true; $("screen").scrollTop = 0; // stay on the plan; don't jump to what else changed
     poll();
   }
@@ -829,10 +868,10 @@
     var sp = s.site_plan && s.site_plan.plan;
     screen.appendChild(el("h2", { text: "Concept site plan" }));
     if (state.planError) screen.appendChild(el("div", { class: "notice error", text: state.planError }));
-    if (state.planBusy) { screen.appendChild(el("p", { class: "small", text: "Drawing your plan to scale…" })); return; }
+    if (state.planBusy) { screen.appendChild(el("p", { class: "plan-working" }, [el("span", { class: "spinner", "aria-hidden": "true" }), el("span", { text: state.planWaiting ? "Working: it starts as soon as the desk is free…" : "Generating your site sketch…" })])); return; }
     if (!sp) {
       screen.appendChild(el("p", { class: "small", text: "Turn your sketch into a clean drawing, true to one scale. It is a concept, not a survey." }));
-      var go = el("button", { type: "button", text: "Make a to-scale site plan" });
+      var go = el("button", { type: "button", text: "Generate Site Sketch" });
       go.addEventListener("click", makeSitePlan);
       screen.appendChild(go);
       return;
@@ -1146,7 +1185,7 @@
     demoNextTurn();
   }
   function resetVisit() {
-    clearTimeout(state.progress.timer); state.progress.active = false;
+    clearTimeout(state.progress.timer); state.progress.active = false; state.outbox = []; state.planWaiting = false; state.planBusy = false;
     state.ref = null; state.key = null; state.session = null; state.lastMsgCount = 0; state.lastParcelId = null; state.pinView = null; state.pinDraft = null; document.body.classList.add("no-visit"); phoneShow("chat"); state.channel = "welcome"; state.seen = { map: null, code: null, submissions: null, paperwork: null }; state.fresh = {};
     $("chat").textContent = ""; $("chat").appendChild(greetingItem(new Date().toISOString())); $("refline").textContent = "New visit"; $("statusChip").textContent = "";
     history.replaceState(null, "", "/");

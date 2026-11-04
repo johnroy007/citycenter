@@ -90,6 +90,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — edit a sketch
+Information You Uploaded has an Edit my sketch button. A GIS map sketch reopens on the same map with its marks editable, on a phone or a desktop. An uploaded or blank-page drawing opens underneath as a picture to draw over, since it has no separate marks to bring back. Sending it counts as a new drawing, so the plan, code review, application and checklist all refresh.
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — outlined lots, flag lots, AI checklist, Download and print
 John traced a closed loop around a strip and the back of 865 N Canyon St (TC-2026-0147) and the plan treated it as loose marks. Now:
 - **An outlined area is the new lot.** `newPart` in `lib/siteplan.js` drops the parts of a stroke that hug the lot lines, and the rest becomes the clean line. Lots are named Proposed new lot and Remaining lot; the line is Proposed new lot line. With no outline, the new lot is the part without the main building.

@@ -164,8 +164,12 @@
     CCSketch.open({
       parcel: state.session && state.session.parcel ? state.session.parcel : null,
       marks: keepDrawing === true && state.session ? state.session.sketch_marks : null,
+      backdrop: keepDrawing === true && state.session && state.session.has_sketch ? "/api/sessions/" + encodeURIComponent(state.ref) + "/sketch?key=" + encodeURIComponent(state.key) : null,
       phone: isPhone(),
-      onDone: function (image, marks, address) { sendMessage($("text").value.trim() || (address ? "Here is my site sketch for " + address + "." : "Here is my site sketch."), image, marks); },
+      onDone: function (image, marks, address) {
+        var what = keepDrawing === true ? "my updated site sketch" : "my site sketch";
+        sendMessage($("text").value.trim() || "Here is " + what + (address ? " for " + address : "") + ".", image, marks);
+      },
     });
   }
   $("drawBtn").addEventListener("click", openSketchPad);
@@ -913,6 +917,9 @@
       $("tvModel").textContent = "Muse Spark · image  +  SAM 3.1 · outlines";
       screen.appendChild(el("h2", { text: "Your drawing" }));
       screen.appendChild(drawingWithOutline("/api/sessions/" + encodeURIComponent(s.ref) + "/sketch?key=" + encodeURIComponent(state.key), reading));
+      var editSketch = el("button", { type: "button", class: "quiet", text: "Edit my sketch" });
+      editSketch.addEventListener("click", function () { openSketchPad(true); });
+      screen.appendChild(el("div", { class: "row" }, [editSketch]));
       if (reading) {
         screen.appendChild(el("p", { class: "small", text: "Read as: " + String(reading.drawing_type || "").replace(/_/g, " ") + ", " + reading.readability + "." + (reading.building_code_site_plan_note ? " " + reading.building_code_site_plan_note : "") }));
         if (reading.dimensions && reading.dimensions.length) screen.appendChild(kv(reading.dimensions.map(function (d) { return [d.what, d.value_text]; })));

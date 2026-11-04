@@ -42,6 +42,7 @@
     var base = null;                                  // the map's first view: { lon, lat, meters, parcelId, address }
     var view = { cx: W / 2, cy: H / 2, z: 1 };        // the base point at the middle of the screen, and the zoom
     var layers = { aerial: true, parcels: true, streets: true, zoning: false };
+    var backdrop = null; // an earlier picture to draw over, when its marks can't be brought back one by one
     var photo = null, lines = null, loadId = 0, loadTimer = null, drag = null, erased = false;
     var canvas = el("canvas", { width: String(W), height: String(H), class: "sk-canvas", "aria-label": "Drawing area. Draw your site sketch here." });
     var ctx = canvas.getContext("2d");
@@ -94,6 +95,10 @@
       ctx.setLineDash([]);
       ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
       if (base) { drawLayer(photo); drawLayer(lines); }
+      else if (backdrop) {
+        var fit = Math.min(W / backdrop.naturalWidth, H / backdrop.naturalHeight), bw = backdrop.naturalWidth * fit, bh = backdrop.naturalHeight * fit;
+        ctx.drawImage(backdrop, (W - bw) / 2, (H - bh) / 2, bw, bh);
+      }
       marks.forEach(drawMark);
       if (current) drawMark(current);
       undo.disabled = !past.length; redo.disabled = !future.length; clear.disabled = use.disabled = !marks.length;
@@ -409,9 +414,22 @@
     if (opts.play) playDrawing(opts.play);
     // Changing a drawing starts from the one already made, on the same map.
     var old = opts.marks;
-    if (old && old.map && opts.parcel && old.map.svg[0] === W && old.map.svg[1] === H) {
-      marks = old.items.map(function (m) { var c = {}; Object.keys(m).forEach(function (k) { c[k] = m[k]; }); c.color = m.dash ? NEW : INK; c.width = 7; return c; });
-      showMap(opts.parcel);
+    var sameMap = old && old.map && opts.parcel && old.map.box[2] === old.map.svg[0] && (!old.map.parcel || old.map.parcel === opts.parcel.id);
+    if (sameMap) {
+      // A phone and a desktop use different page sizes, so the marks move to this page's size around the middle of the lot.
+      var k = H / old.map.svg[1], cx = old.map.svg[0] / 2, cy = old.map.svg[1] / 2;
+      var move = function (p) { return [W / 2 + (p[0] - cx) * k, H / 2 + (p[1] - cy) * k]; };
+      marks = old.items.map(function (m) {
+        var c = { type: m.type, dash: m.dash, color: m.dash ? NEW : INK, width: 7 };
+        if (m.pts) c.pts = m.pts.map(move);
+        if (m.a) { c.a = move(m.a); c.b = move(m.b); }
+        if (m.type === "label") { var at = move([m.x, m.y]); c.x = at[0]; c.y = at[1]; c.text = m.text; c.width = 1; }
+        return c;
+      });
+      showMap(opts.parcel, "Your sketch is back on the map. Add to it, or use Erase to take something out.");
+    } else if (opts.backdrop) {
+      picture(opts.backdrop, function (img) { backdrop = img; redraw(); });
+      note.textContent = "Your earlier drawing is underneath. Draw your changes on top, or start again with the GIS map.";
     }
   }
 

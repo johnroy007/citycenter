@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CityCenter: Problem Statement</title>
 <link rel="stylesheet" href="/public/app.css?v=20261103a">
-<link rel="stylesheet" href="/public/trust-gap.css?v=20261104e">
+<link rel="stylesheet" href="/public/trust-gap.css?v=20261104f">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body class="trustgap">
@@ -49,13 +49,22 @@
   <dt>What is the potential impact of this project?</dt>
   <dd>In addition to helping reduce problems like housing affordability by making the land use and development process easier to navigate, there are less quantifiable benefits that are extremely impactful. By easing the administrative burden on both residents and local officials, this program builds trust and frees up time for personal connections.</dd>
   <dt>What is the processing cost, and is it economical?</dt>
-  <dd>Yes, it is economical. At Meta's published prices, the AI work costs about 12 cents per resident request, measured across 22 test requests on November 4, 2026 (about 61,000 input tokens and 9,600 output tokens each)<sup><a href="#cite4">4</a></sup>. A complete application, with a few back-and-forth turns, the staff's four-step review and a second read, comes to roughly 50 cents to $1. Hosting this demo is a separate fixed cost of about $7 a month.
-    <p>Compare that with what an application already costs people. Application fees commonly run from hundreds of dollars to more than a thousand: Washington City, Utah charges $400 for a minor subdivision plat and $300 plus acreage and notice fees for a zone change<sup><a href="#cite5">5</a></sup>, and Oakley, Utah set $750 plus a $500 retainer for a minor subdivision<sup><a href="#cite6">6</a></sup>. In my experience, people often spend about that much again on consultants or engineering firms just to prepare the application, separate from the actual engineering. For scale, the median U.S. planner earns about $40 an hour before any consulting markup<sup><a href="#cite7">7</a></sup>.</p>
-    <p>CityCenter doesn't remove the city's fee, or the need for surveying and engineering. It means the AI's share of preparing and reviewing an application costs well under a dollar.</p>
+  <dd>Yes. The AI's share of a complete application costs under a dollar. The application itself already costs people hundreds of dollars or more.
+    <table class="costs">
+      <tbody>
+        <tr><th scope="row">AI work, one resident request</th><td>About 12 cents, measured<sup><a href="#cite4">4</a></sup></td></tr>
+        <tr><th scope="row">AI work, complete application with staff review</th><td>Roughly 50 cents to $1, estimated<sup><a href="#cite4">4</a></sup></td></tr>
+        <tr><th scope="row">Hosting this demo</th><td>About $7 a month, fixed</td></tr>
+        <tr><th scope="row">City application fee</th><td>$300 to $1,250 in two Utah cities, before added fees<sup><a href="#cite5">5</a>,<a href="#cite6">6</a></sup></td></tr>
+        <tr><th scope="row">Consultant or engineering firm to prepare the application, separate from the actual engineering</th><td>Often about as much again, in my experience</td></tr>
+        <tr><th scope="row">One hour of a planner's time</th><td>About $40 in median pay, before any consulting markup<sup><a href="#cite7">7</a></sup></td></tr>
+      </tbody>
+    </table>
+    <p>CityCenter doesn't replace the city's fee, surveying or engineering. It cuts the cost of preparing and reviewing the paperwork.</p>
     <ol class="cites" start="4">
-      <li id="cite4">Meta Model API, <a href="https://dev.meta.ai/docs/pricing-rate-limits" rel="noopener">Pricing and rate limits</a>: Muse Spark at $1.25 per million input tokens and $4.25 per million output tokens; Muse Wonder at $4.00 and $20.00. Token counts are from this project's own test run. The full-application figure is an estimate built from those prices and our usage logs.</li>
-      <li id="cite5">Washington City, Utah, <a href="https://washingtonutah.gov/development/planningandzoning/planningfeeschedule/" rel="noopener">Planning fee schedule</a>.</li>
-      <li id="cite6">Oakley City, Utah, <a href="https://oakleyut.gov/sites/default/files/fileattachments/city_council/page/15001/resolution_2021-9_planning_development_fee.pdf" rel="noopener">Resolution 2021-9, planning and development fees</a>.</li>
+      <li id="cite4">Meta Model API, <a href="https://dev.meta.ai/docs/pricing-rate-limits" rel="noopener">Pricing and rate limits</a>: Muse Spark at $1.25 per million input tokens and $4.25 per million output; Muse Wonder at $4.00 and $20.00. Measured across 22 test requests on November 4, 2026, at about 61,000 input and 9,600 output tokens each. The complete-application figure is an estimate from those prices and our usage logs.</li>
+      <li id="cite5">Washington City, Utah, <a href="https://washingtonutah.gov/development/planningandzoning/planningfeeschedule/" rel="noopener">Planning fee schedule</a>: $400 for a minor subdivision plat; $300 plus acreage and notice fees for a zone change.</li>
+      <li id="cite6">Oakley City, Utah, <a href="https://oakleyut.gov/sites/default/files/fileattachments/city_council/page/15001/resolution_2021-9_planning_development_fee.pdf" rel="noopener">Resolution 2021-9, planning and development fees</a>: $750 plus a $500 retainer for a minor subdivision.</li>
       <li id="cite7">U.S. Bureau of Labor Statistics, <a href="https://www.bls.gov/ooh/life-physical-and-social-science/urban-and-regional-planners.htm" rel="noopener">Urban and Regional Planners</a>: median pay of $83,720 a year, or $40.25 an hour, in May 2024.</li>
     </ol>
   </dd>

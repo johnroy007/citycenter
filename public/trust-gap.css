@@ -10,6 +10,10 @@ body.trustgap { height: auto; }
 .tg.ps dt { font-size: 15px; font-weight: 600; margin: .8rem 0 2px; }
 .tg.ps dd { margin-left: 0; }
 .tg.ps dd p { margin-top: .6rem; }
+.tg.ps .costs { width: 100%; margin: .7rem 0; border-collapse: collapse; font-size: 14px; line-height: 1.4; }
+.tg.ps .costs th, .tg.ps .costs td { padding: 7px 10px 7px 0; border-top: 1px solid var(--tg-border); text-align: left; vertical-align: top; }
+.tg.ps .costs th { width: 52%; font-weight: 400; color: var(--tg-text2); }
+.tg.ps .costs td { font-weight: 600; }
 .tg.ps sup { font-size: 11px; line-height: 0; }
 .tg.ps .cites { font-size: 12px; line-height: 1.45; color: var(--tg-muted); margin: 6px 0 0; padding-left: 18px; }
 .tg .sub { font-size: 14px; color: var(--tg-text2); margin: 0 0 1rem; }

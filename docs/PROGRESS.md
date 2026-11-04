@@ -94,6 +94,7 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - **Nothing bounces:** a message sent while the desk works waits in line, shown as Pending, and goes when the desk is free (`state.outbox`, `flushOutbox` in `public/resident.js`). The line lives in the open page, so closing the page loses a waiting message. The plan button does the same (`state.planWaiting`).
 - **Button renamed** Generate Site Sketch.
 - **North up:** the plan page always has north at the top; the scale is chosen for that shape.
+- **Checked on the live site (TC-2026-0146):** a map sketch sent first, with a second message queued behind it; the code review came back as a staff lot split, listing only water and sewer approvals and what will be built. Generate Site Sketch pressed mid-turn waited, then drew the plan from a typed address on a blank-page sketch. The video robot has not been run since these changes, so check its first run closely: it may need adjusting.
 - **Code review follows the sketch:** a map sketch's message now says what it shows, for example that a new lot line splits the lot into two lots of given sizes. A new drawing always gets a fresh code review, even at a desk that is already working. Research no longer lists the address, zone, drawings or the proposal as missing when the visit has them.
 
 ### 2026-11-04 — Claude Code on John's laptop (John) — checklist and full PDF packet

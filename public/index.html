@@ -2,15 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CityCenter">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/public/icons/apple-touch-icon.png">
 <title>CityCenter: Virtual City Help Desk</title>
-<link rel="stylesheet" href="/public/app.css?v=20261103e">
+<link rel="stylesheet" href="/public/app.css?v=20261103h">
+<link rel="stylesheet" href="/public/phone.css?v=20261103j" media="(max-width: 700px), (max-height: 500px) and (max-width: 950px)">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body class="resident">
 <header class="top">
   <div class="brand">CityCenter <span id="townName">Virtual City Help Desk</span></div>
-  <nav>
+  <button type="button" class="phone-only" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg class="phone-only" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <nav id="topNav">
+    <button type="button" class="phone-only" id="newVisitBtn">Start a new visit</button>
+    <button type="button" class="phone-only hidden" id="installBtn">Install the app</button>
+    <div class="phone-only hidden" id="installHelp">To install: tap Share, then Add to Home Screen.</div>
     <button type="button" class="quiet" id="muteBtn" title="Read replies aloud (browser voice)">🔊 Voice on</button>
     <button type="button" class="quiet" id="demoBtn" title="Worked examples for judges">▶ Examples</button>
     <a href="/about">Information</a>
@@ -18,6 +30,7 @@
     <a href="/staff">Staff</a>
     <a href="/privacy">Privacy</a>
     <a href="https://github.com/johnroy007/citycenter" rel="noopener">Source</a>
+    <div class="phone-only" id="menuCredits"></div>
   </nav>
 </header>
 
@@ -40,6 +53,7 @@
       <span id="statusChip"></span>
     </div>
     <ol class="chat" id="chat"></ol>
+    <div class="phone-only" id="phoneStart"></div>
     <details class="lookup-box"><summary class="small">Come back to an earlier visit</summary>
       <form id="lookup" class="row" style="margin-top:8px">
         <input type="text" id="lookupRef" placeholder="Visit code, e.g. TC-2026-0107-xzUHULux" aria-label="Visit code" style="max-width:280px">
@@ -69,10 +83,11 @@
       <div class="screen" id="screen"><div class="screen-inner" id="screenInner"></div></div>
     </div>
     <div class="remote" id="remote" role="tablist" aria-label="Choose what the screen shows">
-      <button type="button" class="rbtn" data-channel="map" role="tab"><span class="rkey">1</span>Parcel Map</button>
-      <button type="button" class="rbtn" data-channel="code" role="tab"><span class="rkey">2</span>Code Review</button>
-      <button type="button" class="rbtn" data-channel="submissions" role="tab"><span class="rkey">3</span>Information You Uploaded</button>
-      <button type="button" class="rbtn" data-channel="paperwork" role="tab"><span class="rkey">4</span>Submission Paperwork</button>
+      <button type="button" class="phonetab phone-only" id="chatTab" role="tab"><span class="ricon-wrap phone-only"><svg class="ricon phone-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-5A8 8 0 1 1 21 12z"/></svg><span class="ricon-dot"></span></span><span class="rshort phone-only">Chat</span></button>
+      <button type="button" class="rbtn" data-channel="map" role="tab"><span class="ricon-wrap phone-only"><svg class="ricon phone-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.3 7-11.5A7 7 0 0 0 5 9.5C5 14.7 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span class="ricon-dot"></span></span><span class="rshort phone-only">Map</span><span class="rkey">1</span><span class="rlong">Parcel Map</span></button>
+      <button type="button" class="rbtn" data-channel="code" role="tab"><span class="ricon-wrap phone-only"><svg class="ricon phone-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 21H20v-3"/></svg><span class="ricon-dot"></span></span><span class="rshort phone-only">Code</span><span class="rkey">2</span><span class="rlong">Code Review</span></button>
+      <button type="button" class="rbtn" data-channel="submissions" role="tab"><span class="ricon-wrap phone-only"><svg class="ricon phone-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="m4 7 8 4 8-4M12 11v10"/></svg><span class="ricon-dot"></span></span><span class="rshort phone-only">Yours</span><span class="rkey">3</span><span class="rlong">Information You Uploaded</span></button>
+      <button type="button" class="rbtn" data-channel="paperwork" role="tab"><span class="ricon-wrap phone-only"><svg class="ricon phone-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 13h6M9 17h6"/></svg><span class="ricon-dot"></span></span><span class="rshort phone-only">Forms</span><span class="rkey">4</span><span class="rlong">Submission Paperwork</span></button>
     </div>
   </section>
 
@@ -94,7 +109,7 @@
   </div>
 </main>
 <footer class="credits" id="credits"></footer>
-<script src="/public/form.js?v=20261103f"></script>
-<script src="/public/resident.js?v=20261103g"></script>
+<script src="/public/form.js?v=20261103h"></script>
+<script src="/public/resident.js?v=20261103j"></script>
 </body>
 </html>

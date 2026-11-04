@@ -88,7 +88,7 @@ async function readJson(req, maxBytes) {
     throw e;
   }
 }
-const STATIC_TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".json": "application/json; charset=utf-8", ".mp3": "audio/mpeg" };
+const STATIC_TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".json": "application/json; charset=utf-8", ".mp3": "audio/mpeg", ".webmanifest": "application/manifest+json; charset=utf-8" };
 function serveStatic(res, rel) {
   const full = path.normalize(path.join(PUBLIC_DIR, rel));
   if (!full.startsWith(PUBLIC_DIR + path.sep) && full !== PUBLIC_DIR) return notFound(res);
@@ -226,6 +226,9 @@ async function handle(req, res) {
   if (req.method === "GET" && p === "/staff") return serveStatic(res, "staff.html");
   if (req.method === "GET" && p === "/trust-gap") return serveStatic(res, "trust-gap.html");
   if (req.method === "GET" && p === "/about") return serveStatic(res, "about.html");
+  if (req.method === "GET" && p === "/offline") return serveStatic(res, "offline.html");
+  if (req.method === "GET" && p === "/manifest.webmanifest") return serveStatic(res, "manifest.webmanifest");
+  if (req.method === "GET" && p === "/sw.js") return serveStatic(res, "sw.js");
   if (req.method === "GET" && p === "/privacy") return serveStatic(res, "privacy.html");
   if (req.method === "GET" && p === "/favicon.ico") return serveStatic(res, "favicon.svg");
   if (req.method === "GET" && p.startsWith("/public/")) return serveStatic(res, p.slice("/public/".length));
@@ -253,8 +256,10 @@ async function handle(req, res) {
     const center = Number.isFinite(lon) && Number.isFinite(lat) && gis.inCity(lon, lat) ? [lon, lat] : gis.townCenter;
     const pinParts = String(url.searchParams.get("pin") || "").split(",").map(Number);
     const pin = pinParts.length === 2 && pinParts.every(Number.isFinite) && gis.inCity(pinParts[0], pinParts[1]) ? pinParts : null;
+    // The phone asks for a tall, smaller canvas so street names stay readable on a narrow screen.
+    const tall = url.searchParams.get("tall") === "1";
     res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
-    return res.end(gis.renderSvg({ center, meters: span, width: 1000, height: 750, pin }));
+    return res.end(gis.renderSvg({ center, meters: span, width: tall ? 480 : 1000, height: tall ? 600 : 750, pin }));
   }
   m = p.match(/^\/api\/map\/parcel\/([^/]+)\.svg$/);
   if (req.method === "GET" && m) {
@@ -263,7 +268,8 @@ async function handle(req, res) {
     if (!gis.getParcel(id)) return notFound(res);
     const meters = Math.min(600, Math.max(60, Number(url.searchParams.get("m") || 160)));
     res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=3600" });
-    return res.end(gis.renderSvg({ parcelId: id, meters, width: 1000, height: 750 }));
+    const square = url.searchParams.get("phone") === "1";
+    return res.end(gis.renderSvg({ parcelId: id, meters, width: square ? 520 : 1000, height: square ? 520 : 750 }));
   }
   if (req.method === "GET" && p === "/api/parcels/lookup") {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");

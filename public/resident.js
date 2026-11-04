@@ -27,6 +27,22 @@
     return data;
   }
 
+  // The phone app. Everything guarded by isPhone() stays off on a desktop-sized window.
+  var phoneMq = window.matchMedia("(max-width: 700px), (max-height: 500px) and (max-width: 950px)");
+  function isPhone() { return phoneMq.matches; }
+  function phoneShow(view) {
+    state.phoneView = view;
+    document.body.classList.toggle("pv-chat", view === "chat");
+    document.body.classList.toggle("pv-screen", view === "screen");
+    if (view === "chat" && isPhone()) { var c = $("chat"); c.scrollTop = c.scrollHeight; }
+  }
+  function showOnPhone(channel) {
+    state.channel = channel; state.manual = true; state.fresh[channel] = false;
+    if (state.session) state.seen[channel] = contentSig(state.session)[channel];
+    phoneShow("screen");
+    renderScreen(state.session); renderRemote(state.session);
+    $("screen").scrollTop = 0;
+  }
   var town = null;
   var state = {
     ref: null, key: null, timer: null, lastMsgCount: 0, session: null, typing: null, voiceOn: true, editing: false, demo: null,
@@ -45,8 +61,10 @@
   var CHANNEL_LABEL = { welcome: "Welcome", map: "Parcel Map", code: "Code Review", submissions: "Information You Uploaded", paperwork: "Submission Paperwork" };
 
   // ---------- voice out (browser) ----------
-  try { state.voiceOn = localStorage.getItem("cc_voice") !== "off"; } catch (e) {}
+  // A phone stays quiet until asked: a voice starting up in public is a surprise.
+  try { var savedVoice = localStorage.getItem("cc_voice"); state.voiceOn = savedVoice ? savedVoice !== "off" : !isPhone(); } catch (e) {}
   function updateMuteBtn() { $("muteBtn").textContent = state.voiceOn ? "🔊 Voice on" : "🔇 Voice off"; }
+  function rememberVisit() { if (isPhone()) try { localStorage.setItem("cc_last", JSON.stringify({ ref: state.ref, key: state.key })); } catch (e) {} }
   updateMuteBtn();
   $("muteBtn").addEventListener("click", function () {
     state.voiceOn = !state.voiceOn;
@@ -172,6 +190,7 @@
       rec.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) { $("formMsg").textContent = "Microphone not available: " + e.message; return; }
     rec.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (rec.ctx.state === "suspended") rec.ctx.resume();
     var src = rec.ctx.createMediaStreamSource(rec.stream);
     rec.processor = rec.ctx.createScriptProcessor(4096, 1, 1);
     rec.chunks = [];
@@ -220,12 +239,14 @@
       if (!state.ref) {
         var data = await api("/api/sessions", { method: "POST", body: JSON.stringify({ text: text, image: image || undefined, demo_id: state.demo ? state.demo.example.id : undefined }) });
         state.ref = data.ref; state.key = data.view_key; state.lastMsgCount = 0;
+        rememberVisit();
         history.replaceState(null, "", "/?ref=" + encodeURIComponent(state.ref) + "&key=" + encodeURIComponent(state.key));
       } else {
         await api("/api/sessions/" + encodeURIComponent(state.ref) + "/messages?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ text: text, image: image || undefined }) });
       }
       addPendingResident(text, !!image);
-      $("text").value = ""; pendingImage = null; $("attachBtn").textContent = "📎";
+      document.body.classList.remove("no-visit"); phoneShow("chat");
+      $("text").value = ""; $("text").style.height = ""; pendingImage = null; $("attachBtn").textContent = "📎";
       think(state.session ? state.session.department : "front_desk", "Let me look into that…");
       poll();
     } catch (e) { $("formMsg").textContent = e.message || "Something went wrong."; }
@@ -247,6 +268,7 @@
   });
   function openSession(ref, key) {
     state.ref = ref; state.key = key; state.lastMsgCount = 0;
+    document.body.classList.remove("no-visit"); rememberVisit();
     history.replaceState(null, "", "/?ref=" + encodeURIComponent(ref) + "&key=" + encodeURIComponent(key));
     poll();
   }
@@ -311,18 +333,24 @@
       row.appendChild(b); any = true;
     }
     (m.quick_replies || []).forEach(function (q) { chip(q, function () { sendMessage(q); }); });
-    if (m.offers_pin && s && !s.submitted_at) chip("Mark it on the map", function () { state.channel = "map"; state.manual = true; renderScreen(state.session); renderRemote(state.session); }, "primary");
+    if (m.offers_pin && s && !s.submitted_at) chip("Mark it on the map", function () { state.channel = "map"; state.manual = true; phoneShow("screen"); renderScreen(state.session); renderRemote(state.session); }, "primary");
     if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && (s.parcel || isService(s)) && !s.submitted_at) {
       if (signatureFree(s)) chip("Send it", function () { sendWithoutSignature(); }, "primary");
       else chip("Sign and submit", function () { openSignPanel(); }, "primary");
-      chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; renderScreen(state.session); renderRemote(state.session); });
+      chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; phoneShow("screen"); renderScreen(state.session); renderRemote(state.session); });
       chip("I want to change something", function () { $("text").placeholder = "Tell " + characterFor(s.department || "planning").character + " what to change…"; $("text").focus(); });
     } else if (s && isService(s) && !s.submitted_at && (m.questions || []).length) {
-      chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; renderScreen(state.session); renderRemote(state.session); });
+      chip("Edit it myself", function () { state.channel = "paperwork"; state.manual = true; state.editing = true; phoneShow("screen"); renderScreen(state.session); renderRemote(state.session); });
     }
     if (m.offers_submit && s && s.submitted_at && s.changed_since_submit) {
       if (signatureFree(s)) chip("Send the update", function () { sendWithoutSignature(); }, "primary");
       else chip("Sign and resubmit", function () { openSignPanel(); }, "primary");
+    }
+    // On a phone the other screens are a tap away, so the chat points to whatever is ready.
+    if (isPhone() && s && m.role === "desk") {
+      if (s.packet && s.packet.packet_type !== "referral") chip("View paperwork", function () { showOnPhone("paperwork"); }, "view");
+      if (s.research) chip("See the code", function () { showOnPhone("code"); }, "view");
+      if ((s.parcel || s.pin) && !m.offers_pin) chip("See the map", function () { showOnPhone("map"); }, "view");
     }
     return any ? row : null;
   }
@@ -385,10 +413,12 @@
     else if (changed.indexOf("code") >= 0) target = "code";
     else if (changed.indexOf("map") >= 0) target = "map";
     else if (changed.indexOf("submissions") >= 0 && s.has_sketch && state.seen.submissions === null) target = "submissions";
-    if (target && !state.editing && !state.lockOnce) { state.channel = target; state.manual = false; }
+    // A phone never jumps away from the chat by itself; the tab shows a dot instead.
+    if (target && !state.editing && !state.lockOnce && !isPhone()) { state.channel = target; state.manual = false; }
     state.lockOnce = false;
     if (state.channel === "welcome" && s.ref) state.channel = s.packet ? "paperwork" : s.research ? "code" : s.parcel ? "map" : (s.has_sketch || s.understanding) ? "submissions" : "welcome";
-    order.forEach(function (c) { if (c === state.channel) { state.seen[c] = sig[c]; state.fresh[c] = false; } else if (!sig[c]) state.seen[c] = sig[c]; });
+    var looking = !isPhone() || state.phoneView === "screen";
+    order.forEach(function (c) { if (c === state.channel && looking) { state.seen[c] = sig[c]; state.fresh[c] = false; } else if (!sig[c]) state.seen[c] = sig[c]; });
   }
   function hasContent(s, c) {
     if (!s) return false;
@@ -403,13 +433,14 @@
       var c = b.dataset.channel;
       b.classList.toggle("active", state.channel === c);
       b.classList.toggle("empty", !hasContent(s, c));
-      b.classList.toggle("fresh", !!state.fresh[c] && state.channel !== c);
+      b.classList.toggle("fresh", !!state.fresh[c] && (state.channel !== c || (isPhone() && state.phoneView !== "screen")));
       b.setAttribute("aria-selected", state.channel === c ? "true" : "false");
     });
   }
   Array.prototype.forEach.call(document.querySelectorAll(".rbtn"), function (b) {
     b.addEventListener("click", function () {
       state.channel = b.dataset.channel; state.manual = true; state.fresh[state.channel] = false;
+      phoneShow("screen");
       if (state.session) { state.seen[state.channel] = contentSig(state.session)[state.channel]; renderScreen(state.session); renderRemote(state.session); }
       else { renderScreen(null); renderRemote(null); }
     });
@@ -482,11 +513,11 @@
 
   // ---------- the clickable map: a resident marks a spot on a real street ----------
   function pinWindow(v) {
-    var dLat = v.m / 110574, dLon = dLat * (1000 / 750) / Math.cos(v.lat * Math.PI / 180);
+    var dLat = v.m / 110574, dLon = dLat * (isPhone() ? 480 / 600 : 1000 / 750) / Math.cos(v.lat * Math.PI / 180);
     return [v.lon - dLon, v.lat - dLat, v.lon + dLon, v.lat + dLat];
   }
   function pinImageSrc(v, spot) {
-    return "/api/map/area.svg?lon=" + v.lon.toFixed(6) + "&lat=" + v.lat.toFixed(6) + "&m=" + Math.round(v.m) + (spot ? "&pin=" + spot.lon.toFixed(6) + "," + spot.lat.toFixed(6) : "");
+    return "/api/map/area.svg?lon=" + v.lon.toFixed(6) + "&lat=" + v.lat.toFixed(6) + "&m=" + Math.round(v.m) + (isPhone() ? "&tall=1" : "") + (spot ? "&pin=" + spot.lon.toFixed(6) + "," + spot.lat.toFixed(6) : "");
   }
   function renderPinMap(screen, s) {
     $("tvLabel").textContent = "Mark the Spot";
@@ -498,7 +529,7 @@
     }
     var v = state.pinView;
     var spot = function () { return state.pinDraft || saved || null; };
-    screen.appendChild(el("p", { class: "lead", text: saved && !state.pinDraft ? "Spot marked" + (saved.road ? " near " + saved.road : "") + (saved.address ? ", closest address " + saved.address : "") + ". Click the map to move it." : "Click the map to mark the spot. Drag to move around." }));
+    screen.appendChild(el("p", { class: "lead", text: saved && !state.pinDraft ? "Spot marked" + (saved.road ? " near " + saved.road : "") + (saved.address ? ", closest address " + saved.address : "") + ". " + (isPhone() ? "Tap" : "Click") + " the map to move it." : (isPhone() ? "Tap" : "Click") + " the map to mark the spot. Drag to move around." }));
     var img = el("img", { class: "pinpic", alt: "Street map. Click to mark the spot.", draggable: "false", src: pinImageSrc(v, spot()) });
     var wrap = el("div", { class: "pinmap" }, [img]);
     function zoom(f) { v.m = Math.min(3600, Math.max(60, v.m * f)); img.src = pinImageSrc(v, spot()); }
@@ -531,6 +562,7 @@
       try {
         await api("/api/sessions/" + encodeURIComponent(state.ref) + "/pin?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ lon: state.pinDraft.lon, lat: state.pinDraft.lat, note: note.value }) });
         state.pinDraft = null;
+        phoneShow("chat");
         poll();
       } catch (e) { msg.textContent = e.message; go.disabled = false; }
     });
@@ -553,7 +585,7 @@
     var firstTime = state.lastParcelId !== p.id;
     var wrap = el("div", { class: "mapwrap" + (!firstTime && state.mapView !== "city" ? " zoomed" : "") });
     var zo = el("img", { class: "zoomout", src: "/api/map/city.svg", alt: "City zoning map" });
-    var zi = el("img", { class: "zoomin", src: "/api/map/parcel/" + encodeURIComponent(p.id) + ".svg?m=" + (VIEWS[state.mapView] || 160), alt: "Zoning map around the parcel" });
+    var zi = el("img", { class: "zoomin", src: "/api/map/parcel/" + encodeURIComponent(p.id) + ".svg?m=" + (VIEWS[state.mapView] || 160) + (isPhone() ? "&phone=1" : ""), alt: "Zoning map around the parcel" });
     wrap.appendChild(zo); wrap.appendChild(zi);
     screen.appendChild(wrap);
     if (firstTime) { state.lastParcelId = p.id; if (state.mapView === "city") state.mapView = "block"; setTimeout(function () { wrap.classList.add("zoomed"); }, 400); }
@@ -767,6 +799,7 @@
   async function sendWithoutSignature() {
     try {
       await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" });
+      phoneShow("chat");
       poll();
     } catch (e) { $("formMsg").textContent = e.message; }
   }
@@ -775,6 +808,7 @@
   var pad = { canvas: null, ctx: null, drawing: false, strokes: 0, last: null };
   function openSignPanel() {
     state.signing = true; state.channel = "paperwork"; state.manual = true;
+    phoneShow("screen");
     renderScreen(state.session); renderRemote(state.session);
     $("screen").scrollTop = 0; // the panel is the first thing on the screen; scroll only the TV, never the whole page
   }
@@ -829,6 +863,7 @@
         await api("/api/sessions/" + state.ref + "/sign?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify(body) });
         await api("/api/sessions/" + state.ref + "/submit?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" });
         state.signing = false;
+        phoneShow("chat");
         poll();
       } catch (e) { msg.textContent = e.message; msg.classList.remove("hidden"); go.disabled = false; }
     });
@@ -876,7 +911,7 @@
     demoNextTurn();
   }
   function resetVisit() {
-    state.ref = null; state.key = null; state.session = null; state.lastMsgCount = 0; state.lastParcelId = null; state.pinView = null; state.pinDraft = null; state.channel = "welcome"; state.seen = { map: null, code: null, submissions: null, paperwork: null }; state.fresh = {};
+    state.ref = null; state.key = null; state.session = null; state.lastMsgCount = 0; state.lastParcelId = null; state.pinView = null; state.pinDraft = null; document.body.classList.add("no-visit"); phoneShow("chat"); state.channel = "welcome"; state.seen = { map: null, code: null, submissions: null, paperwork: null }; state.fresh = {};
     $("chat").textContent = ""; $("chat").appendChild(greetingItem(new Date().toISOString())); $("refline").textContent = "New visit"; $("statusChip").textContent = "";
     history.replaceState(null, "", "/");
     renderScreen(null); renderRemote(null);
@@ -911,6 +946,50 @@
   $("demoSkip").addEventListener("click", function () { var d = state.demo; if (!d) return; if (d.waiting) return; var t = d.example.turns[d.turn]; if (t) { d.turn++; d.waiting = true; sendMessage(t, d.sketch && d.turn === d.example.turns.length ? d.sketch : null); } });
   $("demoTakeOver").addEventListener("click", function () { state.demo = null; $("demoBar").classList.add("hidden"); $("text").value = ""; $("text").focus(); });
 
+  // ---------- the phone app: start screen, menu, install ----------
+  var START_TILES = [["🚧", "Report a pothole", "Mark it on a map", "There's a pothole on my street."], ["💧", "Water bill", "Questions and outages", "I have a question about my water bill."], ["🔥", "Burn permit", "Weeds and brush", "I need a burn permit for my weed pile."], ["🏡", "My property", "Zoning, lots, fences", "I have a question about what I can do on my property."], ["🌳", "Reserve a pavilion", "Parks and events", "I'd like to reserve a park pavilion."], ["🚓", "Police request", "Reports, records, events", "I need something from the Police Department. It isn't an emergency."]];
+  function renderPhoneStart() {
+    var box = $("phoneStart"); box.textContent = "";
+    var last = null;
+    try { last = JSON.parse(localStorage.getItem("cc_last") || "null"); } catch (e) {}
+    if (last && last.ref && last.key) {
+      var again = el("button", { type: "button", class: "ps-resume", text: "Continue your last visit (" + last.ref + ")" });
+      again.addEventListener("click", function () { openSession(last.ref, last.key); });
+      box.appendChild(again);
+    }
+    box.appendChild(el("div", { class: "ps-title", text: "What do you need?" }));
+    var grid = el("div", { class: "ps-grid" });
+    START_TILES.forEach(function (t) {
+      var b = el("button", { type: "button", class: "ps-tile" }, [el("span", { class: "ps-emoji", text: t[0] }), el("span", { text: t[1] }), el("small", { text: t[2] })]);
+      b.addEventListener("click", function () { sendMessage(t[3]); });
+      grid.appendChild(b);
+    });
+    box.appendChild(grid);
+    box.appendChild(el("div", { class: "ps-notes" }, [
+      el("p", null, [(town && town.wording.exampleCity || "") + " ", el("a", { href: "/about", text: "How this site works" })]),
+      el("p", { text: "This is a public demo: others can read what you type, so please use made-up names and details." }),
+      el("p", null, ["The desk characters are AI assistants and can make mistakes. Nothing here is legal advice. You must be 18 or older. ", el("a", { href: "/privacy", text: "Privacy and terms" })]),
+      el("p", { text: "In an emergency, call 911. This app cannot send help." }),
+    ]));
+  }
+  function setMenu(open) { document.body.classList.toggle("menu-open", open); $("menuBtn").setAttribute("aria-expanded", open ? "true" : "false"); }
+  $("menuBtn").addEventListener("click", function (e) { e.stopPropagation(); setMenu(!document.body.classList.contains("menu-open")); });
+  document.addEventListener("click", function (e) { if (document.body.classList.contains("menu-open") && !e.target.closest("#menuBtn")) setMenu(false); });
+  $("chatTab").addEventListener("click", function () { phoneShow("chat"); if (state.session) renderRemote(state.session); });
+  $("newVisitBtn").addEventListener("click", function () { try { localStorage.removeItem("cc_last"); } catch (e) {} location.href = "/"; });
+  $("text").addEventListener("input", function () { if (!isPhone()) return; var t = $("text"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight + 2) + "px"; });
+  var installEvent = null;
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); installEvent = e; $("installBtn").classList.remove("hidden"); });
+  $("installBtn").addEventListener("click", async function () {
+    if (installEvent) { installEvent.prompt(); await installEvent.userChoice; installEvent = null; $("installBtn").classList.add("hidden"); }
+  });
+  if (isPhone()) {
+    $("text").placeholder = "Message";
+    var standalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone) $("installHelp").classList.remove("hidden");
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(function () {});
+  }
+
   // ---------- boot ----------
   (async function boot() {
     try {
@@ -918,15 +997,18 @@
       $("townName").textContent = town.name + " · Virtual City Help Desk";
       $("credits").textContent = (town.notes.dataCredits || "") + " · " + (town.notes.fictionalOwners || "") + " · Built during the Meta Global AI Developer Hackathon, Oct 26 to Nov 4, 2026. Models: " + town.models.desk + ", " + town.models.voice + ", " + town.models.image + ". Office scene and characters generated with " + town.models.image + ".";
       setPortrait("front_desk", "neutral");
+      $("menuCredits").textContent = $("credits").textContent;
       if (window.speechSynthesis) speechSynthesis.getVoices();
     } catch (e) { $("formMsg").textContent = "Could not load the town: " + e.message; }
     renderScreen(null); renderRemote(null);
     var params = new URLSearchParams(location.search);
+    phoneShow("chat");
+    if (!(params.get("ref") && params.get("key"))) { document.body.classList.add("no-visit"); renderPhoneStart(); }
     if (!(params.get("ref") && params.get("key"))) {
       $("chat").appendChild(greetingItem(new Date().toISOString()));
       say("front_desk", greetingText());
     }
-    if (params.get("ch") && CHANNEL_LABEL[params.get("ch")]) { state.channel = params.get("ch"); state.manual = true; state.lockOnce = true; }
+    if (params.get("ch") && CHANNEL_LABEL[params.get("ch")]) { state.channel = params.get("ch"); state.manual = true; state.lockOnce = true; phoneShow("screen"); }
     if (params.get("expand") === "1") setExpanded(true);
     if (params.get("sign") === "1") { state.signing = true; state.channel = "paperwork"; state.manual = true; state.lockOnce = true; }
     if (params.get("ref") && params.get("key")) openSession(params.get("ref"), params.get("key"));

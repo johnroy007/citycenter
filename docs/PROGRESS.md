@@ -11,7 +11,7 @@
 - **Last updated:** 2026-11-03 (evening) by Claude Code on John's laptop (computer name JOHN): all departments and certified questions built and deployed.
 
 ## RESUME POINT
-**Start here:** all department desks, certified questions and the Information page are live (see the log). The Q&A tab on `/about` is a placeholder John will fill in. The demo video still shows only Planning, which remains accurate; its greeting wording differs slightly from the live site now. The corrected video is in John's Downloads. What is left is John's: upload the video, then submit before 2026-11-04 9 PM ET. Audit details and the rights inventory are in the private notebook (`citycenter-notes`, file `notes/audit-2026-11-03.md`); keep them out of this public repo. The form answers and the YouTube description are in that notebook's `notes/submission-draft.md`.
+**Start here:** all department desks, certified questions, the Information page and the phone app are live (see the log). The Q&A tab on `/about` is a placeholder John will fill in. The demo video still shows only Planning, which remains accurate; its greeting wording differs slightly from the live site now. The corrected video is in John's Downloads. What is left is John's: upload the video, then submit before 2026-11-04 9 PM ET. Audit details and the rights inventory are in the private notebook (`citycenter-notes`, file `notes/audit-2026-11-03.md`); keep them out of this public repo. The form answers and the YouTube description are in that notebook's `notes/submission-draft.md`.
 
 If the app changes again before the deadline: deploy with `npm run deploy`, re-record with `node video/capture.js` (about 10 minutes, a few cents, drives the live site; it plays `video/turn1.wav` into a fake microphone), build with the command above (must stay at or under 3:00), look at stills, and copy the .mp4 and .srt from `video/out/` to John's Downloads. The Google voice key lives only in the git-ignored `.env.google-tts.local` on John's main laptop.
 
@@ -80,6 +80,11 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-03 (night) — Claude Code on John's laptop (JOHN) — phone app
+John asked for a phone layout and an installable app, with liberties on the design, and no change to desktop. Built `public/phone.css`, a bottom tab bar, a start screen with tiles, a slide-down menu, a tall street map with readable labels, a card-style form, finger signing, "continue your last visit", a manifest, icons, and a service worker that only serves a no-connection page. A phone never jumps away from the chat by itself; tabs show a dot and the chat offers buttons. Voice starts off on a phone.
+Tested in Chrome's phone emulation with touch input and the real models: pothole with map pin (taps landed 0 feet from the target), paperwork, sending, reopening a visit, finger signature, 911 line, install check, sizes 320 to 430 wide and landscape. With the server shut down, the no-connection page appeared. Desktop: old and new code on the same data at four window sizes, 44 screens, 40 with no visible pixel difference; the other 4 are the Privacy page, where a sentence was added on purpose.
+Not tested on a real iPhone or Android phone, so the microphone and actual installation still need a real try. To change the phone look, edit `phone.css`.
 
 ### 2026-11-03 (night) — Claude Code on John's laptop (JOHN) — Meta tools and rules check
 Checked against the Official Rules (read in a browser), Meta's Terms of Service and Acceptable Use Policy, and the notebook's rules digest. Meta models only, in every feature; repo public, no secrets; no sample copies a source (936 eight-word runs against 56 pages, 0 matches; 7 PDFs not compared).

@@ -172,3 +172,22 @@ test("nothing reads as a real city's act: sample forms, demo letters, AI labels"
   const page = fs.readFileSync(path.join(__dirname, "..", "..", "public", "resident.js"), "utf8");
   assert.match(page, /"AI assistant · "/);
 });
+
+test("the phone app stays out of the desktop site and out of people's data", () => {
+  const read = (f) => fs.readFileSync(path.join(__dirname, "..", "..", "public", f), "utf8");
+  for (const page of ["index.html", "staff.html"]) assert.match(read(page), /phone\.css[^>]*media="\(max-width: 700px\)/, page + " loads phone styles on phone-sized screens only");
+  assert.match(read("app.css"), /\.phone-only \{ display: none; \}/, "phone parts are hidden on desktop");
+  const sw = read("sw.js");
+  assert.doesNotMatch(sw, /cache\.put|\/api/, "the service worker never stores conversations");
+  const app = JSON.parse(read("manifest.webmanifest"));
+  assert.equal(app.display, "standalone");
+  for (const i of app.icons) assert.ok(fs.existsSync(path.join(__dirname, "..", "..", i.src)), i.src);
+  assert.ok(app.icons.some((i) => i.purpose === "maskable"));
+  assert.match(read("offline.html"), /call 911/);
+  assert.doesNotMatch(read("offline.html"), /style="/);
+  const js = read("resident.js");
+  assert.match(js, /!state\.lockOnce && !isPhone\(\)/, "only a phone stops the screen changing by itself");
+  assert.match(js, /is a public demo/, "the phone start screen keeps the public demo notice");
+  assert.match(js, /18 or older/, "the phone start screen keeps the age notice");
+  assert.match(js, /AI assistants/, "the phone start screen keeps the AI notice");
+});

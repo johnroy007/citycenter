@@ -9,6 +9,7 @@ body.trustgap { height: auto; }
 .tg.ps p.sub { font-size: 14px; margin: 0; }
 .tg.ps dt { font-size: 15px; font-weight: 600; margin: .8rem 0 2px; }
 .tg.ps dd { margin-left: 0; }
+.tg.ps p.note { font-size: 12px; margin-top: 1rem; }
 .tg .sub { font-size: 14px; color: var(--tg-text2); margin: 0 0 1rem; }
 .tg .row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
 .tg .row label { font-size: 14px; color: var(--tg-text2); width: 240px; flex: none; }

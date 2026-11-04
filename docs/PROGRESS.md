@@ -91,6 +91,7 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ### 2026-11-04 — Claude Code on John's laptop (John) — Problem Statement tab
 Added a Problem Statement link to the top bar on the resident, staff and Information pages. It replaces the Trust Gap link. The new page at `/problem-statement` shows John's statement with the Trust Gap Model below it; `/trust-gap` still works and opens the same page. The robot now hides the new link in the video. 59 of 59 unit tests pass, checked by screenshot on desktop and at phone width, deployed, and live checked (commit 8e0e11d).
+The first Q&A now gives U.S. numbers at John's request: more than 310 million citizens (a secondary source citing the 2020 to 2024 American Community Survey says 312.2 million; the Census data service needs a key, so this was not read at the source), about 342 million residents (Census, July 2025), about 91,000 local governments (Census report: 90,837 in 2022, 91,438 in 2025).
 John's text was cleaned for spelling. Three wording changes for accuracy, told to John: "the city's own form" became "city-style application" (AGENTS.md: our layout, not the city's real form); "every requirement quoted exactly from the code" became "the requirements quoted from the code" (14 of 134 saved staff review points had no quote); "open source and public record" became "public record".
 
 ### 2026-11-04 — Claude Code on John's laptop (John) — video feedback, models section moved

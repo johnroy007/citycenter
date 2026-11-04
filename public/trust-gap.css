@@ -9,6 +9,7 @@ body.trustgap { height: auto; }
 .tg.ps p.sub { font-size: 14px; margin: 0; }
 .tg.ps dt { font-size: 15px; font-weight: 600; margin: .8rem 0 2px; }
 .tg.ps dd { margin-left: 0; }
+.tg.ps dd p { margin-top: .6rem; }
 .tg.ps sup { font-size: 11px; line-height: 0; }
 .tg.ps .cites { font-size: 12px; line-height: 1.45; color: var(--tg-muted); margin: 6px 0 0; padding-left: 18px; }
 .tg .sub { font-size: 14px; color: var(--tg-text2); margin: 0 0 1rem; }

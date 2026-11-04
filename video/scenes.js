@@ -14,7 +14,7 @@ module.exports = [
   // ---------- Opening statement, in a second voice: built during the event (about 9 s) ----------
   {
     id: "built", card: "built", fadeIn: 0.6, fadeOut: 0.5, voice: INTRO_VOICE,
-    say: "CityCenter was built for the Meta Global AI Developer Hackathon, entirely during the event, October twenty-sixth to November fourth, twenty twenty-six. Example data and mapping come from public records, and a table on the site cites every source.",
+    say: "CityCenter was built entirely during the Meta Global AI Developer Hackathon, October twenty-sixth to November fourth, twenty twenty-six. Example data and mapping come from public records, and a table on the site cites every source.",
   },
 
   // ---------- Act 1: the problem (about 70 s). Opening words are John's. ----------
@@ -58,7 +58,7 @@ module.exports = [
   {
     id: "ask", tag: "Sample resident (invented)", fadeIn: 0.5,
     clip: "resident", segs: [{ from: "home", to: "sent1", w: 1.3 }, { from: "sent1", to: "juniper-asks", w: 1 }],
-    say: "Here's a visit on the live site, with an invented resident. Devon holds the microphone and says he wants to split his lot and sell the back half to his son. The front desk sends him to Planning.",
+    say: "Here's a visit on the live site, with an invented resident. Devon holds the microphone and asks to split his lot. The front desk sends him to Planning.",
     callouts: [
       { at: 0.6, dur: 3.6, model: "Live site", text: "citycenter-puh5.onrender.com · Trust City" },
       { at: 4.4, dur: 4.2, model: "Muse Voice Transcribe", text: "transcribes his spoken request live (computer voice standing in for Devon)" },
@@ -75,9 +75,9 @@ module.exports = [
     ],
   },
   {
-    id: "channels", tag: "Sample resident (invented)", min: 12,
+    id: "channels", tag: "Sample resident (invented)", min: 11,
     clip: "resident", segs: [{ from: "ch:code", to: "ch:submissions", w: 0.9 }, { from: "ch:paperwork", to: "plan-shown", w: 1.5 }, { from: "plan-shown", to: "sign-open", w: 1 }],
-    say: "Quotes are checked against the code. His rough line becomes a clean, measured site plan, with SAM 3.1 finding the buildings on the aerial photo. Then Juniper fills out a city-style application.",
+    say: "Quotes are checked against the code. His rough line becomes a clean, measured site plan, with buildings found by SAM 3.1. Then Juniper fills out a city-style application.",
     callouts: [
       { at: 0.2, dur: 3, model: "Verified quotes", text: "quotes are matched to the stored code text" },
       { at: 3.4, dur: 4.4, model: "SAM 3.1", text: "finds the buildings on the aerial photo" },
@@ -85,7 +85,7 @@ module.exports = [
     ],
   },
   {
-    id: "sign", tag: "Sample resident (invented)", min: 6.5,
+    id: "sign", tag: "Sample resident (invented)", min: 5,
     clip: "resident", segs: [{ from: "sign-open", to: "end", w: 1 }],
     say: "Devon reads it, signs it, and submits it.",
   },
@@ -98,17 +98,17 @@ module.exports = [
     callouts: [{ at: 1, dur: 6, model: "Staff workspace", text: "review in four steps · the agent prepares, staff decide" }],
   },
   {
-    id: "staff2", min: 7,
+    id: "staff2", min: 5.5,
     clip: "staff", segs: [{ from: "step2-click", to: "step3-click", w: 1 }],
     say: "Second: the code that applies, summarized, with the exact text.",
   },
   {
     id: "staff3",
     clip: "staff", segs: [{ from: "step3-click", to: "point-open", w: 0.8 }, { from: "point-open", to: "second-click", w: 1.6 }, { from: "second-click", to: "step4-click", w: 0.8 }],
-    say: "Third: point by point, the requirement, the exact quote, and what the application says. The planner decides each point. Muse Wonder gives a second read.",
+    say: "Third: point by point, the requirement and the exact quote. The planner decides each point. Muse Wonder gives a second read.",
     callouts: [
       { at: 0.5, dur: 6, model: "Muse Spark · tool calls", text: "lists the points a planner checks, with the exact code" },
-      { at: 9.5, dur: 5, model: "Muse Wonder", text: "a second read of the list against the code" },
+      { at: 6.5, dur: 3.5, model: "Muse Wonder", text: "a second read of the list against the code" },
     ],
   },
   {
@@ -126,13 +126,13 @@ module.exports = [
     // From `npm run test:live` on 2026-11-04. Rerun and update these numbers if the desks change.
     id: "result", card: "result", voice: INTRO_VOICE,
     head: "Measured: 22 test requests on real parcels",
-    stats: [["21 of 22", "reached the expected outcome"], ["91 of 91", "code quotes matched the stored code exactly"], ["69 s", "average time to finish a request"]],
+    stats: [["21 of 22", "reached the expected outcome"], ["84 of 85", "code quotes matched exactly; the checker removed the other"], ["68 s", "average time to finish a request"]],
     note: "Self-run test, November 4, 2026. Invented people; expected answers written in advance. The miss: a home cafe the desk marked unclear.",
-    say: "In a self-run test of twenty-two requests on real parcels, twenty-one reached the expected outcome, and all ninety-one code quotes matched the stored code exactly.",
+    say: "In a self-run test of twenty-two requests, twenty-one reached the expected outcome. Eighty-four of eighty-five quotes matched exactly, and the checker removed the other.",
   },
   {
     id: "models", card: "models", fadeOut: 0.4, voice: INTRO_VOICE,
-    say: "It runs on Meta's models. Muse Spark reads requests, researches the code with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 reads drawings and aerial photos. Muse Voice Transcribe lets residents talk. Muse Wonder gives staff a second read. And Muse Image drew the art.",
+    say: "It runs on Meta's models. Muse Spark reads requests, researches the code, fills in forms, and prepares staff reviews. SAM 3.1 reads drawings and aerial photos. Muse Voice Transcribe hears residents. Muse Wonder gives a second read. Muse Image drew the art.",
     rows: [
       { model: "Muse Spark", text: "understands requests · researches the code with tool calls · fills in forms · prepares staff reviews" },
       { model: "SAM 3.1", text: "finds buildings on aerial photos · outlines drawings" },

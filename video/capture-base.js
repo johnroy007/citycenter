@@ -48,7 +48,7 @@ if (!window.__ipmask && document.body) {
 async function setup(b) {
   await b.send("Page.setBypassCSP", { enabled: true });
   // John's call (2026-11-03): the video leaves out the Local Government Trust Gap Model page, so hide its top-bar link while recording.
-  await b.send("Page.addScriptToEvaluateOnNewDocument", { source: `document.addEventListener("DOMContentLoaded", () => { const st = document.createElement("style"); st.textContent = 'a[href="/trust-gap"]{display:none!important}'; document.head.appendChild(st); });` });
+  await b.send("Page.addScriptToEvaluateOnNewDocument", { source: `document.addEventListener("DOMContentLoaded", () => { const st = document.createElement("style"); st.textContent = 'a[href="/problem-statement"]{display:none!important}'; document.head.appendChild(st); });` });
   b.on((m) => { if (m.method === "Page.javascriptDialogOpening") b.send("Page.handleJavaScriptDialog", { accept: true }).catch(() => {}); });
   b.cursor = async () => { try { await b.eval(CURSOR_JS); await b.eval(MASK_JS); } catch {} };
   b.viewport = async (width, height) => { await b.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 0, mobile: false }); b.size = { ...b.size, width, height }; };

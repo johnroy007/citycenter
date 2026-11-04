@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CityCenter: Local Government Trust Gap Model</title>
+<title>CityCenter: Problem Statement</title>
 <link rel="stylesheet" href="/public/app.css?v=20261103a">
-<link rel="stylesheet" href="/public/trust-gap.css?v=20261103a">
+<link rel="stylesheet" href="/public/trust-gap.css?v=20261104a">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body class="trustgap">
 <header class="top">
-  <div class="brand">CityCenter <span>Local Government Trust Gap Model</span></div>
+  <div class="brand">CityCenter <span>Problem Statement</span></div>
   <nav>
     <a href="/">Resident counter</a>
     <a href="/staff">Staff</a>
@@ -19,8 +19,34 @@
   </nav>
 </header>
 
-<main class="tg">
-<h1>The local government trust gap</h1>
+<main>
+<section class="tg ps">
+<h1>Problem Statement</h1>
+<p class="sub">Build for Your World</p>
+
+<h2>Problem Statement</h2>
+<p>There is a technical problem that contributes to mistrust in government. I call it the Local Government Trust Gap.</p>
+
+<h2>Built for My World</h2>
+<p>As a former City Manager and current community developer, I encounter a lot of mistrust between people and their government. Most people meet their government at the local level, in small offices where residents aren't bureaucrats and officials aren't administrative experts. Zoning codes are long and technical, and touch on people's most basic property rights, so a simple request like splitting a lot can turn confusing and personal on both sides.</p>
+
+<h2>Solution</h2>
+<p>CityCenter uses Meta's models to carry that process, solve technical problems, and empower people and local government officials to close the trust gap (<a href="#model">see the model below</a>). Residents describe what they want in their own words and get a completed city-style application with supporting information. City officials get a four-step review with the requirements quoted from the code. The AI never recommends a decision, predicts an outcome or rates the applicant. It just puts the technical tools in people's hands to ensure every neighbor gets the same fair process.</p>
+<p>Everything shown was built during the hackathon, Oct 26 – Nov 4, 2026. Project scope was largely limited to land use issues (i.e., the Planning and Zoning Department) for the purposes of this competition because it is where the biggest trust gap is; however, it can be expanded to all local government areas.</p>
+
+<h2>Questions</h2>
+<dl>
+  <dt>How many potential users are there for this program?</dt>
+  <dd>Every person who lives in a country where local governments have the bulk of the governing and service responsibilities. In the U.S., that is every citizen.</dd>
+  <dt>Would local governments have to adopt this program for it to be useful to the end user?</dt>
+  <dd>No. Local governments' applications, codes and processes are public record, so the program could work for every citizen whether or not the local government adopts the tools for reviewing questions and applications. It would just be submitted by email instead of through the program.</dd>
+  <dt>What is the potential impact of this project?</dt>
+  <dd>In addition to helping reduce problems like housing affordability by making the land use and development process easier to navigate, there are less quantifiable benefits that are extremely impactful. By easing the administrative burden on both residents and local officials, this program builds trust and frees up time for personal connections.</dd>
+</dl>
+</section>
+
+<section class="tg" id="model">
+<h2 class="model-title">The local government trust gap</h2>
 <p class="sub">Fairness requires process. Process requires skill. When neither residents nor staff have enough, trust is lost.</p>
 
 <div class="row"><label for="p">Process fairness requires</label><input type="range" id="p" min="0" max="100" step="1" value="75"><span class="v" id="pv">75</span></div>
@@ -49,6 +75,7 @@
 </div>
 <div class="chartbox"><canvas id="ch" role="img" aria-label="Line chart of trust versus process required, with the trust gap shaded between potential and current trust."></canvas></div>
 <p class="note">Illustrative model, not survey data. Potential trust starts at 50 (goodwill alone) and rises with diminishing returns to 100. Gap = potential × √(resident shortfall × staff shortfall), so it closes if either side can carry the full process.</p>
+</section>
 </main>
 
 <script src="/public/trust-gap.js?v=20261103a"></script>

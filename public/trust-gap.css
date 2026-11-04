@@ -1,8 +1,14 @@
-/* Local Government Trust Gap Model page (/trust-gap). */
+/* Problem Statement page (/problem-statement): the statement, then the Local Government Trust Gap Model. */
 body.trustgap { height: auto; }
 .tg { --tg-text2: #52514e; --tg-muted: #898781; --tg-accent: #185FA5; --tg-danger: #A32D2D; --tg-success: #3B6D11; --tg-surface: #f5f4f0; --tg-border: rgba(11,11,11,0.10);
   max-width: 760px; margin: 24px auto 40px; padding: 22px 24px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); line-height: 1.5; }
-.tg h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+.tg h1, .tg .model-title { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+.tg.ps { margin-bottom: 0; }
+.tg.ps h2 { font-size: 16px; font-weight: 600; margin: 1.25rem 0 4px; }
+.tg.ps p, .tg.ps dd { font-size: 15px; line-height: 1.55; margin: 0 0 .6rem; }
+.tg.ps p.sub { font-size: 14px; margin: 0; }
+.tg.ps dt { font-size: 15px; font-weight: 600; margin: .8rem 0 2px; }
+.tg.ps dd { margin-left: 0; }
 .tg .sub { font-size: 14px; color: var(--tg-text2); margin: 0 0 1rem; }
 .tg .row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
 .tg .row label { font-size: 14px; color: var(--tg-text2); width: 240px; flex: none; }

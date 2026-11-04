@@ -259,7 +259,7 @@ async function handle(req, res) {
 
   if (req.method === "GET" && p === "/") return serveStatic(res, "index.html");
   if (req.method === "GET" && p === "/staff") return serveStatic(res, "staff.html");
-  if (req.method === "GET" && p === "/trust-gap") return serveStatic(res, "trust-gap.html");
+  if (req.method === "GET" && (p === "/problem-statement" || p === "/trust-gap")) return serveStatic(res, "trust-gap.html");
   if (req.method === "GET" && p === "/about") return serveStatic(res, "about.html");
   if (req.method === "GET" && p === "/offline") return serveStatic(res, "offline.html");
   if (req.method === "GET" && p === "/site-plan") return serveStatic(res, "plan-print.html");

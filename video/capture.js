@@ -11,21 +11,34 @@ const args = process.argv.slice(2);
 const flag = (n) => { const i = args.indexOf("--" + n); return i > -1 ? args[i + 1] : null; };
 const ONLY = flag("only");
 
+// "Devon" in pen strokes on a 0-1 box: the D's stem, its bowl, the rest of the name in one go, then a line under it.
+const SIGNATURE = [
+  [[0.135, 0.17], [0.128, 0.42], [0.118, 0.8]],
+  [[0.065, 0.3], [0.13, 0.15], [0.205, 0.17], [0.245, 0.36], [0.215, 0.6], [0.14, 0.76], [0.07, 0.8]],
+  [[0.255, 0.62], [0.295, 0.56], [0.312, 0.47], [0.285, 0.43], [0.262, 0.54], [0.272, 0.7], [0.31, 0.72], [0.345, 0.56],
+    [0.358, 0.46], [0.368, 0.6], [0.382, 0.72], [0.41, 0.56], [0.425, 0.44], [0.445, 0.46],
+    [0.468, 0.44], [0.447, 0.56], [0.46, 0.71], [0.5, 0.66], [0.505, 0.5], [0.472, 0.45], [0.53, 0.5],
+    [0.56, 0.44], [0.562, 0.58], [0.565, 0.72], [0.585, 0.54], [0.62, 0.45], [0.637, 0.56], [0.64, 0.7], [0.69, 0.66], [0.76, 0.58]],
+  [[0.09, 0.9], [0.3, 0.86], [0.55, 0.88], [0.72, 0.84]],
+];
+/** Rounds a few points into a pen-like curve (Catmull-Rom). */
+function smooth(pts, per = 9) {
+  const out = [], at = (i) => pts[Math.max(0, Math.min(pts.length - 1, i))];
+  for (let i = 0; i < pts.length - 1; i++) for (let k = 0; k < per; k++) {
+    const t = k / per, a = at(i - 1), b = at(i), c = at(i + 1), d = at(i + 2);
+    const f = (j) => 0.5 * (2 * b[j] + (c[j] - a[j]) * t + (2 * a[j] - 5 * b[j] + 4 * c[j] - d[j]) * t * t + (3 * b[j] - a[j] - 3 * c[j] + d[j]) * t * t * t);
+    out.push([f(0), f(1)]);
+  }
+  out.push(pts[pts.length - 1]);
+  return out;
+}
+
 async function signatureStroke(b) {
-  // Draws a cursive-looking signature on the canvas with real mouse drags.
+  // Writes the signature on the canvas with real mouse drags.
   const box = await b.eval(`const c=document.querySelector("canvas.sigpad"); c.scrollIntoView({block:"center",behavior:"instant"}); window.scrollTo({top:0,left:0,behavior:"instant"}); await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); const r=c.getBoundingClientRect(); return {x:r.x,y:r.y,w:r.width,h:r.height};`);
   await sleep(600);
   const P = (u, v) => ({ x: box.x + box.w * u, y: box.y + box.h * v });
-  const strokes = [];
-  const s1 = [];
-  for (let i = 0; i <= 40; i++) { const a = -Math.PI / 2 + (Math.PI * 2 * i) / 40; s1.push(P(0.12 + 0.07 * Math.cos(a), 0.45 + 0.25 * Math.sin(a))); }
-  strokes.push([P(0.12, 0.2), P(0.12, 0.45), P(0.12, 0.7)], s1);
-  const s2 = [];
-  for (let i = 0; i <= 120; i++) { const u = 0.22 + (0.55 * i) / 120; s2.push(P(u, 0.55 - 0.16 * Math.abs(Math.sin(i / 6.5)) - 0.05 * Math.sin(i / 21))); }
-  strokes.push(s2);
-  const s3 = [];
-  for (let i = 0; i <= 40; i++) { const u = 0.2 + (0.62 * i) / 40; s3.push(P(u, 0.74 + 0.04 * Math.sin(i / 6))); }
-  strokes.push(s3);
+  const strokes = SIGNATURE.map((line) => smooth(line).map((p) => P(p[0], p[1])));
   for (const st of strokes) {
     await b.eval(`window.__vcur && window.__vcur(${st[0].x}, ${st[0].y})`);
     await sleep(350);
@@ -80,8 +93,12 @@ async function drawOnMap(b) {
   await b.type("345 E Jessop Ave", 45);
   await b.tapText(".sk-panel button", "Find", { pause: 400 });
   await b.waitFor(`!!document.querySelector(".sk-layers") && document.querySelector(".sk-layers").offsetParent !== null && document.querySelector(".sk-note").textContent === ""`, 40000);
-  await sleep(2500);
+  await sleep(2000);
   b.mark("map-found");
+  // A thick red pen, so the line reads clearly on the aerial photo.
+  await b.tap('.sk-swatch[title="Red"]', { pause: 350 });
+  await b.tapText(".sk-tool", "Thick", { pause: 350 });
+  b.mark("pen-ready");
   const box = await b.eval(`const c = document.querySelector(".sk-canvas"), r = c.getBoundingClientRect(); return { x: r.left, y: r.top, k: r.width / c.width }`);
   const at = (x, y) => ({ x: box.x + x * box.k, y: box.y + y * box.k });
   const pts = [];
@@ -92,7 +109,7 @@ async function drawOnMap(b) {
   for (const p of pts) {
     await b.eval(`window.__vcur && window.__vcur(${p.x}, ${p.y})`);
     await b.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: p.x, y: p.y, button: "left", buttons: 1 });
-    await sleep(35);
+    await sleep(20);
   }
   const end = pts[pts.length - 1];
   await b.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: end.x, y: end.y, button: "left", buttons: 0, clickCount: 1 });

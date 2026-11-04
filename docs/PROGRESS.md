@@ -7,11 +7,11 @@
 
 - **Live link:** https://citycenter-puh5.onrender.com (resident) and https://citycenter-puh5.onrender.com/staff (open to everyone, no sign-in since 2026-11-03). If a conversation ever says "I hit a problem on my side", check `/api/staff/diag` (needs the staff passcode: sign in with `POST /api/staff/login`): `via_relay` should be false, `models` should list 9, and `direct` should be all 200.
 - **Local:** `npm start` then http://localhost:3000 and http://localhost:3000/staff. Stop any old `node server.js` first.
-- **Demo video:** final 2:59 cut at 2560x1440 from the live site, visit TC-2026-0160. It is in John's Downloads as `CityCenter-demo.mp4` and `CityCenter-demo-captions.srt` (the one before it is kept there as `CityCenter-demo-previous.mp4`). John still has to upload it. Rebuild with `node video/capture.js` then `GOOGLE_TTS_VOICE=en-US-Chirp3-HD-Charon node video/build.js`.
+- **Demo video:** final 2:59 cut at 2560x1440 from the live site, visit TC-2026-0161. It is in John's Downloads as `CityCenter-demo.mp4` and `CityCenter-demo-captions.srt` (the one before it is kept there as `CityCenter-demo-previous.mp4`). John still has to upload it. Rebuild with `node video/capture.js` then `GOOGLE_TTS_VOICE=en-US-Chirp3-HD-Charon node video/build.js`.
 - **Last updated:** 2026-11-04 by Claude Code on John's laptop (computer name John): session wrapped up. All code is committed, pushed and deployed.
 
 ## RESUME POINT
-**New video built 2026-11-04, about 3:20 PM on the laptop, and in John's Downloads. He has not uploaded it. Deadline tonight, 9 PM ET (6 PM on the laptop).** It shows the robot drawing on the GIS map, the clean plan, and the Looks right step. If the app changes again: wait a few minutes after any deploy, run `npm run test:live` if the desks changed and update the card in `video/scenes.js`, then `node video/capture.js`, then the build command in Status, then check stills and copy to Downloads.
+**New video built 2026-11-04, about 3:45 PM on the laptop, and in John's Downloads. He has not uploaded it. Deadline tonight, 9 PM ET (6 PM on the laptop).** It shows the robot drawing on the GIS map, the clean plan, and the Looks right step. If the app changes again: wait a few minutes after any deploy, run `npm run test:live` if the desks changed and update the card in `video/scenes.js`, then `node video/capture.js`, then the build command in Status, then check stills and copy to Downloads.
 
 **New video built 2026-11-04 and in John's Downloads; he has not uploaded it yet.** Deadline tonight, 9 PM ET (6 PM on the laptop's Pacific clock). Order: built, the full trust story, the demo (starts 1:10), what the AI never does, the measured results card, Meta models, close. Female voice on built, result and models; male voice on the rest. John's decisions: no recording of his own voice and no who-built line; trust story stays full length; the looser quote check stays, so the narration no longer says word for word; he took the eligibility check off the list. The 21 of 22, 91 of 91 and 69 s on the card come from `npm run test:live` on 2026-11-04. If the desks change, rerun it and update `video/scenes.js`. After any deploy, wait a few minutes before `node video/capture.js`: starting straight after one lost a recording. Never deploy during a recording.
 
@@ -89,6 +89,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-04 — Claude Code on John's laptop (John) — drawing close-up and a real signature
+The video's new `draw` scene brings the camera in on the sketch pad (`crop` on a scene in `video/scenes.js`, read by `video/build.js`), with a thick red line drawn in real time. The robot now signs "Devon" in real pen strokes (`SIGNATURE` in `video/capture.js`). Voice sped up 11%. Visit TC-2026-0161.
 
 ### 2026-11-04 — Claude Code on John's laptop (John) — test rerun and final video
 Live test with plans drawn: 21 of 22 (the home cafe again, tier unclear); 85 different quotes, 84 exact, 0 looser, 1 removed by the checker (a table row spliced together, not a real sentence); average 68 s; 223 calls, 1,419,728 in and 232,965 out tokens, about $2.76, or about 13 cents a request. The staff test printed SKIP after running, as before. Card, narration and the Problem Statement page use these numbers.

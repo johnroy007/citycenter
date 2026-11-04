@@ -66,13 +66,20 @@ module.exports = [
     ],
   },
   {
-    id: "details", tag: "Sample resident (invented)",
-    clip: "resident", segs: [{ from: "typed2", to: "map-found", w: 0.7 }, { from: "map-found", to: "drawn", w: 1 }, { from: "sent2", to: "drafted", w: 1 }],
-    say: "He finds his lot on the GIS map and draws the split by hand. The drawing measures itself, and the planner researches the city's code, all eight hundred sixty-five sections of it.",
+    // The sketch pad gets its own close-up: the camera comes in on the tools and the map.
+    id: "draw", min: 10, crop: [0.16, 0.27, 0.68, 0.68],
+    clip: "resident", segs: [{ from: "pad-open", to: "map-found", w: 0.55 }, { from: "map-found", to: "drawn", w: 1 }, { from: "drawn", to: "sent2", w: 0.3 }],
+    say: "He opens the sketch pad, finds his lot on the GIS map, and draws the split by hand, right on the aerial photo. No drafting software needed.",
     callouts: [
-      { at: 0.5, dur: 6, model: "Live GIS map", text: "USDA aerial photo · county zoning · state parcels" },
-      { at: 7, dur: 6, model: "Muse Spark · tool calls", text: "researches 865 sections of the city's code" },
+      { at: 0.4, dur: 4, model: "In-app sketch pad", text: "aerial photo, parcel lines, streets and zoning layers" },
+      { at: 5, dur: 4.5, model: "Sample resident", text: "drawing his lot split by hand" },
     ],
+  },
+  {
+    id: "details", tag: "Sample resident (invented)",
+    clip: "resident", segs: [{ from: "sent2", to: "drafted", w: 1 }],
+    say: "The planner researches the city's code, all eight hundred sixty-five sections of it.",
+    callouts: [{ at: 0.5, dur: 4.5, model: "Muse Spark · tool calls", text: "researches 865 sections of the city's code" }],
   },
   {
     id: "channels", tag: "Sample resident (invented)", min: 11,

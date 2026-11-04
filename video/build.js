@@ -114,7 +114,9 @@ async function buildScene(sc, d, idx) {
     list += `file '${last.replace(/\\/g, "/")}'\n`; // concat demuxer needs the last file repeated
     fs.writeFileSync(path.join(dir, "frames.ffconcat"), list);
     inputs.push("-f", "concat", "-safe", "0", "-i", path.join(dir, "frames.ffconcat"));
-    chains.push(`[0:v]fps=${FPS},scale=${W}:${H}:flags=lanczos,setsar=1,trim=duration=${d.toFixed(3)}[base]`);
+    // crop: [x, y, w, h] as fractions of the frame, to bring the camera in on part of the screen.
+    const crop = sc.crop ? `crop=iw*${sc.crop[2]}:ih*${sc.crop[3]}:iw*${sc.crop[0]}:ih*${sc.crop[1]},` : "";
+    chains.push(`[0:v]fps=${FPS},${crop}scale=${W}:${H}:flags=lanczos,setsar=1,trim=duration=${d.toFixed(3)}[base]`);
     base = "base";
   }
 

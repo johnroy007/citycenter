@@ -33,6 +33,7 @@
   const ctx = canvas.getContext("2d");
   let state = null; // { P, C, O, A } at the last update
   let hoverX = null;
+  let dragging = false;
 
   function draw() {
     if (!state) return;
@@ -101,7 +102,9 @@
 
     // The current setting.
     ctx.fillStyle = COLORS.current;
-    ctx.beginPath(); ctx.arc(sx(P), sy(cur[P]), 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(sx(P), sy(cur[P]), dragging ? 9 : 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
     // Hover read-out.
     if (hoverX !== null) {
@@ -152,15 +155,48 @@
     draw();
   }
 
-  function hover(ev) {
+  // The process level under the pointer, as a plain number (not limited to the chart).
+  function levelAt(ev) {
     const r = canvas.getBoundingClientRect();
-    const pw = r.width - 46 - 12;
-    const x = Math.round((ev.clientX - r.left - 46) / pw * 100);
+    return Math.round((ev.clientX - r.left - 46) / (r.width - 46 - 12) * 100);
+  }
+  function onDot(ev) {
+    const r = canvas.getBoundingClientRect();
+    const x = 46 + state.P / 100 * (r.width - 46 - 12);
+    const y = 10 + (1 - model(state.P, state.C, state.O, state.A).T / 100) * (r.height - 10 - 40);
+    return Math.hypot(ev.clientX - r.left - x, ev.clientY - r.top - y) <= (ev.pointerType === "touch" ? 26 : 16);
+  }
+  function hover(ev) {
+    if (dragging) {
+      const P = Math.max(0, Math.min(100, levelAt(ev)));
+      hoverX = P;
+      if (P !== state.P) { $("p").value = P; upd(); } else draw();
+      return;
+    }
+    const x = levelAt(ev);
     hoverX = x >= 0 && x <= 100 ? x : null;
+    canvas.style.cursor = onDot(ev) ? "grab" : "";
     draw();
   }
-  canvas.addEventListener("mousemove", hover);
-  canvas.addEventListener("mouseleave", () => { hoverX = null; draw(); });
+  // The dot is the same setting as the "Process fairness requires" slider.
+  canvas.addEventListener("pointerdown", (ev) => {
+    if (!onDot(ev)) return;
+    ev.preventDefault();
+    dragging = true;
+    canvas.setPointerCapture(ev.pointerId);
+    canvas.style.cursor = "grabbing";
+    draw();
+  });
+  function drop() {
+    if (!dragging) return;
+    dragging = false;
+    canvas.style.cursor = "grab";
+    draw();
+  }
+  canvas.addEventListener("pointermove", hover);
+  canvas.addEventListener("pointerup", drop);
+  canvas.addEventListener("pointercancel", drop);
+  canvas.addEventListener("pointerleave", () => { if (!dragging) { hoverX = null; draw(); } });
   window.addEventListener("resize", draw);
   ["p", "c", "o", "a"].forEach((i) => $(i).addEventListener("input", upd));
   upd();

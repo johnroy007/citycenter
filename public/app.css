@@ -364,7 +364,28 @@ table.standards td { font-size: 13px; }
   .screen { overflow: visible; box-shadow: none; padding: 0; }
   .form-page { box-shadow: none; border: 0; padding: 0; break-after: page; }
   .card { border: 0; box-shadow: none; padding: 0; margin: 0 0 18px; break-inside: avoid; }
+  .checklist, .plan-check, h1, .welcome { display: none !important; }
+  .print-pack { display: block !important; }
+  .pack-page { break-before: page; font-family: Georgia, "Times New Roman", serif; }
+  .pack-page h2 { font-size: 18px; margin: 0 0 12px; }
+  .pack-img { display: block; max-width: 100%; max-height: 8.6in; margin: 0 auto; }
+  .pack-msg { margin: 0 0 12px; font-size: 13px; break-inside: avoid; }
+  .pack-msg p { margin: 2px 0 0; white-space: pre-wrap; }
+  /* The site plan gets its own landscape page at true size, so its printed scale stays correct. */
+  .pack-plan { break-before: page; page: siteplan; }
+  .pack-plan img { display: block; width: 10in; height: 7.5in; }
 }
+@page siteplan { size: 11in 8.5in; margin: 0.45in 0.5in; }
+.print-pack { display: none; }
+.checklist { margin: 14px 0 6px; padding: 12px 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.checklist-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.checklist-head h3 { margin: 0; font-size: 16px; }
+.checklist-items { list-style: none; margin: 8px 0 6px; padding: 0; }
+.checklist-items li { padding: 6px 0; border-top: 1px solid var(--line); }
+.checklist-items label { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; line-height: 1.35; }
+.checklist-items input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: #1c7a4b; }
+.checklist-items li.done span { color: var(--muted); text-decoration: line-through; }
+.checklist > .small { margin: 2px 0 0; }
 
 /* Staff queue: column heading menus (sort and filter) */
 .qtools .qtip { white-space: nowrap; }

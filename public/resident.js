@@ -742,15 +742,88 @@
     var sp = s.site_plan && s.site_plan.plan;
     if (!sp) return;
     var src = "/api/sessions/" + encodeURIComponent(s.ref) + "/siteplan.svg?key=" + encodeURIComponent(state.key) + "&t=" + encodeURIComponent(s.updated_at);
-    screen.appendChild(el("h2", { text: "Your concept site plan" }));
-    screen.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener" }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]));
-    if (s.site_plan.confirmed_at) { screen.appendChild(el("p", { class: "small", text: "You confirmed this plan. It stays with your application." })); return; }
+    var wrap = el("div", { class: "plan-check" });
+    screen.appendChild(wrap);
+    wrap.appendChild(el("h2", { text: "Your concept site plan" }));
+    wrap.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener" }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]));
+    if (s.site_plan.confirmed_at) { wrap.appendChild(el("p", { class: "small", text: "You confirmed this plan. It stays with your application." })); return; }
     var yes = el("button", { type: "button", text: "Looks right" });
     var change = el("button", { type: "button", class: "quiet", text: "Change the drawing" });
     yes.addEventListener("click", confirmPlan);
     change.addEventListener("click", function () { openSketchPad(true); });
-    screen.appendChild(el("p", { text: "Does this look right? It is a concept, not a survey." }));
-    screen.appendChild(el("div", { class: "row" }, [yes, change]));
+    wrap.appendChild(el("p", { text: "Does this look right? It is a concept, not a survey." }));
+    wrap.appendChild(el("div", { class: "row" }, [yes, change]));
+  }
+
+  // ---------- what's left to do, as a checklist ----------
+  function ticks(ref) { try { return JSON.parse(localStorage.getItem("cc_ticks_" + ref)) || {}; } catch (e) { return {}; } }
+  function stillNeeded(screen, s, p, blanks) {
+    var mine = ticks(s.ref), items = [];
+    items.push({ text: "Application prepared", done: true });
+    if (s.site_plan) items.push({ text: "Check your concept site plan", done: !!s.site_plan.confirmed_at });
+    (blanks || []).forEach(function (b) { items.push({ text: "Fill in: " + b, done: false }); });
+    (p.questions || []).forEach(function (q) { items.push({ text: q, tick: true, done: !!mine[q] }); });
+    items.push({ text: signatureFree(s) ? "Send it to " + deskName(s) : "Sign and submit to " + deskName(s), done: false });
+    var count = el("span", { class: "small" });
+    var list = el("ul", { class: "checklist-items" });
+    function refresh() { count.textContent = items.filter(function (i) { return i.done; }).length + " of " + items.length + " done"; }
+    items.forEach(function (it) {
+      var box = el("input", { type: "checkbox", "aria-label": it.text });
+      box.checked = it.done;
+      // Only the items the resident handles can be ticked by hand; the app ticks the others itself.
+      box.disabled = !it.tick;
+      var row = el("li", { class: it.done ? "done" : "" }, [el("label", null, [box, el("span", { text: it.text })])]);
+      box.addEventListener("change", function () {
+        it.done = box.checked; row.className = it.done ? "done" : "";
+        var now = ticks(s.ref); if (it.done) now[it.text] = true; else delete now[it.text];
+        try { localStorage.setItem("cc_ticks_" + s.ref, JSON.stringify(now)); } catch (e) {}
+        refresh();
+      });
+      list.appendChild(row);
+    });
+    refresh();
+    screen.appendChild(el("div", { class: "checklist" }, [
+      el("div", { class: "checklist-head" }, [el("h3", { text: "Still needed" }), count]),
+      list,
+      el("p", { class: "small", text: "Your ticks are only a reminder for you. Tell " + characterFor(s.department || "planning").character + " the answers so they go in your application." }),
+    ]));
+  }
+
+  // ---------- the printed packet: the application, then every attachment ticked on it ----------
+  function attachmentPages(s) {
+    var pack = el("div", { class: "print-pack" }), n = 0, key = "?key=" + encodeURIComponent(state.key);
+    var picked = CCForm.attachments(s, isService(s)).filter(function (a) { return a.on; });
+    function page(a, children) { n++; pack.appendChild(el("section", { class: "pack-page" }, [el("h2", { text: "Attachment " + n + ": " + a.label })].concat(children))); }
+    picked.forEach(function (a) {
+      if (a.id === "sketch") page(a, [el("img", { class: "pack-img", src: "/api/sessions/" + encodeURIComponent(s.ref) + "/sketch" + key, alt: a.label })]);
+      if (a.id === "plan") { n++; pack.appendChild(el("section", { class: "pack-plan" }, [el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/siteplan.svg" + key, alt: "Attachment " + n + ": " + a.label })])); }
+      if (a.id === "map") {
+        var src = s.pin ? "/api/map/area.svg?lon=" + s.pin.lon + "&lat=" + s.pin.lat + "&m=300&pin=" + s.pin.lon + "," + s.pin.lat : "/api/map/parcel/" + encodeURIComponent(s.parcel.id) + ".svg?m=160";
+        page(a, [el("img", { class: "pack-img", src: src, alt: a.label })]);
+      }
+      if (a.id === "record") page(a, s.messages.map(function (m) {
+        var who = m.role === "resident" ? "Resident" : characterFor(m.department || s.department || "front_desk").character + " (AI assistant)";
+        return el("div", { class: "pack-msg" }, [el("b", { text: who + (m.at ? " · " + new Date(m.at).toLocaleString() : "") }), el("p", { text: m.text || "" })]);
+      }));
+      if (a.id === "code") {
+        var r = s.research || {};
+        page(a, [r.process_explanation ? el("p", { text: r.process_explanation }) : null].concat((r.applicable_sections || []).map(function (x) {
+          return el("div", { class: "pack-msg" }, [el("b", { text: "Section " + x.section + (x.title ? ": " + x.title : "") }), x.quote ? el("p", { text: "“" + x.quote + "”" }) : null, x.why ? el("p", { class: "small", text: x.why }) : null]);
+        })));
+      }
+    });
+    return pack;
+  }
+  async function printPacket(s) {
+    var old = document.querySelector(".print-pack");
+    if (old) old.remove();
+    var pack = attachmentPages(s);
+    $("screen").appendChild(pack);
+    await Promise.all(Array.prototype.map.call(pack.querySelectorAll("img"), function (img) {
+      return new Promise(function (done) { if (img.complete) return done(); img.onload = img.onerror = done; setTimeout(done, 15000); });
+    }));
+    window.addEventListener("afterprint", function gone() { window.removeEventListener("afterprint", gone); pack.remove(); });
+    window.print();
   }
   function sitePlanBlock(screen, s) {
     var sp = s.site_plan && s.site_plan.plan;
@@ -918,8 +991,7 @@
     var canResubmit = !!s.submitted_at && s.changed_since_submit && hasDocs;
     if (s.submitted_at && !s.changed_since_submit && !state.editing) actions.appendChild(el("span", { class: "small", text: "Submitted " + fmt(s.submitted_at) + (s.resubmit_count ? " (update " + s.resubmit_count + ")" : "") + ". You can keep talking or edit; any change can be resubmitted." }));
     if ((canSubmit || canResubmit) && !state.editing && !state.signing) {
-      if (blanks.length) actions.appendChild(el("span", { class: "small", text: "Still needed before this can be sent: " + blanks.join(", ") + "." }));
-      else {
+      if (!blanks.length) {
         var free = signatureFree(s);
         var submit = el("button", { type: "button", text: canResubmit ? (free ? "Send the update" : "Sign and resubmit") : (free ? "Send to " + deskName(s) : "Sign and submit to " + deskName(s)) });
         submit.addEventListener("click", function () { if (free) sendWithoutSignature(); else openSignPanel(); });
@@ -947,11 +1019,11 @@
       actions.appendChild(save); actions.appendChild(cancel);
     }
     var print = el("button", { type: "button", class: "quiet", text: "Print / save PDF" });
-    print.addEventListener("click", function () { window.print(); });
+    print.addEventListener("click", function () { printPacket(s); });
     actions.appendChild(print);
     screen.appendChild(actions);
     if (s.submitted_at && !s.changed_since_submit) screen.appendChild(el("p", { class: "small", text: "Staff will write back in this conversation." }));
-    if (p.questions && p.questions.length && !s.submitted_at) screen.appendChild(el("div", { class: "notice warn" }, [el("b", { text: "Still needed: " }), p.questions.join(" ")]));
+    if (hasDocs && !s.submitted_at) stillNeeded(screen, s, p, blanks);
   }
 
   async function sendWithoutSignature() {

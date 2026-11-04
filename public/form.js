@@ -23,6 +23,15 @@
     else box.appendChild(el("div", { class: "fv" + (value ? "" : " blank"), text: value || "" }));
     return box;
   }
+  /** The application's attachments. The form ticks these, and Print / save PDF includes every ticked one. */
+  function attachments(s, isService) {
+    return [
+      { id: "sketch", label: isService ? "Photo or drawing" : "Site sketch or drawing", on: !!s.has_sketch },
+      { id: "plan", label: "Concept site plan, to scale (not a survey)", on: !!s.site_plan },
+      { id: "map", label: isService ? "Map showing the location" : "Zoning map excerpt showing the parcel", on: !!(isService ? s.pin || s.parcel : s.parcel) },
+      { id: "record", label: "Record of the help desk conversation", on: true },
+    ].concat(isService ? [] : [{ id: "code", label: "Code review with cited sections", on: !!s.research }]);
+  }
   function checkbox(label, checked) {
     return el("div", { class: "cb" }, [el("span", { class: "box" + (checked ? " on" : ""), text: checked ? "✓" : "" }), el("span", { text: label })]);
   }
@@ -123,18 +132,7 @@
       });
     }
     if (!(svc && svc.certified)) pg.appendChild(head("Attachments"));
-    if (!(svc && svc.certified)) pg.appendChild(el("div", { class: "cbgrid" }, svc ? [
-      checkbox("Photo or drawing", !!s.has_sketch),
-      checkbox("Concept site plan, to scale (not a survey)", !!s.site_plan),
-      checkbox("Map showing the location", !!(s.pin || s.parcel)),
-      checkbox("Record of the help desk conversation", true),
-    ] : [
-      checkbox("Site sketch or drawing", !!s.has_sketch),
-      checkbox("Concept site plan, to scale (not a survey)", !!s.site_plan),
-      checkbox("Zoning map excerpt showing the parcel", !!s.parcel),
-      checkbox("Record of the help desk conversation", true),
-      checkbox("Code review with cited sections", !!s.research),
-    ]));
+    if (!(svc && svc.certified)) pg.appendChild(el("div", { class: "cbgrid" }, attachments(s, !!svc).map(function (a) { return checkbox(a.label, a.on); })));
     if (!svc || svc.signature) pg.appendChild(el("div", { class: "certify" }, [
       el("p", { text: "I certify that the information in this application is true and complete to the best of my knowledge, and I authorize city staff to visit the property for the purpose of reviewing this application." }),
       signatureLines(s, opts.sigSrc),
@@ -148,5 +146,5 @@
     pg.appendChild(el("p", { class: "small foot", text: office.formFooter || "" }));
     return pg;
   }
-  window.CCForm = { page: page, fmtDate: fmtDate };
+  window.CCForm = { page: page, fmtDate: fmtDate, attachments: attachments };
 })();

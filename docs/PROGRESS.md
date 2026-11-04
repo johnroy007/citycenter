@@ -90,6 +90,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — checklist and full PDF packet
+- **Still needed** on Submission Paperwork is now a checklist with a count. The app ticks what it knows (application prepared, site plan confirmed); the desk's questions can be ticked by hand and are remembered in that browser only, as a reminder (`stillNeeded` in `public/resident.js`). It does not change the application or submission.
+- **Print / save PDF** now carries every attachment ticked on the form. `CCForm.attachments` in `public/form.js` is the one list behind the boxes and the PDF. `printPacket` adds the pages, waits for pictures, then prints. The site plan prints on its own landscape page at true size (`@page siteplan`). Checked by reading a real PDF: 9 pages, plan page 11 x 8.5 in. Only the printing button builds the attachments; a keyboard Ctrl+P prints the application alone.
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — the program drafts the site plan
 John's point: input is a hand drawing, words or the drawing tool; output is a clean plan with measurements and what the code needs, then "does this look right?". His visit TC-2026-0139 kept the freehand squiggle and Juniper asked for lot sizes and a scaled survey. Now:
 - A rough stroke becomes straight runs squared to the lot and meeting the lot lines, if it ends within about 20% of the lot's length of them. A line from lot line to lot line divides the lot; each new lot gets area and frontage (corner lots count both streets), shown beside the code minimum for reference, with no finding.

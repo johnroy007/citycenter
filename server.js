@@ -18,6 +18,7 @@ const { runTurn } = require("./lib/desk");
 const { missingRequired } = require("./lib/servicedesk");
 const siteplan = require("./lib/siteplan");
 const { parseSamText } = require("./lib/segment");
+const { addressCandidates } = require("./lib/desk");
 const { zoneSetbacks } = require("./lib/tools");
 const review = require("./lib/review");
 const { validateImage } = require("./lib/sketch");
@@ -234,7 +235,16 @@ async function aerialBuildings(parcel) {
 
 /** Draw or redraw the concept plan from whatever the resident gave: map marks, a hand drawing, or only words. */
 async function drawSitePlan(ref) {
-  const s = store.getSession(ref);
+  let s = store.getSession(ref);
+  if (!s.parcel) {
+    // The address may be in the resident's own words, even if no desk has looked it up yet.
+    const words = s.messages.filter((m) => m.role === "resident").map((m) => m.text).join("\n");
+    for (const cand of addressCandidates(words)) {
+      const r = gis.locate({ address: cand });
+      const parcel = r.parcel || (r.candidates || [])[0];
+      if (parcel) { store.updateSession(ref, { parcel, owner: ownerFor(parcel.id) }); s = store.getSession(ref); break; }
+    }
+  }
   if (!s.parcel) return null;
   const marks = marksFor(s);
   let extraction = { lot: {}, structures: [], lines: [] };

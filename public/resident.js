@@ -1065,7 +1065,7 @@
   document.addEventListener("click", function (e) { if (document.body.classList.contains("menu-open") && !e.target.closest("#menuBtn")) setMenu(false); });
   $("chatTab").addEventListener("click", function () { phoneShow("chat"); if (state.session) renderRemote(state.session); });
   $("newVisitBtn").addEventListener("click", function () { try { localStorage.removeItem("cc_last"); } catch (e) {} location.href = "/"; });
-  $("text").addEventListener("input", function () { if (!isPhone()) return; var t = $("text"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight + 2) + "px"; });
+  $("text").addEventListener("input", function () { var t = $("text"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight + 2) + "px"; });
   var installEvent = null;
   window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); installEvent = e; $("installBtn").classList.remove("hidden"); });
   $("installBtn").addEventListener("click", async function () {

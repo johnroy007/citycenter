@@ -64,7 +64,7 @@ code { font-size: 13px; background: var(--grey-bg); padding: 1px 5px; border-rad
 .top nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; }
 .top nav > * { white-space: nowrap; }
 .top nav a { text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 8px; }
-.office { position: relative; display: grid; grid-template-columns: 310px minmax(250px, 320px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; height: calc(100vh - 57px); min-height: 560px; }
+.office { position: relative; display: grid; grid-template-columns: 310px minmax(250px, 320px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: calc(100vh - 57px); min-height: 560px; }
 .office-bg { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: #e9dcc6 url(/public/office/office-bg.webp) center bottom / cover no-repeat; z-index: 0; }
 .office > section { position: relative; z-index: 1; min-height: 0; }
 .chatlog { display: flex; flex-direction: column; margin: 14px 0 14px 14px; background: rgba(255,255,255,.93); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
@@ -143,9 +143,10 @@ body.tv-expanded .pages { max-width: 900px; margin: 10px auto 0; }
 .rbtn.active .rkey { background: rgba(0,0,0,.3); color: #fff; }
 .rbtn.empty { opacity: .55; }
 .rbtn.fresh::after { content: ""; position: absolute; right: 8px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: #ffb52e; box-shadow: 0 0 0 2px #2a2f38; }
-.inputbar { grid-column: 1 / -1; position: relative; z-index: 1; border-top: 1px solid var(--line); background: var(--paper); padding: 10px 18px 10px; }
-.inputbar form { display: flex; gap: 8px; align-items: flex-end; max-width: 1400px; }
-.inputbar textarea { min-height: 46px; max-height: 160px; flex: 1; }
+.inputbar { flex: none; border-top: 1px solid var(--line); background: var(--paper); padding: 8px 10px; }
+.inputbar form { display: grid; grid-template-columns: auto auto auto 1fr auto; gap: 6px; align-items: center; }
+.inputbar textarea { grid-column: 1 / -1; grid-row: 1; min-height: 44px; max-height: 120px; resize: none; }
+.inputbar #send { grid-column: 5; }
 .mic.recording { background: var(--red-ink); border-color: var(--red-ink); animation: pulse 1s infinite; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(160, 32, 32, .4); } 50% { box-shadow: 0 0 0 10px rgba(160, 32, 32, 0); } }
 .welcome h1 { font-size: 24px; margin: 8px 0 6px; }
@@ -182,7 +183,7 @@ table.kv th { width: 34%; font-size: 12px; text-transform: none; letter-spacing:
 .visits { margin: 10px 0; }
 .visits .v { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin: 6px 0; cursor: pointer; }
 .visits .v:hover { border-color: var(--blue); }
-.demo-bar { background: #fff8e1; border: 1px solid #efe4c0; border-radius: 10px; padding: 6px 12px; margin-bottom: 8px; display: flex; gap: 10px; align-items: center; font-size: 14px; }
+.demo-bar { background: #fff8e1; border: 1px solid #efe4c0; border-radius: 10px; padding: 6px 10px; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 13px; }
 footer.credits { font-size: 12px; color: var(--muted); padding: 10px 18px; }
 
 /* The application form, in the city's format */
@@ -251,7 +252,6 @@ footer.credits { font-size: 12px; color: var(--muted); padding: 10px 18px; }
   .tv-top .tv-model { display: none; }
   body.tv-expanded .tvcol { inset: 0; border-radius: 0; }
   .chatlog { order: 3; margin: 0 14px 14px; max-height: 50vh; }
-  .inputbar { order: 4; position: sticky; bottom: 0; }
   .fgrid, .cbgrid { grid-template-columns: 1fr; }
   .siglines { grid-template-columns: 1fr 1fr; }
   .office-use .fgrid { grid-template-columns: 1fr 1fr; }

@@ -81,6 +81,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (JOHN) — input moved into the chat panel
+At John's request the input moved from the bottom of the screen into the conversation panel, as a two-row composer on desktop (text box on top, clip, pencil, mic and Send below). The office scene took the freed space. The phone keeps its one-row input. The box now grows as you type on desktop too.
+
 ### 2026-11-04 — Claude Code on John's laptop (JOHN) — concept site plan
 John asked for a site plan generated from a hand sketch, accurate to scale on paper though not survey accurate. `lib/siteplan.js` draws it in plain code from the parcel and the sketch. A pad sketch over the parcel map keeps exact positions; a paper sketch goes through Muse Spark, and numbers not actually written are dropped. Each measurement is marked given, parcel record or estimated. Arithmetic conflicts become questions the resident answers. The zone's setback lines are read from the real table headings; non-numeric ones (such as RA-1's "10 feet one side and 20 feet other side") are left out with a note.
 It is deliberately not the formal site plan in 152-7-10, which needs a Utah professional engineer's stamp, contours and utility plans. Parcel lines are approximate, and their accuracy has not been measured.

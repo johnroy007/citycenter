@@ -15,7 +15,7 @@ Sources, accessed 2026-10-28:
 
 Layer metadata is published at those addresses and at https://gis.utah.gov/data/cadastre/parcels.
 
-Changes made: kept one town's records and a subset of fields, did not store market values, and joined tax-roll facts to parcels. When the app loads the data, it replaces the town's name with the stand-in name Trust City. The app also computes areas and zones and shows invented owner names, which are not part of this data.
+Changes made: kept one town's records and a subset of fields, did not store market values, and joined tax-roll facts to parcels. When the app loads the data, it replaces the town's name with the example city's name, Trust City. The app also computes areas and zones and shows invented owner names, which are not part of this data.
 
 UGRC disclaimer:
 
@@ -31,7 +31,7 @@ Washington County, Utah GIS public zoning layer: https://agisprodvm.washco.utah.
 
 ## City code (`code.json`)
 
-The town's published ordinances, from its Municipal Code Online site. The official hard copy governs. The app replaces the town's name with the stand-in name Trust City.
+The town's published ordinances, from its Municipal Code Online site. The official hard copy governs. The app replaces the town's name with the example city's name, Trust City.
 
 ## Sample procedures (`services.json`, `sources.json`)
 

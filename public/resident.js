@@ -91,7 +91,7 @@
     $("portrait").className = "portrait " + (pose || "");
     $("nametag").textContent = "";
     $("nametag").appendChild(document.createTextNode(d.character));
-    $("nametag").appendChild(el("span", { text: d.role || d.name }));
+    $("nametag").appendChild(el("span", { text: "AI assistant · " + (d.role || d.name) }));
   }
   function typeInto(node, text, done) {
     if (state.typing) clearInterval(state.typing);
@@ -340,7 +340,7 @@
     var d = dept ? characterFor(dept) : null;
     var body = el("div", { class: "body" }, [
       el("div", { class: "who" }, [el("b", { text: who }), d && !m.letter ? el("span", { class: "small", text: " · " + d.name }) : null, el("span", { class: "time", text: m.at ? new Date(m.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "" })]),
-      m.certified ? el("div", { class: "certified-tag", text: "Certified answer from city staff" }) : null,
+      m.certified ? el("div", { class: "certified-tag", text: "Certified answer from city staff · demo, no legal effect" }) : null,
       m.letter ? el("div", { class: "letter", text: m.text }) : el("div", { class: "text", text: m.text }),
       m.has_sketch ? el("div", { class: "small attach", text: "📎 drawing attached" }) : null,
       opts.newest && m.role === "desk" && opts.session && !opts.session.busy ? quickReplies(m, opts.session) : null,

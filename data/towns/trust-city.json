@@ -241,7 +241,7 @@
       "id": "planning",
       "name": "Planning & Zoning",
       "character": "Juniper",
-      "role": "land use planner",
+      "role": "planning desk",
       "live": true,
       "handles": "zoning questions, zoning verification letters, land use applications (lot splits, conditional uses, variances, rezones), zoning complaints",
       "intro": "Hi, I am Juniper, an AI assistant with the Planning & Zoning Department. I can help you get information, prepare applications, and send structured questions to the City Staff to help you get answers you can rely on. Give me one second while I review the information you provided..."
@@ -250,7 +250,7 @@
       "id": "building",
       "name": "Building Department",
       "character": "Bob",
-      "role": "building official",
+      "role": "building desk",
       "live": true,
       "handles": "building permits, building inspections, demolition permits, anything on private property that involves structures, plumbing or electrical",
       "contact": "Trust City Building Department (call the city office)"
@@ -268,7 +268,7 @@
       "id": "public_works",
       "name": "Public Works",
       "character": "Sol",
-      "role": "public works crew lead",
+      "role": "public works desk",
       "live": true,
       "handles": "potholes and road hazards, street lights, sidewalks, storm drains, snow and debris in the street, permits to dig in the public right of way",
       "contact": "Trust City Public Works (call the city office)"
@@ -277,7 +277,7 @@
       "id": "police",
       "name": "Police Department",
       "character": "Harper",
-      "role": "police officer",
+      "role": "police desk",
       "live": true,
       "handles": "non-emergency reports, police records requests, police standby at events, house watch while away (emergencies: call 911)",
       "contact": "Trust City Police non-emergency line (call the city office); emergencies 911"
@@ -286,7 +286,7 @@
       "id": "fire",
       "name": "Fire Department",
       "character": "Mateo",
-      "role": "fire chief",
+      "role": "fire desk",
       "live": true,
       "handles": "fire alarm inspections, burn permits, fireworks displays, fire records and response time information (emergencies: call 911)",
       "contact": "Trust City Fire Department (call the city office); emergencies 911"
@@ -295,7 +295,7 @@
       "id": "parks",
       "name": "Parks and Recreation",
       "character": "Rosa",
-      "role": "parks and recreation coordinator",
+      "role": "parks desk",
       "live": true,
       "handles": "pavilion and field reservations, special events, recreation program sign-ups, parks and trails",
       "contact": "Trust City Parks and Recreation (call the city office)"
@@ -304,7 +304,7 @@
       "id": "enforcement",
       "name": "Code Enforcement & Animal Control",
       "character": "Dakota",
-      "role": "code enforcement officer",
+      "role": "code enforcement desk",
       "live": true,
       "handles": "code complaints about weeds, junk, nuisances and work without permits; animal complaints; dog licenses",
       "contact": "Trust City Code Enforcement (call the city office)"
@@ -313,10 +313,10 @@
       "id": "recorder",
       "name": "City Recorder",
       "character": "Avery",
-      "role": "city recorder",
+      "role": "recorder's desk",
       "live": true,
       "handles": "public records requests, business licenses, meeting agendas and minutes, the fee schedule",
-      "contact": "Trust City Recorder, 320 E Newel Ave"
+      "contact": "Trust City Recorder (call the city office)"
     }
   ],
   "processTiers": [
@@ -504,7 +504,8 @@
     "staffDecide": "Only real City Officials can make decisions.",
     "stub": "I can't help you yet because this area of the program is not built out yet.",
     "emergency": "If someone is in danger or this is happening right now, call 911. If you smell gas, leave the area first and call from outside. This help desk is not watched by a dispatcher and cannot send help. When everyone is safe, come back and I can help with the paperwork.",
-    "exampleCity": "Trust City is an example city. Its city code and maps come from Hildale, Utah's public records; its procedures and forms are samples."
+    "exampleCity": "Trust City is an example city. Its city code and maps come from Hildale, Utah's public records; its procedures and forms are samples.",
+    "letterNotice": "Trust City is an example city. This letter is a demonstration and has no legal effect anywhere."
   },
   "notes": {
     "fictionalOwners": "Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.",
@@ -513,8 +514,8 @@
   "office": {
     "department": "Planning & Zoning Department",
     "cityLine": "Trust City",
-    "addressLine": "320 E Newel Ave, Trust City, UT 84784",
+    "addressLine": "Example address, Trust City, Utah",
     "phone": "",
-    "formFooter": "This application was prepared with the Virtual City Help Desk from the applicant's own words and public records. City staff verify every entry."
+    "formFooter": "Sample form of an example city; it has no effect in any real city. Prepared with the Virtual City Help Desk from the applicant's own words and public records. City staff verify every entry."
   }
 }

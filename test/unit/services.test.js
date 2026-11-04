@@ -161,3 +161,14 @@ test("a request that names its desk goes there, unless the resident asks about z
   assert.equal(namedDesk("Can I get a business license in this zone?"), null);
   assert.equal(namedDesk("I need a burn permit"), null);
 });
+
+test("nothing reads as a real city's act: sample forms, demo letters, AI labels", () => {
+  assert.doesNotMatch(JSON.stringify(town.office), /Newel/, "no real city hall on the sample forms");
+  assert.match(town.office.formFooter, /no effect in any real city/);
+  assert.match(town.wording.letterNotice, /no legal effect/);
+  for (const d of town.departments) assert.doesNotMatch(d.role, /officer|chief|official|lead/i, d.id + " is an AI desk, not a person in office");
+  const server = fs.readFileSync(path.join(__dirname, "..", "..", "server.js"), "utf8");
+  assert.match(server, /town\.wording\.letterNotice/, "every sent letter carries the notice");
+  const page = fs.readFileSync(path.join(__dirname, "..", "..", "public", "resident.js"), "utf8");
+  assert.match(page, /"AI assistant · "/);
+});

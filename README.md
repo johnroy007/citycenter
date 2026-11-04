@@ -51,7 +51,8 @@ Not ours: the town's code and the county and state map data, and the real public
 |---|---|---|
 | Routing, understanding, drafting, replies, letters | `muse-spark-1.3` | Chat Completions with structured output (JSON schema) |
 | Code research, staff considerations, staff questions | `muse-spark-1.3` | Tool calling: `search_code`, `get_section`, `zone_info`, `lookup_parcel`, `lot_math`, `animal_points`, `process_info` |
-| Reading drawings | `muse-spark-1.3` | Image input |
+| Department desks: answers, forms and certified questions | `muse-spark-1.3` | Tool calling (`read_service`, `search_services`, `search_code`, `get_section`, `lookup_parcel`), then structured output; each form's field list is fixed in the schema |
+| Reading drawings and photos, at every desk | `muse-spark-1.3` | Image input |
 | Outlining the drawing | `sam-3.1` | Responses API, text-prompted boxes |
 | Resident speaks | `muse-voice-transcribe-1.0` | `POST /v1/asr/transcribe` (WAV built in the browser) |
 | Second read of the considerations | `muse-wonder-1.0` | Chat Completions |

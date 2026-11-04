@@ -598,7 +598,7 @@ async function handle(req, res) {
         const next = { request_info: "needs_info", accept_complete: "in_review", answer: "answered", refer: "referred", certified_yes: "answered", certified_no: "answered" }[decision] || s.status;
         store.addStaffAction(ref, { action: "letter_saved", payload: { subject, body: text, decision } });
         store.updateSession(ref, { status: next });
-        store.addMessage(ref, { role: "desk", department: review.isService(s) ? s.department : "planning", character: review.officeOf(s, town) + " staff", text: `${subject}\n\n${text}\n\nDrafted with AI from the city staff's review, then sent by staff.`, letter: true, certified: /^certified_/.test(decision) });
+        store.addMessage(ref, { role: "desk", department: review.isService(s) ? s.department : "planning", character: review.officeOf(s, town) + " staff", text: `${subject}\n\n${text}\n\nDrafted with AI from the city staff's review, then sent by staff.\n\n${town.wording.letterNotice}`, letter: true, certified: /^certified_/.test(decision) });
         if (s.review) store.setReviewPart(ref, "letter", { ...stored, subject, body: text, decision, sent_at: new Date().toISOString() });
         return sendJson(res, 200, { ok: true, status: next });
       }

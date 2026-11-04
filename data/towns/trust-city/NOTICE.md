@@ -2,6 +2,8 @@
 
 The MIT license in this repository covers the software written for CityCenter. It does not cover the data in this folder, which belongs to its sources.
 
+Trust City is an example city, not a real place. The code and map data below are public records of Hildale, Utah, shown under the Trust City name. Hildale City did not make or review this project.
+
 ## Parcels and tax-roll facts (`parcels.geojson`, `lir.json`)
 
 Parcel data derived from the UGRC SGID under the CC BY 4.0 license (https://creativecommons.org/licenses/by/4.0/). Credit: Utah Geospatial Resource Center (UGRC), State Geographic Information Datasource.
@@ -9,6 +11,7 @@ Parcel data derived from the UGRC SGID under the CC BY 4.0 license (https://crea
 Sources, accessed 2026-10-28:
 - https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington/FeatureServer/0
 - https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington_LIR/FeatureServer/0
+- https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/UtahRoads/FeatureServer/0 (`roads.geojson`, accessed 2026-11-03; street names and lines only)
 
 Layer metadata is published at those addresses and at https://gis.utah.gov/data/cadastre/parcels.
 
@@ -29,3 +32,7 @@ Washington County, Utah GIS public zoning layer: https://agisprodvm.washco.utah.
 ## City code (`code.json`)
 
 The town's published ordinances, from its Municipal Code Online site. The official hard copy governs. The app replaces the town's name with the stand-in name Trust City.
+
+## Sample procedures (`services.json`, `sources.json`)
+
+The procedures, forms, fees and timelines in `services.json` are original samples written for the example city. They are not the rules of any real city. `sources.json` lists the real public pages read while writing them; no text was copied from those pages, and each stays the property of its publisher.

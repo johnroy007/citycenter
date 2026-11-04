@@ -1,0 +1,226 @@
+{
+  "note": "One resident conversation for each city service, played by scripts/desks.js against a running server. People are invented; addresses are public parcels.",
+  "cases": [
+    {
+      "service": "building_permit",
+      "department": "building",
+      "opening": "I need a building permit. The zoning is already cleared, I just need the permit paperwork.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. It's at 345 E Jessop Ave. New 400 square foot garage, about $30,000 of work, owner-builder, and my plans are ready."
+    },
+    {
+      "service": "building_inspection",
+      "department": "building",
+      "opening": "I need to schedule a framing inspection on my permit.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. The job site is 345 E Jessop Ave, permit number B-2026-114, framing inspection, next Tuesday would be great, and I will be on site."
+    },
+    {
+      "service": "demolition_permit",
+      "department": "building",
+      "opening": "I want to tear down an old shed behind my house. What do I need for a demolition permit?",
+      "details": "Yes, please prepare it. I'm Dana Whitlock, 435-555-0142, dana@example.com, 345 E Jessop Ave. It's a shed built around 1975, no contractor, utilities are disconnected, and debris goes to the county landfill."
+    },
+    {
+      "service": "utility_new_service",
+      "department": "utilities",
+      "opening": "I'm moving and need to start water service at my new house.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. Start service at 455 E Jessop Ave on December 1. I own it."
+    },
+    {
+      "service": "utility_billing",
+      "department": "utilities",
+      "opening": "Why is my water bill so high this month? And what happens if I pay it late?",
+      "details": "Yes, please send it to billing. I'm Dana Whitlock, 435-555-0142, dana@example.com. Service address 345 E Jessop Ave. My question is why my October bill doubled."
+    },
+    {
+      "service": "utility_outage",
+      "department": "utilities",
+      "opening": "We have no water at our house.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, 345 E Jessop Ave. No water since about 7 this morning and my neighbors are out too."
+    },
+    {
+      "service": "hydrant_flow_test",
+      "department": "utilities",
+      "opening": "I need a hydrant flow test for a sprinkler design.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, with Red Rock Fire Protection. It's the hydrant nearest 455 E Jessop Ave, project name Jessop Shops, for sprinkler design, any weekday next month."
+    },
+    {
+      "service": "road_hazard",
+      "department": "public_works",
+      "opening": "There's a big pothole on my street.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. It's a pothole about two feet wide, and cars are swerving around it, though it isn't blocking traffic.",
+      "pin": true
+    },
+    {
+      "service": "street_light",
+      "department": "public_works",
+      "opening": "The street light by my house has been out for a week.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. It's near 345 E Jessop Ave, the light is out completely, I can't see a pole number."
+    },
+    {
+      "service": "storm_drain",
+      "department": "public_works",
+      "opening": "The storm drain on our corner is clogged and water is standing in the road.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. Near 345 E Jessop Ave. It's blocked with leaves since yesterday's storm."
+    },
+    {
+      "service": "right_of_way_permit",
+      "department": "public_works",
+      "opening": "I need to dig across the street to run a water line.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. Contractor is Canyon Excavating. Near 345 E Jessop Ave, to connect a water service, a trench 30 feet long, 2 feet wide and 4 feet deep, from March 2 to March 4."
+    },
+    {
+      "service": "police_report",
+      "department": "police",
+      "opening": "Someone stole my bike from my carport last week. I'd like to file a report. Nobody is in danger.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. It happened at 345 E Jessop Ave on October 28 overnight. A blue bike worth about $400. I don't know who did it."
+    },
+    {
+      "service": "police_records",
+      "department": "police",
+      "opening": "How do I get a copy of a police report?",
+      "details": "Yes, please prepare it. I'm Dana Whitlock, 435-555-0142, dana@example.com. It's from a fender bender on October 2 at Utah Ave and Field Ave, I was the driver, and I want the accident report. People involved were me and one other driver."
+    },
+    {
+      "service": "police_standby",
+      "department": "police",
+      "opening": "We need police standby at our community festival.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, with the Trust City Harvest Committee. The Harvest Festival at 345 E Jessop Ave on May 15, 10 am to 6 pm, about 300 people, no alcohol, officers needed for crowd and traffic."
+    },
+    {
+      "service": "police_house_watch",
+      "department": "police",
+      "opening": "We're going out of town. Can officers check on our house?",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, 345 E Jessop Ave. Leaving December 20, back January 2. Emergency contact is Sam Whitlock, 435-555-0177."
+    },
+    {
+      "service": "fire_alarm_inspection",
+      "department": "fire",
+      "opening": "I need to schedule a fire alarm inspection for my building.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. Whitlock Hardware at 455 E Jessop Ave, annual inspection, alarm company is Canyon Alarm, any day next week."
+    },
+    {
+      "service": "burn_permit",
+      "department": "fire",
+      "opening": "I need a burn permit for my weed pile.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, 345 E Jessop Ave. Yard weeds and brush, a pile about 3 feet across, on March 10, I'll have a hose ready, and it's 40 feet from the house."
+    },
+    {
+      "service": "fire_info_request",
+      "department": "fire",
+      "opening": "What are the fire department's response times? I'd like the numbers for my insurance.",
+      "details": "Yes, please prepare the request. I'm Dana Whitlock, 435-555-0142, dana@example.com. I want average response times for the last 12 months in my area around 345 E Jessop Ave, for my home insurance."
+    },
+    {
+      "service": "fireworks_display",
+      "department": "fire",
+      "opening": "We want to do a public fireworks show for Pioneer Day.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, sponsoring group Trust City Harvest Committee, at 345 E Jessop Ave, July 24 at 10 pm. Operator is Sky Bright Displays, license 44871, insurance with Beehive Mutual, about 500 people, and the site diagram is ready."
+    },
+    {
+      "service": "pavilion_reservation",
+      "department": "parks",
+      "opening": "I'd like to reserve a park pavilion for a family reunion. How much is it?",
+      "details": "Yes, please prepare it. I'm Dana Whitlock, 435-555-0142, dana@example.com. Maxwell Park pavilion, June 6, 11 am to 4 pm, 40 people, family reunion, no extras."
+    },
+    {
+      "service": "special_event",
+      "department": "parks",
+      "opening": "We want to hold a 5K race through town. Do we need a permit?",
+      "details": "Yes, please prepare it. I'm Dana Whitlock, 435-555-0142, dana@example.com, sponsor Trust City Runners, the Red Rock 5K on Utah Ave starting near 345 E Jessop Ave, April 18, 8 am to noon, about 200 runners, we need one street closed, no vendors or alcohol, insurance with Beehive Mutual."
+    },
+    {
+      "service": "recreation_signup",
+      "department": "parks",
+      "opening": "I want to sign my daughter up for youth soccer.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. Participant Mia Whitlock, age 9, youth soccer, emergency contact Sam Whitlock 435-555-0177."
+    },
+    {
+      "service": "code_complaint",
+      "department": "enforcement",
+      "opening": "There's a pile of junk and tall weeds in the empty lot by my house. I want to file a complaint.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. It's at 455 E Jessop Ave. Tall weeds and old tires, going on about three months."
+    },
+    {
+      "service": "animal_complaint",
+      "department": "enforcement",
+      "opening": "My neighbor's dog barks all night and I want to report it.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. The dog is at 455 E Jessop Ave, a large brown dog that barks from about 10 pm to 2 am most nights this past week."
+    },
+    {
+      "service": "dog_license",
+      "department": "enforcement",
+      "opening": "I need to license my new puppy.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, 345 E Jessop Ave. Her name is Biscuit, a tan Labrador, 5 months old, spayed, rabies shot on October 1."
+    },
+    {
+      "service": "public_records_request",
+      "department": "recorder",
+      "opening": "How do I ask for copies of city records?",
+      "details": "Yes, please prepare it. I'm Dana Whitlock, 435-555-0142, dana@example.com, mailing address 345 E Jessop Ave. I want the 2025 city budget and the contracts for road paving, from January to December 2025."
+    },
+    {
+      "service": "business_license",
+      "department": "recorder",
+      "opening": "I want to open a small bakery shop and need a business license.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com. Whitlock Bakery at 455 E Jessop Ave, a retail bakery, I'm the owner, 2 employees."
+    },
+    {
+      "service": "public_meetings",
+      "department": "recorder",
+      "opening": "When is the next city council meeting and how do I get the agenda?",
+      "details": "Yes, please prepare it. I'm Dana Whitlock, 435-555-0142, dana@example.com. The City Council, the next meeting, and I want the agenda."
+    }
+  ],
+  "edge": [
+    {
+      "id": "emergency-fire",
+      "text": "My neighbor's house is on fire right now!",
+      "expect": "emergency"
+    },
+    {
+      "id": "emergency-gas",
+      "text": "I smell gas in my kitchen.",
+      "expect": "emergency"
+    },
+    {
+      "id": "transfer",
+      "text": "I need a burn permit.",
+      "then": "Actually, can you also tell me about my water bill instead?",
+      "expect": "transfer"
+    }
+  ],
+  "certified": [
+    {
+      "id": "hens",
+      "department": "planning",
+      "opening": "Can I have three hens at 595 E 1400 N?",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com"
+    },
+    {
+      "id": "sewer-fee",
+      "department": "utilities",
+      "opening": "How much are the sewer impact fees for a new house at 345 E Jessop Ave?",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com"
+    },
+    {
+      "id": "pavilion-cost",
+      "department": "parks",
+      "opening": "How much does a park pavilion cost for a half day?",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com"
+    },
+    {
+      "id": "burn-window",
+      "department": "fire",
+      "opening": "Am I allowed to burn weeds in my yard in April? I don't need a permit yet, I just want to know.",
+      "details": "I'm Dana Whitlock, 435-555-0142, dana@example.com, 345 E Jessop Ave."
+    }
+  ],
+  "formal": [
+    {
+      "id": "zoning-verification",
+      "opening": "My bank needs a zoning verification letter for 345 E Jessop Ave.",
+      "department": "planning",
+      "packet": "zoning_verification_request"
+    }
+  ]
+}

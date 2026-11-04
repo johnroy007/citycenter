@@ -327,7 +327,9 @@
       "sections": [
         "152-11-5"
       ],
-      "resident": "If the standards in the cited sections are met, no planning application is needed. A building permit may still apply; check with the Building Department."
+      "resident": "If the standards in the cited sections are met, no planning application is needed. A building permit may still apply; check with the Building Department.",
+      "screenLabel": "The code lists no land use application for this",
+      "screenDecider": "Read the sections below. For an answer you can rely on, send a certified question."
     },
     {
       "id": "building_permit",
@@ -421,7 +423,8 @@
     "application_set": "Land Use Application",
     "complaint_report": "Complaint Report",
     "referral": "Department Referral",
-    "service_request": "City Service Request"
+    "service_request": "City Service Request",
+    "certified_question": "Certified Question"
   },
   "applicationTypes": {
     "lot_split": {

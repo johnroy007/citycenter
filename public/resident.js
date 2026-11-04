@@ -37,7 +37,7 @@
   var STEP_LABEL = { sketch: "Reading your drawing", route: "Finding the right desk", understand: "Understanding your request", locate: "Finding your parcel on the county map", research: "Reading the city code", draft: "Preparing your paperwork" };
   var STEP_MODEL = { sketch: "Muse Spark · image", route: "Muse Spark · structured", understand: "Muse Spark · structured", locate: "county GIS (no AI)", research: "Muse Spark · tools", draft: "Muse Spark · structured" };
   var STATUS_LABEL = { open: "Talking", ready: "Paperwork ready to submit", referred: "Referred to another desk", submitted: "Submitted to planning", needs_info: "Staff asked for more", in_review: "Forwarded for decision", answered: "Staff answered", error: "Problem" };
-  function isService(s) { return !!(s && s.packet && s.packet.packet_type === "service_request"); }
+  function isService(s) { return !!(s && s.packet && ["service_request", "certified_question"].includes(s.packet.packet_type)); }
   function needsPin(s) { return !!(s && s.research && s.research.service && s.research.service.location === "pin"); }
   function signatureFree(s) { return isService(s) && s.packet.signature_required === false; }
   function deskName(s) { return s.department && s.department !== "planning" ? characterFor(s.department).name : "the planning department"; }
@@ -340,6 +340,7 @@
     var d = dept ? characterFor(dept) : null;
     var body = el("div", { class: "body" }, [
       el("div", { class: "who" }, [el("b", { text: who }), d && !m.letter ? el("span", { class: "small", text: " · " + d.name }) : null, el("span", { class: "time", text: m.at ? new Date(m.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "" })]),
+      m.certified ? el("div", { class: "certified-tag", text: "Certified answer from city staff" }) : null,
       m.letter ? el("div", { class: "letter", text: m.text }) : el("div", { class: "text", text: m.text }),
       m.has_sketch ? el("div", { class: "small attach", text: "📎 drawing attached" }) : null,
       opts.newest && m.role === "desk" && opts.session && !opts.session.busy ? quickReplies(m, opts.session) : null,
@@ -674,7 +675,7 @@
     if (r.desk) return renderDeskResearch(screen, s);
     $("tvModel").textContent = "Muse Spark · " + (r.tool_log ? r.tool_log.length : 0) + " tool calls on the real code";
     var t = tierInfo(r.process_tier);
-    screen.appendChild(el("div", { class: "tier" }, [el("div", null, [el("div", { class: "small", text: "Process the code provides" }), el("div", { class: "big", text: t ? t.label : r.process_tier }), el("div", { class: "small", text: t ? "Decided by " + t.decider : "" }), el("div", { style: "margin-top:6px", text: r.process_explanation })])]));
+    screen.appendChild(el("div", { class: "tier" }, [el("div", null, [el("div", { class: "small", text: "Process the code provides" }), el("div", { class: "big", text: t ? t.label : r.process_tier }), el("div", { class: "small", text: t ? t.screenDecider || "Decided by " + t.decider : "" }), el("div", { style: "margin-top:6px", text: r.process_explanation })])]));
     if (r.required_applications && r.required_applications.length) {
       screen.appendChild(el("h3", { text: "You would file" }));
       screen.appendChild(el("ul", null, r.required_applications.map(function (id) { var a = town.applicationTypes[id] || {}; return el("li", { text: (a.name || id) + " (section " + (a.section || "?") + ")" }); })));

@@ -198,7 +198,7 @@ function townPublic() {
     county: town.county,
     refPrefix: town.refPrefix,
     departments: town.departments,
-    processTiers: town.processTiers.map((t) => ({ id: t.id, label: t.label, decider: t.decider, resident: t.resident, sections: t.sections })),
+    processTiers: town.processTiers.map((t) => ({ id: t.id, label: t.screenLabel || t.label, decider: t.decider, screenDecider: t.screenDecider || "", resident: t.resident, sections: t.sections })),
     applicationTypes: town.applicationTypes,
     zones: Object.fromEntries(Object.entries(town.zones).map(([k, v]) => [k, { name: v.name, chapter: v.chapter, usesSection: v.usesSection, standardsSection: v.standardsSection, color: gis.zoneColor(k) }])),
     wording: town.wording,
@@ -432,7 +432,7 @@ async function handle(req, res) {
     if (req.method === "POST" && action === "submit") {
       if (s.busy) return sendError(res, 409, "The desk is still working. Wait for the packet, then submit.");
       if (!s.packet || !s.packet.documents || !s.packet.documents.length) return sendError(res, 400, "There is no prepared packet to submit yet.");
-      const blanks = s.packet.packet_type === "service_request" ? s.packet.documents.flatMap(missingRequired) : [];
+      const blanks = review.isService(s) ? s.packet.documents.flatMap(missingRequired) : [];
       if (blanks.length) return sendError(res, 400, "Please fill in: " + blanks.join(", ") + ".");
       if (s.packet.signature_required !== false && (!s.signature || s.signature.doc_hash !== signature.docHash(s.packet))) {
         res.writeHead(409, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
@@ -595,10 +595,10 @@ async function handle(req, res) {
         const text = (typeof body.body === "string" ? body.body : stored.body || "").trim().slice(0, 12000);
         const decision = review.DECISIONS[body.decision] ? String(body.decision) : stored.decision || "";
         if (!subject || !text) return sendError(res, 400, "The letter needs a subject and a body.");
-        const next = { request_info: "needs_info", accept_complete: "in_review", answer: "answered", refer: "referred" }[decision] || s.status;
+        const next = { request_info: "needs_info", accept_complete: "in_review", answer: "answered", refer: "referred", certified_yes: "answered", certified_no: "answered" }[decision] || s.status;
         store.addStaffAction(ref, { action: "letter_saved", payload: { subject, body: text, decision } });
         store.updateSession(ref, { status: next });
-        store.addMessage(ref, { role: "desk", department: review.isService(s) ? s.department : "planning", character: review.officeOf(s, town) + " staff", text: `${subject}\n\n${text}\n\nDrafted with AI from the city staff's review, then sent by staff.`, letter: true });
+        store.addMessage(ref, { role: "desk", department: review.isService(s) ? s.department : "planning", character: review.officeOf(s, town) + " staff", text: `${subject}\n\n${text}\n\nDrafted with AI from the city staff's review, then sent by staff.`, letter: true, certified: /^certified_/.test(decision) });
         if (s.review) store.setReviewPart(ref, "letter", { ...stored, subject, body: text, decision, sent_at: new Date().toISOString() });
         return sendJson(res, 200, { ok: true, status: next });
       }

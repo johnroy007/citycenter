@@ -1,0 +1,690 @@
+{
+  "note": "Where the example city's material came from. `license` is filled only where the publisher's open license was confirmed. `reuse` is the publisher's own notice, when one was seen. Checked 2026-11-03.",
+  "sources": [
+    {
+      "id": "real-code",
+      "government": "Hildale City, Utah",
+      "title": "Hildale City Code (Municipal Code Online)",
+      "url": "https://hildale.municipalcodeonline.com/book?type=ordinances",
+      "kind": "City code",
+      "used_for": "City code: all 865 sections",
+      "license": "",
+      "reuse": "",
+      "how_used": "Real text, shown word for word under the Trust City name"
+    },
+    {
+      "id": "real-zoning",
+      "government": "Washington County, Utah",
+      "title": "Zoning map layer (Washington County GIS)",
+      "url": "https://agisprodvm.washco.utah.gov/arcgis/rest/services/Zoning/MapServer/4",
+      "kind": "Map data",
+      "used_for": "Zoning map",
+      "license": "",
+      "reuse": "",
+      "how_used": "Real map data, shown under the Trust City name"
+    },
+    {
+      "id": "real-parcels",
+      "government": "State of Utah (UGRC)",
+      "title": "Washington County parcels (Utah SGID)",
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington/FeatureServer/0",
+      "kind": "Map data",
+      "used_for": "Parcel boundaries and addresses",
+      "license": "CC BY 4.0",
+      "reuse": "",
+      "how_used": "Real map data, modified; owner names are never used"
+    },
+    {
+      "id": "real-lir",
+      "government": "State of Utah (UGRC)",
+      "title": "Washington County land information records (Utah SGID)",
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/Parcels_Washington_LIR/FeatureServer/0",
+      "kind": "Map data",
+      "used_for": "Parcel facts such as size and year built",
+      "license": "CC BY 4.0",
+      "reuse": "",
+      "how_used": "Real data, modified; owner names are never used"
+    },
+    {
+      "id": "real-roads",
+      "government": "State of Utah (UGRC)",
+      "title": "Utah roads (Utah SGID)",
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/UtahRoads/FeatureServer/0",
+      "kind": "Map data",
+      "used_for": "Streets on the clickable map",
+      "license": "CC BY 4.0",
+      "reuse": "",
+      "how_used": "Real map data, modified"
+    },
+    {
+      "id": "src-01",
+      "government": "Washington City, Utah",
+      "title": "Residential New Construction Permit Submittal Requirements",
+      "url": "https://washingtonutah.gov/development/building/ResidentialPermitRequirements",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© 2026 Washington City Corporation. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-02",
+      "government": "City of St. George, Louisiana (East Baton Rouge Parish)",
+      "title": "Apply for Building Permits (Building Department Services)",
+      "url": "https://stgeorgela.gov/services/building-department-services/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© 2026 City of St. George. All Rights Reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-03",
+      "government": "City of Logan, Utah",
+      "title": "Building FAQs",
+      "url": "https://www.loganutah.gov/government/departments/community_development/building_department/faqs.php",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-04",
+      "government": "Park City, Utah",
+      "title": "Building Inspections",
+      "url": "https://www.parkcity.gov/services/building/inspections.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© 2026 Park City, UT",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-05",
+      "government": "City of Logan, Utah",
+      "title": "Building Inspections",
+      "url": "https://www.loganutah.gov/government/departments/community_development/building_department/building_inspections.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-06",
+      "government": "Murray City, Utah",
+      "title": "How to Obtain a Demolition Permit in Murray City (Building Division checklist, Rev. 11/25/2025)",
+      "url": "https://murray.utah.gov/DocumentCenter/View/15691/Demolition-Checklist-072924",
+      "kind": "Form",
+      "license": "",
+      "reuse": "All content © 2006-2026 Murray City, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-07",
+      "government": "Kaysville City, Utah",
+      "title": "Demolition Site Plan / Demo Checklist",
+      "url": "https://www.kaysville.gov/DocumentCenter/View/5224/Demo-Checklist",
+      "kind": "Form",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-08",
+      "government": "West Jordan City, Utah",
+      "title": "Water/Sanitary Sewer Service Abandonment Permit",
+      "url": "https://www.westjordan.utah.gov/water-sanitary-sewer-service-abandonment-permit/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "2026 © West Jordan City",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-09",
+      "government": "City of St. George, Utah",
+      "title": "Residential Application For Utility Service",
+      "url": "https://forms.sgcityutah.gov/utility/signup",
+      "kind": "Form",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-10",
+      "government": "City of Logan, Utah",
+      "title": "Treasurer and Utility Billing",
+      "url": "https://www.loganutah.gov/government/departments/finance/treasurer_and_utility_billing/index.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© Copyright all rights reserved",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-11",
+      "government": "Herriman City, Utah",
+      "title": "Utility Billing",
+      "url": "https://www.herriman.gov/utility-billing",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "HERRIMAN CITY © 2026",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-12",
+      "government": "City of Saratoga Springs, Utah",
+      "title": "Utility Billing",
+      "url": "https://www.saratogasprings-ut.gov/403/Utility-Billing",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "All content © 2006-2026 Saratoga Springs, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-13",
+      "government": "Washington City, Utah",
+      "title": "Rules for Water Service (Ordinance 2014-11), sections 7.12, 7.13, 9.6, 9.7",
+      "url": "https://washingtonutah.gov/publicworks/WashingtonCity-RulesForWaterService.pdf",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-14",
+      "government": "Summit County Service Area #3, Utah (county service area)",
+      "title": "Regulation 2017-10: Water Leak Billing Adjustment Policy",
+      "url": "https://summitcountyutah.gov/DocumentCenter/View/22725/RES-2017-10-Water-Leak-Policy",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-15",
+      "government": "City of St. George, Utah",
+      "title": "Collection and Distribution (water line break reporting)",
+      "url": "https://sgcityutah.gov/departments/water_services/collection_and_distribution.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-16",
+      "government": "City of St. George, Utah",
+      "title": "Report Power / water outage",
+      "url": "https://sgcityutah.gov/departments/energy_services/report_power_outage.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-17",
+      "government": "City of Baltimore, Maryland",
+      "title": "Fire Flow Test Requests (Department of Public Works)",
+      "url": "https://www.baltimorecity.gov/publicworks/fire-flow-test-requests",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "Copyright © 2026 City of Baltimore. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-18",
+      "government": "Spotsylvania County, Virginia",
+      "title": "Fire Hydrant Flow Test Request",
+      "url": "https://www.spotsylvania.va.us/1626/Fire-Hydrant-Flow-Test-Request",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "All content © 2006-2026 Spotsylvania County, VA and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-19",
+      "government": "West Jordan City, Utah",
+      "title": "The season of potholes: how to easily report them to the city online",
+      "url": "https://www.westjordan.utah.gov//newsroom/2023/04/the-season-of-potholes-how-to-easily-report-them-to-the-city-online",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "2026 © West Jordan City",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-20",
+      "government": "Salt Lake County, Utah",
+      "title": "Report a Problem (roads and street lights)",
+      "url": "https://prod.saltlakecounty.gov/operations/report-a-problem/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© Salt Lake County—All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-21",
+      "government": "City of West Bountiful, Utah",
+      "title": "Street Light Out",
+      "url": "https://wbcityut.gov/street-light-out",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-22",
+      "government": "Murray City, Utah",
+      "title": "Excavation & Road Cut Permits",
+      "url": "https://www.murray.utah.gov/152",
+      "kind": "Fee schedule",
+      "license": "",
+      "reuse": "All content © 2006-2026 Murray City, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-23",
+      "government": "Lindon City, Utah",
+      "title": "Encroachment Permit",
+      "url": "https://lindon.gov/353/Encroachment-Permit",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-24",
+      "government": "Herriman City, Utah",
+      "title": "Stormwater",
+      "url": "https://herriman.gov/stormwater",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "HERRIMAN CITY © 2026",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-25",
+      "government": "City of St. George, Utah",
+      "title": "Police Services and Forms",
+      "url": "https://sgcityutah.gov/departments/police_department/services_and_forms.php",
+      "kind": "Form",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-26",
+      "government": "City of Roosevelt, Utah",
+      "title": "Request Police Records",
+      "url": "https://www.rooseveltcity.gov/340/Request-Police-Records",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-27",
+      "government": "South Jordan City, Utah",
+      "title": "GRAMA Request Form",
+      "url": "https://www.sjc.utah.gov/FormCenter/Public-Records-8/GRAMA-Request-Form-80",
+      "kind": "Form",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-28",
+      "government": "Washington City, Utah",
+      "title": "Hire Off-Duty Officers",
+      "url": "https://washingtonutah.gov/services/publicsafety/police/hireoffdutyofficers",
+      "kind": "Fee schedule",
+      "license": "",
+      "reuse": "© 2026 Washington City Corporation. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-29",
+      "government": "Utah County Sheriff's Office, Utah",
+      "title": "Off-Duty / Supplemental Security Services",
+      "url": "https://sheriff.utahcounty.gov/information/offDuty",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "© 2026 All Rights Reserved by Utah County Government.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-30",
+      "government": "Murray City, Utah",
+      "title": "Vacation Watch",
+      "url": "https://murray.utah.gov/358/Vacation-Watch",
+      "kind": "Form",
+      "license": "",
+      "reuse": "All content © 2006-2026 Murray City, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-31",
+      "government": "City of Saratoga Springs, Utah",
+      "title": "Home Watch",
+      "url": "https://saratogasprings-ut.gov/278/Home-Watch",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "All content © 2006-2026 Saratoga Springs, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-32",
+      "government": "West Jordan City, Utah",
+      "title": "Online Police Reporting System",
+      "url": "https://www.westjordan.utah.gov/police/online-police-reporting-system/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "2026 © West Jordan City",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-33",
+      "government": "Bluffdale City, Utah",
+      "title": "Online Police Reports",
+      "url": "https://www.bluffdale.gov/PoliceReports",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-34",
+      "government": "Murray City, Utah",
+      "title": "Fire Inspections & Prevention",
+      "url": "https://www.murray.utah.gov/1748/Fire-Prevention",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "All content © 2006-2026 Murray City, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-35",
+      "government": "Springville City, Utah",
+      "title": "Fire Sprinkler, Alarm and Hood Plans",
+      "url": "https://www.springvilleutah.gov/fire-rescue/?p=1103",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© 2026 Springville City",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-36",
+      "government": "Utah State Fire Marshal's Office, Utah",
+      "title": "Fire alarm systems licensing (testing and certification)",
+      "url": "https://firemarshal.utah.gov/?p=3332",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-37",
+      "government": "City of St. George, Utah",
+      "title": "Burn Permit Information",
+      "url": "https://www.sgcityutah.gov/departments/fire_department/burn_permit_information.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-38",
+      "government": "Utah Division of Forestry, Fire and State Lands (State of Utah)",
+      "title": "Burn Permits",
+      "url": "https://ffsl.utah.gov/wildland-fire/burn-permits/",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-39",
+      "government": "Murray City, Utah",
+      "title": "Request for Records (GRAMA) - fire incident reports",
+      "url": "https://www.murray.utah.gov/1803/Request-for-Records-GRAMA",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "All content © 2006-2026 Murray City, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-40",
+      "government": "Park City Fire District, Utah",
+      "title": "Request Fire Response Report",
+      "url": "https://www.pcfdut.gov/request-fire-response-report",
+      "kind": "Form",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-41",
+      "government": "North Summit Fire District, Utah",
+      "title": "File a Records Request",
+      "url": "https://www.northsummitfireut.gov/file-a-records-request",
+      "kind": "Form",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-42",
+      "government": "Unified Fire Authority (Salt Lake area), Utah",
+      "title": "Holladay City Community Risk Assessment and Standards of Cover (published response time data)",
+      "url": "https://unifiedfireut.gov/wp-content/uploads/1.09Holladay_CommunityRiskAssessment_StandardsofCover-11.pdf",
+      "kind": "Published data",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-43",
+      "government": "Tooele City, Utah",
+      "title": "Pyrotechnics Permit Application",
+      "url": "https://files.tooelecity.gov/services/fire/services/applications___forms/pyrotechnics_permit_application.php",
+      "kind": "Form",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-44",
+      "government": "Utah State Fire Marshal's Office, Utah",
+      "title": "Utah Fireworks Information",
+      "url": "https://firemarshal.utah.gov/department-services/fireworks",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-45",
+      "government": "City of St. George, Utah",
+      "title": "Fireworks Information",
+      "url": "https://sgcityutah.gov/departments/fire_department/fireworks_information.php",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-46",
+      "government": "Springville City, Utah",
+      "title": "Canyon Park Policies (pavilion reservations)",
+      "url": "https://www.springvilleutah.gov/parks-recreation/?p=629",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "© 2026 Springville City",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-47",
+      "government": "Lindon City, Utah",
+      "title": "Pavilions",
+      "url": "https://lindon.gov/531/Pavilions",
+      "kind": "Fee schedule",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-48",
+      "government": "Herriman City, Utah",
+      "title": "Special Event Permit Guide",
+      "url": "https://herriman.gov/special-event-permits",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "HERRIMAN CITY © 2026",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-49",
+      "government": "City of St. George, Utah",
+      "title": "Special Event Permits",
+      "url": "https://sgcityutah.gov/departments/community_development/special_event_permits.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-50",
+      "government": "Springville City, Utah",
+      "title": "Parks and Recreation program refund policy (page data)",
+      "url": "https://www.springvilleutah.gov/parks-recreation/wp-json/wp/v2/pages/331",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "© 2026 Springville City",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-51",
+      "government": "Park City, Utah",
+      "title": "Community Code Compliance",
+      "url": "https://www.parkcity.gov/services/building/community_code_compliance/index.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© 2026 Park City, UT",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-52",
+      "government": "Murray City, Utah",
+      "title": "Ask Murray: How do I file a complaint?",
+      "url": "https://murray.utah.gov/FAQ.aspx?QID=174",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "All content © 2006-2026 Murray City, UT and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-53",
+      "government": "West Valley City, Utah",
+      "title": "How to Come Into Compliance with Code Enforcement",
+      "url": "https://www.wvc-ut.gov/government/department_list/code_enforcement/how_to_come_into_compliance_with_code_enforcement.php",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© 2026 West Valley City, UT",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-54",
+      "government": "Lehi City, Utah",
+      "title": "Animal Control Services",
+      "url": "https://www.lehi-ut.gov/departments/lehi-police/animal-control-services/",
+      "kind": "Fee schedule",
+      "license": "",
+      "reuse": "© 2026 Lehi City",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-55",
+      "government": "Riverton City, Utah",
+      "title": "Animal Control Licensing",
+      "url": "http://www.rivertonutah.gov/animalcontrol/licensing.php",
+      "kind": "Policy",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-56",
+      "government": "Utah State Archives (Division of Archives and Records Service), State of Utah",
+      "title": "Government Records Access FAQ",
+      "url": "https://archives.utah.gov/transparency-services/government-records-access/faq/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-57",
+      "government": "State of Utah (Legislature) - Utah Code",
+      "title": "Utah Code 63G-2-204 Record request -- Response -- Time for responding (effective 5/3/2023 version)",
+      "url": "https://le.utah.gov/xcode/Title63G/Chapter2/C63G-2-S204_2023050320230503.pdf",
+      "kind": "State law",
+      "license": "",
+      "reuse": "Except when specifically stated on a legislative web site and except for the design or layout of a web page, anyone may view, copy, or distribute information found on a legislative web site for personal use without owing an obligation to th",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-58",
+      "government": "Utah Department of Transportation (State of Utah)",
+      "title": "Public Records Requests (GRAMA)",
+      "url": "https://connect.udot.utah.gov/public/records-requests/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-59",
+      "government": "Fruit Heights City, Utah",
+      "title": "Business Licensing",
+      "url": "https://www.fruitheights.gov/206/Business-Licensing",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "All content © 2006-2026 Fruit Heights City and its representatives. All rights reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-60",
+      "government": "Ogden City, Utah",
+      "title": "Home Occupation Licenses",
+      "url": "https://bids.ogdencity.com/199/Home-Occupation-Licenses",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-61",
+      "government": "Utah Office of the State Auditor",
+      "title": "Holding a Public Meeting: Checklist",
+      "url": "https://auditor.utah.gov/local-government/explanations-checklists-and-templates/holding-a-public-meeting/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "© 2025 Office of the State Auditor. All Rights Reserved.",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-62",
+      "government": "State of Utah, Division of Archives and Records Service",
+      "title": "Utah Public Notice Website",
+      "url": "https://www.utah.gov/pmn/",
+      "kind": "Procedure",
+      "license": "",
+      "reuse": "Utah.gov Terms of Use (https://www.utah.gov/disclaimer.html), COPYRIGHT LIMITATIONS: Anyone may view, copy, or distribute information found within these web pages (not including the design or layout of the pages) for personal or information",
+      "how_used": "Read while writing an original sample; no text was copied"
+    },
+    {
+      "id": "src-63",
+      "government": "State of Utah (Legislature) - Utah Code",
+      "title": "Utah Code 52-4-202 Public notice of meetings -- Emergency meetings (effective 5/3/2023 version)",
+      "url": "https://le.utah.gov/xcode/Title52/Chapter4/C52-4-S202_2023050320230503.pdf",
+      "kind": "State law",
+      "license": "",
+      "reuse": "Except when specifically stated on a legislative web site and except for the design or layout of a web page, anyone may view, copy, or distribute information found on a legislative web site for personal use without owing an obligation to th",
+      "how_used": "Read while writing an original sample; no text was copied"
+    }
+  ]
+}

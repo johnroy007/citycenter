@@ -402,6 +402,7 @@
       "text": "I need a building permit. I want to put a second house on my lot at 860 N Maple St for my parents.",
       "expect": {
         "department": [
+          "front_desk",
           "planning",
           "building"
         ],

@@ -391,3 +391,4 @@ table.standards td { font-size: 13px; }
 .pinpic { display: block; width: 100%; user-select: none; -webkit-user-drag: none; }
 .pinimg { display: block; width: 100%; max-width: 420px; margin: 8px 0; border: 1px solid #ccc; }
 #pinNote { flex: 1; min-width: 180px; }
+.certified-tag { display: inline-block; font-size: 12px; font-weight: 700; color: #1d6b35; background: #e4f4e8; border-radius: 999px; padding: 2px 10px; margin-bottom: 6px; }

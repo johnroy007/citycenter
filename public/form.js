@@ -43,14 +43,18 @@
     return el("div", { class: "siglines" }, [appl, date, el("div", { class: "sig" }, [el("span", { text: "Owner signature (if different)" })]), el("div", { class: "sig short" }, [el("span", { text: "Date" })])]);
   }
 
-  function serviceOf(town, d) { return ((town && town.services) || []).find(function (x) { return x.id === d.doc_type; }) || null; }
+  // A certified question has the same shape as a service form, at whichever desk it was asked.
+  function serviceOf(town, d, s) {
+    if (d.doc_type === "certified_question") { var q = deptOf(town, s.department); return { id: d.doc_type, department: s.department, kind: "question", signature: false, certified: true, decider: (q ? q.name : "City") + " staff" }; }
+    return ((town && town.services) || []).find(function (x) { return x.id === d.doc_type; }) || null;
+  }
   function deptOf(town, id) { return ((town && town.departments) || []).find(function (x) { return x.id === id; }) || null; }
 
   function page(town, s, d, di, total, opts) {
     opts = opts || {};
     var office = (town && town.office) || {};
     var editing = !!opts.editing;
-    var svc = serviceOf(town, d);
+    var svc = serviceOf(town, d, s);
     var dept = svc ? deptOf(town, svc.department) : null;
     var sec = 0;
     function head(text) { sec += 1; return el("h3", { class: "fsec", text: sec + ". " + text }); }
@@ -58,16 +62,16 @@
     pg.appendChild(el("div", { class: "letterhead" }, [
       el("div", { class: "seal", text: (town && town.refPrefix ? town.refPrefix : "TC").slice(0, 3).toUpperCase() }),
       el("div", null, [el("div", { class: "city", text: (office.cityLine || (town && town.name) || "City").toUpperCase() }), el("div", { class: "dept", text: dept ? dept.name : office.department || "Planning & Zoning Department" }), el("div", { class: "addr", text: [office.addressLine, office.phone].filter(Boolean).join(" · ") })]),
-      el("div", { class: "appno" }, [el("div", { class: "small", text: svc ? "Request No." : "Application No." }), el("div", { class: "num", text: s.ref }), el("div", { class: "small", text: "Page " + (di + 1) + " of " + total })]),
+      el("div", { class: "appno" }, [el("div", { class: "small", text: svc ? (svc.certified ? "Question No." : "Request No.") : "Application No." }), el("div", { class: "num", text: s.ref }), el("div", { class: "small", text: "Page " + (di + 1) + " of " + total })]),
     ]));
-    pg.appendChild(el("div", { class: "form-title" }, [el("h2", { text: d.name }), el("div", { class: "small", text: svc ? "Sample form of the example city of " + (town ? town.name : "") + (d.section ? ". Related code: section " + d.section : "") : d.section ? "Filed under " + (town ? town.name : "city") + " Code section " + d.section : "" })]));
+    pg.appendChild(el("div", { class: "form-title" }, [el("h2", { text: d.name }), el("div", { class: "small", text: svc && svc.certified ? "A question for city staff to answer in writing. This is not an application." : svc ? "Sample form of the example city of " + (town ? town.name : "") + (d.section ? ". Related code: section " + d.section : "") : d.section ? "Filed under " + (town ? town.name : "city") + " Code section " + d.section : "" })]));
     var u = s.understanding || {};
     var ap = u.applicant || {};
     pg.appendChild(head(svc ? "Requester" : "Applicant"));
     pg.appendChild(el("div", { class: "fgrid" }, [
-      formField(svc ? "Name" : "Applicant name", ap.name || firstField(d, /applicant|name/i)),
-      formField("Phone", ap.phone || firstField(d, /phone/i)),
-      formField("Email", ap.email || firstField(d, /e-?mail/i)),
+      formField(svc ? "Name" : "Applicant name", svc ? firstField(d, /^your name/i) : ap.name || firstField(d, /applicant|name/i)),
+      formField("Phone", svc ? firstField(d, /^phone/i) : ap.phone || firstField(d, /phone/i)),
+      formField("Email", svc ? firstField(d, /^email/i) : ap.email || firstField(d, /e-?mail/i)),
       formField("Date prepared", fmtDate(s.submitted_at || s.updated_at)),
     ]));
     var pr = s.parcel || {};
@@ -86,18 +90,21 @@
       formField("Applicant is the owner", u.location && u.location.is_own_property === true ? "Yes" : u.location && u.location.is_own_property === false ? "No" : ""),
     ]));
     }
-    pg.appendChild(head("Type of request"));
     var types = el("div", { class: "cbgrid" });
+    if (!(svc && svc.certified)) pg.appendChild(head("Type of request"));
     var at = (town && town.applicationTypes) || {};
     var checkedAny = false;
-    if (svc) { checkedAny = true; town.services.filter(function (x) { return x.department === svc.department; }).forEach(function (x) { types.appendChild(checkbox(x.name, x.id === svc.id)); }); }
+    if (svc && svc.certified) checkedAny = true;
+    else if (svc) { checkedAny = true; town.services.filter(function (x) { return x.department === svc.department; }).forEach(function (x) { types.appendChild(checkbox(x.name, x.id === svc.id)); }); }
     else Object.keys(at).forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox(at[id].name, on)); });
     (svc ? [] : ["zoning_verification_request", "complaint_report", "referral"]).forEach(function (id) { var on = id === d.doc_type; if (on) checkedAny = true; types.appendChild(checkbox((town && town.packetTypes && town.packetTypes[id]) || id.replace(/_/g, " "), on)); });
     if (!checkedAny) types.appendChild(checkbox("Other: " + d.name, true));
-    pg.appendChild(types);
-    pg.appendChild(head(svc ? "Details" : "Application details"));
+    if (!(svc && svc.certified)) pg.appendChild(types);
+    pg.appendChild(head(svc ? (svc.certified ? "Question" : "Details") : "Application details"));
     var grid4 = el("div", { class: "fgrid" });
     (d.fields || []).forEach(function (f, fi) {
+      // A service form shows who and where in its own sections above; they stay editable here.
+      if (svc && !editing && (f.source === "map_pin" || f.source === "parcel_record" && svc.certified || /^(your name|phone|email)$/i.test(f.label))) return;
       var wide = (f.value || "").length > 60 || /description|statement|reason|explain|legal/i.test(f.label);
       if (editing) {
         var inp = el("input", { class: "field", type: "text", value: f.value || "", "data-doc": String(di), "data-field": String(fi) });
@@ -105,7 +112,7 @@
       } else grid4.appendChild(formField(f.label + (f.required ? " *" : ""), f.value, { wide: wide, src: f.source && f.source !== "blank" ? f.source : null }));
     });
     pg.appendChild(grid4);
-    pg.appendChild(head(svc ? "Statement" : "Project description and statement"));
+    pg.appendChild(head(svc ? (svc.certified ? "My understanding" : "Statement") : "Project description and statement"));
     if (editing) { var ta = el("textarea", { "data-doc": String(di), "data-narrative": "1" }); ta.value = d.narrative || ""; pg.appendChild(ta); }
     else pg.appendChild(el("div", { class: "narrative", text: d.narrative || "" }));
     var basis = (d.code_basis || []).filter(function (c) { return c.quote || c.section; });
@@ -115,8 +122,8 @@
         pg.appendChild(el("div", { class: "quote" }, [c.quote ? el("span", { text: "“" + c.quote + "”" }) : null, el("span", { class: "cite" }, [el("a", { href: c.url || "#", target: "_blank", rel: "noopener", text: "Section " + c.section }), c.quote ? " · " + (c.quote_verified ? "quote verified against the code text" : "unverified") : ""])]));
       });
     }
-    pg.appendChild(head("Attachments"));
-    pg.appendChild(el("div", { class: "cbgrid" }, svc ? [
+    if (!(svc && svc.certified)) pg.appendChild(head("Attachments"));
+    if (!(svc && svc.certified)) pg.appendChild(el("div", { class: "cbgrid" }, svc ? [
       checkbox("Photo or drawing", !!s.has_sketch),
       checkbox("Map showing the location", !!(s.pin || s.parcel)),
       checkbox("Record of the help desk conversation", true),

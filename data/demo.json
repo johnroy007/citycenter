@@ -13,6 +13,16 @@
       ]
     },
     {
+      "id": "hens-certified",
+      "title": "Priya asks about three hens, then sends a certified question (Planning & Zoning)",
+      "persona": "Priya",
+      "turns": [
+        "Can I have three hens at 595 E 1400 N?",
+        "Send a certified question",
+        "I'm Priya Nair, 435-555-0118, priya@example.com."
+      ]
+    },
+    {
       "id": "casita",
       "title": "Ryan wants to build a casita for his mother",
       "persona": "Ryan",
@@ -66,50 +76,92 @@
     },
     {
       "id": "water-leak",
-      "title": "Sam reports water bubbling up by the meter (Utility Department)",
-      "persona": "Sam",
+      "title": "Priya has no water at home (Utility Department)",
+      "persona": "Priya",
       "turns": [
-        "Water is bubbling up out of the ground next to my water meter at 1105 N Canyon St. Who do I call?"
+        "We have no water at our house this morning.",
+        "I'm Priya Nair, 435-555-0118, at 595 E 1400 N. No water since about 7 this morning, and the neighbors are out too."
       ]
     },
     {
       "id": "pothole",
-      "title": "Grace reports a pothole on her street (Public Works)",
-      "persona": "Grace",
+      "title": "Marcus reports a pothole and marks it on the map (Public Works)",
+      "persona": "Marcus",
       "turns": [
-        "There is a huge pothole in the middle of Utah Avenue near Canyon Street and it is getting worse. Can the city fix it?"
+        "There's a big pothole on my street.",
+        "I'm Marcus Reed, 435-555-0126. It's near 345 E Jessop Ave, about two feet wide, and cars are swerving around it. It isn't blocking traffic."
       ]
     },
     {
       "id": "bike-theft",
-      "title": "Theo's bike was stolen off his porch (Police Department)",
-      "persona": "Theo",
+      "title": "Elena reports a stolen bike (Police Department)",
+      "persona": "Elena",
       "turns": [
-        "Someone took my bike off my front porch last night. Who do I report this to? It is not an emergency."
+        "Someone stole my bike from my carport last week. Nobody is in danger; I'd like to file a report.",
+        "I'm Elena Ruiz, 435-555-0133, at 455 E Jessop Ave. It happened overnight on October 28. A blue bike worth about $400. I don't know who took it."
       ]
     },
     {
       "id": "burn-permit",
-      "title": "Nadia asks about burning a brush pile (Fire Department)",
-      "persona": "Nadia",
+      "title": "Walt needs a burn permit for his brush pile (Fire Department)",
+      "persona": "Walt",
       "turns": [
-        "I have a big pile of tree branches in my back yard. Can I burn it, and do I need some kind of permit?"
+        "I have a big pile of tree branches in my back yard. Can I burn it, and do I need a permit?",
+        "Yes, please prepare it. I'm Walt Fisher, 435-555-0147, at 345 E Jessop Ave. Tree branches and brush, a pile about 3 feet across, on March 10. I'll have a hose ready, and it's 40 feet from the house."
       ]
     },
     {
       "id": "pavilion",
-      "title": "Lena wants to reserve the park pavilion (Parks and Recreation)",
+      "title": "Lena reserves a park pavilion (Parks and Recreation)",
       "persona": "Lena",
       "turns": [
-        "I want to reserve the pavilion at the city park for my daughter's birthday party on a Saturday in November. How do I do that?"
+        "I want to reserve a park pavilion for my daughter's birthday party. How much is it?",
+        "Yes, please prepare it. I'm Lena Ortiz, 435-555-0151. Maxwell Park pavilion, Saturday June 6, 11 am to 3 pm, 25 people, a birthday party, no extras."
       ]
     },
     {
       "id": "inspection",
-      "title": "Omar needs to schedule a framing inspection (Building Department)",
+      "title": "Omar schedules a framing inspection (Building Department)",
       "persona": "Omar",
       "turns": [
-        "My contractor finished the framing on our garage addition and we have a building permit already. How do I schedule the framing inspection?"
+        "My contractor finished the framing on our garage and we have a building permit. How do I schedule the framing inspection?",
+        "Yes, please schedule it. I'm Omar Haddad, 435-555-0162. The job site is 455 E Jessop Ave, permit B-2026-114, framing inspection, next Tuesday, and I'll be on site."
+      ]
+    },
+    {
+      "id": "police-standby",
+      "title": "Rosa asks for police standby at a festival (Police Department)",
+      "persona": "Rosa",
+      "turns": [
+        "We need police standby at our community festival.",
+        "I'm Rosa Kim, 435-555-0171, with the Harvest Committee. The Harvest Festival at 345 E Jessop Ave, May 15, 10 am to 6 pm, about 300 people, no alcohol. We need officers for crowd and traffic."
+      ]
+    },
+    {
+      "id": "fire-alarm",
+      "title": "Ben schedules a fire alarm inspection (Fire Department)",
+      "persona": "Ben",
+      "turns": [
+        "I need to schedule a fire alarm inspection for my building.",
+        "I'm Ben Carter, 435-555-0183. Carter Hardware at 455 E Jessop Ave, annual inspection, alarm company is Canyon Alarm, any day next week."
+      ]
+    },
+    {
+      "id": "water-bill",
+      "title": "Ivy asks why her water bill doubled (Utility Department)",
+      "persona": "Ivy",
+      "turns": [
+        "Why is my water bill so high this month? And what happens if I pay it late?",
+        "Yes, please send it to billing. I'm Ivy Tran, 435-555-0194, service address 345 E Jessop Ave. My question is why my October bill doubled."
+      ]
+    },
+    {
+      "id": "records",
+      "title": "Noah requests city records (City Recorder)",
+      "persona": "Noah",
+      "turns": [
+        "How do I ask for copies of city records?",
+        "Yes, please prepare it. I'm Noah Bell, 435-555-0105, mailing address 345 E Jessop Ave. I want the 2025 city budget."
       ]
     }
   ]

@@ -16,6 +16,7 @@ const { createTools } = require("../../lib/tools");
 const { openStore } = require("../../lib/store");
 const { createClient } = require("../../lib/meta");
 const { runTurn } = require("../../lib/desk");
+const { loadServices, createServiceTools } = require("../../lib/services");
 const review = require("../../lib/review");
 
 const HAVE_KEY = !!process.env.MODEL_API_KEY;
@@ -37,7 +38,9 @@ if (HAVE_KEY) {
       usage.c += u.completion_tokens;
     },
   });
-  ctx = { store, client, town, code, gis, tools, model: process.env.META_MODEL || "muse-spark-1.3" };
+  const services = loadServices(town);
+  const deskTools = [...tools.filter((t) => ["search_code", "get_section", "lookup_parcel"].includes(t.name)), ...createServiceTools(services)];
+  ctx = { store, client, town, code, gis, tools, services, deskTools, model: process.env.META_MODEL || "muse-spark-1.3" };
 }
 test.after(() => {
   if (HAVE_KEY) console.log(`live usage: ${usage.calls} calls, ${usage.p} in / ${usage.c} out tokens`);
@@ -77,8 +80,10 @@ for (const sc of fixtures) {
     if (e.standards_not_met_any) assert.ok(r.standards.some((x) => x.status === "does_not_meet"), "a standard should be does_not_meet: " + JSON.stringify(r.standards));
     if (e.path_if_blocked_mentions) assert.ok(e.path_if_blocked_mentions.some((w) => (r.path_if_blocked + r.process_explanation).includes(w)), `path/process should mention ${e.path_if_blocked_mentions}: ${r.path_if_blocked}`);
     assert.ok(r.applicable_sections.some((x) => x.quote_verified), "at least one verified quote: " + JSON.stringify(r.applicable_sections.map((x) => [x.section, x.quote_verified, x.quote_rejected])));
-    assert.ok(s.packet && s.packet.documents.length >= 1, "a packet document exists");
-    console.log(`  [${sc.id}] ${s.department} / ${s.understanding.request_kind} / ${r.use_status} / tier ${r.process_tier} / apps ${r.required_applications.join("+") || "-"} / parcel ${s.parcel ? s.parcel.id + " " + s.parcel.zone : "none"} / ${r.tool_log.length} tool calls / packet ${s.packet.packet_type}`);
+    // A plain question gets information and the offer of a certified question; anything else gets paperwork.
+    const offered = desk.some((m) => (m.quick_replies || []).includes("Send a certified question"));
+    assert.ok(offered || (s.packet && s.packet.documents.length >= 1), "a packet document exists, or a certified question is offered");
+    console.log(`  [${sc.id}] ${s.department} / ${s.understanding.request_kind} / ${r.use_status} / tier ${r.process_tier} / apps ${r.required_applications.join("+") || "-"} / parcel ${s.parcel ? s.parcel.id + " " + s.parcel.zone : "none"} / ${r.tool_log.length} tool calls / packet ${s.packet ? s.packet.packet_type : "information only"}`);
   });
 }
 

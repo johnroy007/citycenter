@@ -41,6 +41,7 @@
       var st = el("td");
       st.appendChild(el("span", "status", "Public record"));
       if (r.license) st.appendChild(el("span", "status open", "Open license: " + r.license));
+      if (r.reuse) st.appendChild(el("div", "small", "Publisher's notice: " + r.reuse));
       tr.appendChild(st);
       tr.appendChild(el("td", null, r.how_used));
       body.appendChild(tr);
@@ -55,7 +56,7 @@
       var departments = [];
       svcs.forEach(function (v) { if (departments.indexOf(v.department) < 0) departments.push(v.department); });
       return {
-        government: s.government, title: s.title, url: s.url, kind: s.kind, license: s.license || "", how_used: s.how_used,
+        government: s.government, title: s.title, url: s.url, kind: s.kind, license: s.license || "", reuse: s.reuse || "", how_used: s.how_used,
         used_for: s.used_for || svcs.map(function (v) { return v.name; }).join(", "),
         departments: departments,
         departmentNames: departments.length ? departments.map(function (id) { return names[id] || id; }).join(", ") : "All departments",

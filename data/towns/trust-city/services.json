@@ -82,7 +82,11 @@
         "Building plans are complete enough to review.",
         "The contractor's license is on file, or the owner is building the work."
       ],
-      "sources": []
+      "sources": [
+        "src-01",
+        "src-02",
+        "src-03"
+      ]
     },
     {
       "id": "building_inspection",
@@ -155,7 +159,10 @@
         "The inspection type is the next one due.",
         "The requested date gives at least one working day of notice."
       ],
-      "sources": []
+      "sources": [
+        "src-04",
+        "src-05"
+      ]
     },
     {
       "id": "demolition_permit",
@@ -220,9 +227,10 @@
         }
       ],
       "procedure": [
-        "Have every utility shut off and capped by the utility provider.",
-        "Have older buildings checked for asbestos before work starts.",
-        "Submit the application and pay the fee.",
+        "Have every utility shut off and capped, and get a letter from the gas provider.",
+        "File the state air quality demolition notice, and have older buildings checked for asbestos.",
+        "Submit a site plan showing what comes down and what stays.",
+        "Say whether the foundation stays; a removed basement must be filled.",
         "Haul debris to an approved site; burning it on site is not an option.",
         "Call for a final inspection when the lot is cleared."
       ],
@@ -233,7 +241,11 @@
         "An asbestos check is on file for older buildings.",
         "A debris disposal site is named."
       ],
-      "sources": []
+      "sources": [
+        "src-06",
+        "src-07",
+        "src-08"
+      ]
     },
     {
       "id": "utility_new_service",
@@ -297,19 +309,23 @@
         }
       ],
       "procedure": [
-        "Give at least two working days' notice.",
-        "Provide photo identification; renters also show a lease.",
+        "Give at least three working days' notice.",
+        "Bring photo identification; a new owner also shows closing papers.",
         "Staff read the meter on the start or stop date.",
-        "The first or final bill is sent to the address on the account."
+        "Give a forwarding address for the final bill."
       ],
-      "timing": "Service usually starts or stops within two working days.",
-      "fees": "Deposits and reconnect charges come from the fee schedule.",
+      "timing": "Service usually starts or stops within three working days.",
+      "fees": "Sample deposit: $100, which may be waived with a good payment history. Reconnect charges come from the fee schedule.",
       "review_points": [
         "No delinquent debt to the city is on the applicant's record.",
         "Proof of identity and of occupancy is on file.",
         "The date gives enough notice."
       ],
-      "sources": []
+      "sources": [
+        "src-09",
+        "src-10",
+        "src-11"
+      ]
     },
     {
       "id": "utility_billing",
@@ -375,8 +391,8 @@
       ],
       "procedure": [
         "Billing staff pull the account and meter reads.",
-        "A high bill is checked against past use, and a re-read of the meter can be requested.",
-        "If a leak is the cause, staff explain the sample leak adjustment: a repaired leak may qualify for a one-time credit with a plumber's receipt.",
+        "A high bill is compared with past use, and the meter can be read again.",
+        "Sample leak adjustment: for a hidden leak on your side of the meter, apply within 30 days of the due date with repair receipts. Toilets, faucets and pools do not qualify, and it is limited to once in 24 months.",
         "Staff write back with what they found."
       ],
       "timing": "Staff usually answer within 3 working days.",
@@ -386,7 +402,11 @@
         "Recent meter reads were compared with past use.",
         "If a leak is claimed, proof of repair is on file."
       ],
-      "sources": []
+      "sources": [
+        "src-12",
+        "src-13",
+        "src-14"
+      ]
     },
     {
       "id": "utility_outage",
@@ -459,7 +479,10 @@
         "The kind of problem is clear.",
         "Anything urgent was passed to the on-call crew."
       ],
-      "sources": []
+      "sources": [
+        "src-15",
+        "src-16"
+      ]
     },
     {
       "id": "hydrant_flow_test",
@@ -521,10 +544,11 @@
         }
       ],
       "procedure": [
-        "Only city crews open a hydrant; no one else may operate one.",
-        "Staff pick the test and flow hydrants and schedule a date.",
-        "Crews run the test and record static, residual and flow readings.",
-        "The results are sent in writing."
+        "Only city crews operate a hydrant, or a city employee witnesses the test.",
+        "If the city has recent flow data near the site, staff may send that instead of running a new test.",
+        "Otherwise staff pick the test and flow hydrants and schedule a date.",
+        "The crew records static, residual and flow readings.",
+        "Results are sent in writing. A map or site plan helps staff find the connection."
       ],
       "timing": "Tests are usually scheduled within 10 working days, outside peak water use.",
       "fees": "A test fee comes from the fee schedule.",
@@ -533,7 +557,10 @@
         "The purpose is stated.",
         "The date avoids peak water use and any water restriction."
       ],
-      "sources": []
+      "sources": [
+        "src-17",
+        "src-18"
+      ]
     },
     {
       "id": "road_hazard",
@@ -606,7 +633,10 @@
         "The hazard is clear enough for a crew to find.",
         "Anything dangerous has been flagged."
       ],
-      "sources": []
+      "sources": [
+        "src-19",
+        "src-20"
+      ]
     },
     {
       "id": "street_light",
@@ -666,7 +696,10 @@
         "The pole can be identified.",
         "It is known who owns the light."
       ],
-      "sources": []
+      "sources": [
+        "src-21",
+        "src-16"
+      ]
     },
     {
       "id": "storm_drain",
@@ -730,7 +763,9 @@
         "The drain can be found from the pin.",
         "Any dumping was passed to Code Enforcement."
       ],
-      "sources": []
+      "sources": [
+        "src-24"
+      ]
     },
     {
       "id": "right_of_way_permit",
@@ -801,19 +836,22 @@
       ],
       "procedure": [
         "Submit the written, signed application with the size and purpose of the work.",
-        "Show proof of insurance and a traffic control plan.",
+        "Show a state contractor license, a bond, proof of insurance and a traffic control plan.",
         "Call 811 to have utilities marked before digging.",
         "Keep safe passage and proper signs in place while working.",
         "Call for an inspection before backfilling and paving."
       ],
       "timing": "Review usually takes about 5 working days.",
-      "fees": "A permit fee and any deposit come from the fee schedule.",
+      "fees": "Sample: $250 for a cut in pavement, plus a $10,000 bond.",
       "review_points": [
         "The application is written and signed, with the size of the excavation.",
         "A traffic control plan follows the signing standard the code names.",
         "Insurance is on file."
       ],
-      "sources": []
+      "sources": [
+        "src-22",
+        "src-23"
+      ]
     },
     {
       "id": "police_report",
@@ -873,10 +911,10 @@
         }
       ],
       "procedure": [
-        "This form is for past events with no danger now. Anything happening right now is a 911 call.",
+        "This form is only for past events with no danger now, inside city limits. Anything happening right now is a 911 call.",
+        "It fits minor matters with no suspect and no evidence to collect: lost property, minor theft, minor vandalism.",
         "An officer reads the report and may call you.",
-        "A report with a known suspect, or a crime against a person, is handled by an officer in person.",
-        "You get a report number once it is accepted."
+        "If there is a known suspect, or a crime against a person, an officer handles it directly."
       ],
       "timing": "An officer usually reviews reports within 3 working days.",
       "fees": "",
@@ -885,7 +923,10 @@
         "It happened inside the city.",
         "No known suspect or crime against a person means this form fits; otherwise an officer follows up."
       ],
-      "sources": []
+      "sources": [
+        "src-32",
+        "src-33"
+      ]
     },
     {
       "id": "police_records",
@@ -951,18 +992,22 @@
       ],
       "procedure": [
         "Describe the record clearly enough for staff to find it.",
-        "Show identification when you pick up the record.",
+        "Say how you are connected to the case; victims and their representatives may have added rights.",
         "Staff review the record under the state's records law; parts may be withheld.",
         "If the request is denied, the letter explains how to appeal."
       ],
       "timing": "State law generally gives a government office up to 10 working days to respond.",
-      "fees": "Copy costs come from the fee schedule.",
+      "fees": "Sample: $15 for each police or accident report. Other costs come from the fee schedule.",
       "review_points": [
         "The record is described clearly.",
         "The requester's connection to the case is stated.",
         "Any part withheld is identified under the records law."
       ],
-      "sources": []
+      "sources": [
+        "src-25",
+        "src-26",
+        "src-27"
+      ]
     },
     {
       "id": "police_standby",
@@ -1034,21 +1079,24 @@
         }
       ],
       "procedure": [
-        "Apply at least 14 days before the event.",
-        "The Chief decides how many officers are needed, or whether any are available.",
-        "The event host pays for officer time at the posted rate.",
+        "Apply at least 10 days before the event.",
+        "The Chief decides how many officers are needed, and whether any are available.",
+        "The event host pays for officer time, with a two-hour minimum.",
         "A parade or anything on a street also needs a city permit.",
         "Officers follow police rules at all times, not the host's instructions."
       ],
-      "timing": "Apply at least 14 days ahead; staff usually answer within 5 working days.",
-      "fees": "Officers are billed by the hour with a sample minimum of 3 hours; see the fee schedule.",
+      "timing": "Apply at least 10 days ahead; staff usually answer within 5 working days.",
+      "fees": "Sample rate: $90 an hour per officer, two-hour minimum, more on holidays.",
       "review_points": [
-        "The request arrived at least 14 days ahead.",
+        "The request arrived at least 10 days ahead.",
         "Attendance, alcohol and hours are stated.",
         "Any needed event or parade permit is noted.",
         "Officer availability has been checked."
       ],
-      "sources": []
+      "sources": [
+        "src-28",
+        "src-29"
+      ]
     },
     {
       "id": "police_house_watch",
@@ -1109,17 +1157,20 @@
         }
       ],
       "procedure": [
-        "Officers drive by or walk around as patrol time allows.",
+        "Officers check the home as patrol time allows.",
         "A check is not a guarantee of protection.",
         "Tell the department if you come home early."
       ],
-      "timing": "Requests should arrive at least 2 days before you leave. Sample limit: 30 days.",
-      "fees": "",
+      "timing": "Requests should arrive at least 48 hours before you leave.",
+      "fees": "No charge.",
       "review_points": [
-        "The dates are clear and within the limit.",
-        "An emergency contact is listed."
+        "The dates are clear.",
+        "A local contact is listed."
       ],
-      "sources": []
+      "sources": [
+        "src-30",
+        "src-31"
+      ]
     },
     {
       "id": "fire_alarm_inspection",
@@ -1182,9 +1233,9 @@
         }
       ],
       "procedure": [
-        "New or changed systems need approved plans before work starts.",
-        "The alarm contractor tests the system first.",
-        "A technician must be present for the inspection.",
+        "New or changed systems need approved plans and a permit before work starts.",
+        "The alarm contractor tests the system first, and a state-licensed technician attends the inspection.",
+        "Request the inspection at least two working days ahead.",
         "The Fire Marshal witnesses the test and records the result.",
         "Tell the monitoring company before a test so no false alarm is sent."
       ],
@@ -1196,7 +1247,11 @@
         "Plans are on file for a new or changed system.",
         "The monitoring company has been told."
       ],
-      "sources": []
+      "sources": [
+        "src-34",
+        "src-35",
+        "src-36"
+      ]
     },
     {
       "id": "burn_permit",
@@ -1265,21 +1320,25 @@
         }
       ],
       "procedure": [
-        "Only clean yard and ditch waste may be burned: no trash, tires, or construction waste.",
-        "Check the burn day status before lighting; burning stops on days with poor air or high wind.",
-        "An adult stays with the fire with water or tools at hand until it is fully out.",
-        "Sample seasons: state rules generally close open burning for part of the year, so ask about current dates.",
-        "The department can cancel a permit at any time."
+        "Only clean yard and ditch waste may be burned: no trash, tires, oil or construction waste.",
+        "A permit is good for one day; ask for a new one for each day of burning.",
+        "Sample burn window: November 1 through May 31. The state's closed fire season runs June 1 to October 31, and poor air or dry, windy weather can stop burning on any day.",
+        "Keep piles small and at least 25 feet from buildings, with a charged hose ready.",
+        "An adult stays with the fire the whole time. Burn in daylight and have it out by sunset.",
+        "Whoever lights a fire pays the costs if it escapes."
       ],
       "timing": "Staff usually answer within 2 working days and may visit the site first.",
-      "fees": "",
+      "fees": "No charge in this sample.",
       "review_points": [
         "The material is allowed to be burned.",
         "The date is in an open burn period.",
         "Distances from buildings and fences are safe.",
         "Water or tools will be on hand."
       ],
-      "sources": []
+      "sources": [
+        "src-37",
+        "src-38"
+      ]
     },
     {
       "id": "fire_info_request",
@@ -1337,18 +1396,24 @@
         }
       ],
       "procedure": [
-        "Describe the record or data you want.",
+        "Describe the record or data you want, with dates and the address or area.",
         "Staff pull it from department records.",
-        "Records are reviewed under the state's records law; medical details are withheld.",
-        "Trust City has no real response data: any figures here would be samples."
+        "Records are reviewed under the state's records law, and medical details are withheld.",
+        "Fire agencies usually report response times at the 90th percentile: nine out of ten calls were answered at least that fast.",
+        "Trust City is an example city, so it has no real incident or response data to give."
       ],
       "timing": "State law generally gives a government office up to 10 working days to respond.",
-      "fees": "Copy costs come from the fee schedule.",
+      "fees": "Sample: $20 for each incident report.",
       "review_points": [
         "The record or data is described clearly.",
         "Private or medical details are withheld."
       ],
-      "sources": []
+      "sources": [
+        "src-39",
+        "src-40",
+        "src-41",
+        "src-42"
+      ]
     },
     {
       "id": "fireworks_display",
@@ -1393,6 +1458,10 @@
           "auto": "location"
         },
         {
+          "label": "Site diagram ready?",
+          "required": true
+        },
+        {
           "label": "Date and time",
           "required": true
         },
@@ -1410,21 +1479,25 @@
         }
       ],
       "procedure": [
-        "Apply at least 30 days before the show.",
+        "Apply at least 21 days before the show.",
         "Only a state-licensed display operator may run it.",
-        "Show proof of insurance naming the city.",
+        "Attach proof of insurance and a scaled diagram of the site, with the firing point and where the crowd will be.",
         "The Fire Marshal inspects the site and the set-up.",
-        "Fire restrictions can cancel a permit."
+        "A fire restriction can cancel a permit."
       ],
-      "timing": "Apply at least 30 days ahead.",
-      "fees": "A permit fee comes from the fee schedule.",
+      "timing": "Apply at least 21 days ahead.",
+      "fees": "Sample: $75.",
       "review_points": [
         "The operator's license is on file.",
         "Insurance is on file.",
         "The site and safe distances have been reviewed.",
         "No fire restriction is in effect."
       ],
-      "sources": []
+      "sources": [
+        "src-43",
+        "src-44",
+        "src-45"
+      ]
     },
     {
       "id": "pavilion_reservation",
@@ -1490,21 +1563,23 @@
         }
       ],
       "procedure": [
-        "Reservations are first come, first served.",
-        "A deposit holds the date and is returned if the site is left clean.",
-        "Cancel at least 14 days ahead for a refund.",
+        "Book at least 7 days ahead; reservations are first come, first served.",
         "Parks close at dark unless the city gives a permit to stay.",
+        "Cancelling more than 5 days ahead costs $10 in this sample; 1 to 5 days ahead costs half the rental.",
         "Large groups or events open to the public may need a special event permit."
       ],
       "timing": "Staff usually confirm within 3 working days.",
-      "fees": "Sample rates: $40 for a half day, plus a $50 refundable deposit. Residents pay less than non-residents at many cities.",
+      "fees": "Sample weekday rates: half day $25 for residents, $40 for others; full day $50 for residents, $80 for others.",
       "review_points": [
         "The date is open.",
         "The group size fits the pavilion.",
         "The hours end by dark or a permit is requested.",
         "Extras are noted, and a special event permit is flagged if needed."
       ],
-      "sources": []
+      "sources": [
+        "src-46",
+        "src-47"
+      ]
     },
     {
       "id": "special_event",
@@ -1595,7 +1670,10 @@
         "Insurance is on file.",
         "Parade, street or vendor rules are covered."
       ],
-      "sources": []
+      "sources": [
+        "src-48",
+        "src-49"
+      ]
     },
     {
       "id": "recreation_signup",
@@ -1655,18 +1733,20 @@
         }
       ],
       "procedure": [
-        "Sign up before the deadline for the program.",
+        "Sign up before the program's deadline.",
         "A parent or guardian signs for anyone under 18.",
-        "Refunds are given before a program starts, minus a small processing charge."
+        "Sample refunds: if the city cancels, a full refund; before the deadline, the fee less $5; after the deadline but before teams form, less $10."
       ],
       "timing": "Staff usually confirm within 3 working days.",
-      "fees": "Program fees vary; sample programs run $25 to $60.",
+      "fees": "Fees are listed with each program.",
       "review_points": [
         "The program has space.",
         "The age fits the program.",
         "A guardian signed for anyone under 18."
       ],
-      "sources": []
+      "sources": [
+        "src-50"
+      ]
     },
     {
       "id": "code_complaint",
@@ -1727,12 +1807,12 @@
         }
       ],
       "procedure": [
-        "The officer reads the report and checks the site.",
-        "Reports are described as what was seen; only the officer finds whether a violation exists.",
-        "If there is one, the owner gets a notice and a chance to fix it first.",
-        "Your report is a government record; ask staff how the records law treats your name."
+        "Give the address, what you saw, where on the property, and how long it has gone on.",
+        "The officer checks the site. Only the officer finds whether a violation exists.",
+        "The owner usually gets a courtesy notice and a chance to fix it first.",
+        "You may ask to stay confidential or report without your name, but staff cannot update you or ask follow-up questions if they cannot reach you. Ask staff how the records law treats your name."
       ],
-      "timing": "An officer usually checks the site within 5 working days.",
+      "timing": "An officer usually checks the site within 2 working days.",
       "fees": "",
       "review_points": [
         "The property is identified.",
@@ -1740,7 +1820,11 @@
         "The section that may apply is named.",
         "A site visit is scheduled."
       ],
-      "sources": []
+      "sources": [
+        "src-51",
+        "src-52",
+        "src-53"
+      ]
     },
     {
       "id": "animal_complaint",
@@ -1812,7 +1896,10 @@
         "Dates and times are given.",
         "Any bite was handled the same day."
       ],
-      "sources": []
+      "sources": [
+        "src-54",
+        "src-55"
+      ]
     },
     {
       "id": "dog_license",
@@ -1877,18 +1964,21 @@
         }
       ],
       "procedure": [
-        "Bring proof of rabies vaccination.",
-        "Pay the license fee.",
-        "Put the tag on the dog's collar."
+        "Dogs four months or older need a license.",
+        "Bring a current rabies vaccination certificate.",
+        "Pay the fee and put the tag on the dog's collar."
       ],
       "timing": "Licenses are usually issued the same day.",
-      "fees": "Fees are set under section 90-34 and the fee schedule.",
+      "fees": "Sample: $15 a year for a spayed or neutered dog, $35 otherwise. The real amounts are set under section 90-34 and the fee schedule.",
       "review_points": [
         "A vaccination certificate is on file.",
         "The dog is old enough to need a license.",
         "The fee is paid."
       ],
-      "sources": []
+      "sources": [
+        "src-54",
+        "src-55"
+      ]
     },
     {
       "id": "public_records_request",
@@ -1962,7 +2052,11 @@
         "The requester's name and address are present.",
         "Any denial explains the appeal right."
       ],
-      "sources": []
+      "sources": [
+        "src-56",
+        "src-57",
+        "src-58"
+      ]
     },
     {
       "id": "business_license",
@@ -2040,7 +2134,10 @@
         "State registration is on file.",
         "Inspections are noted."
       ],
-      "sources": []
+      "sources": [
+        "src-59",
+        "src-60"
+      ]
     },
     {
       "id": "public_meetings",
@@ -2104,7 +2201,11 @@
         "The meeting is identified.",
         "The request is sent to the right body."
       ],
-      "sources": []
+      "sources": [
+        "src-61",
+        "src-62",
+        "src-63"
+      ]
     }
   ]
 }

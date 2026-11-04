@@ -28,7 +28,7 @@
   }
   var STATUS_LABEL = { open: "Talking", ready: "Ready (not submitted)", referred: "Referred", submitted: "Submitted", needs_info: "Needs info", in_review: "Forwarded", answered: "Answered", error: "Error" };
   var STATE_LABEL = { not_started: "Not reviewed", met: "Approved", not_met: "Denied", cannot_verify: "Needs info", not_applicable: "N/A", staff_note: "Comment" };
-  var DECISION_LABEL = { request_info: "Incomplete: ask for the missing items", accept_complete: "Complete: forwarded to the deciding body", answer: "Answer letter (from your comments)", refer: "Belongs with another department" };
+  var DECISION_LABEL = { request_info: "Incomplete: ask for the missing items", accept_complete: "Complete: forwarded to the deciding body", answer: "Answer letter (from your comments)", refer: "Belongs with another department", certified_yes: "Certified answer: confirmed", certified_no: "Certified answer: not as stated" };
   var town = null, current = null, activeId = null, step = 1, queueRows = [], qMode = "full", letterTimer = null, generating = false;
 
   function drawingWithOutline(src, reading) {
@@ -314,7 +314,7 @@
     } else {
       pane.appendChild(el("h3", { text: "Basic facts" }));
       var ftb = el("tbody");
-      var isSvc = current.packet && current.packet.packet_type === "service_request";
+      var isSvc = current.packet && ["service_request", "certified_question"].includes(current.packet.packet_type);
       (isSvc ? [["Name", "applicant_name"], ["Request type", "application_type"], ["Location", "property_address"], ["Request", "proposed_use"]] : [["Name of applicant", "applicant_name"], ["Application type", "application_type"], ["Address of property", "property_address"], ["Existing zone", "existing_zone"], ["Requested zoning", "requested_zoning"], ["General Plan designation", "general_plan_designation"], ["Proposed use", "proposed_use"]]).forEach(function (row) {
         var v = sum.facts[row[1]] || "not stated";
         ftb.appendChild(el("tr", null, [el("th", { text: row[0] }), el("td", { class: /^not (stated|available)/i.test(v) ? "blank" : "", text: v })]));
@@ -633,7 +633,8 @@
     var kindRow = el("div", { class: "row", style: "margin:8px 0" }, [el("label", { class: "small", text: "Kind of letter" })]);
     var sel = el("select", { id: "letterKind" });
     sel.appendChild(el("option", { value: "", text: "From your review: " + (DECISION_LABEL[auto.decision] || auto.decision) + " (" + (auto.why || "") + ")" }));
-    Object.keys(DECISION_LABEL).forEach(function (k) { sel.appendChild(el("option", { value: k, text: DECISION_LABEL[k] })); });
+    var cq = current.packet && current.packet.packet_type === "certified_question";
+    Object.keys(DECISION_LABEL).filter(function (k) { return cq ? ["certified_yes", "certified_no", "request_info", "refer"].includes(k) : !/^certified_/.test(k); }).forEach(function (k) { sel.appendChild(el("option", { value: k, text: DECISION_LABEL[k] })); });
     sel.value = L.decision_auto ? "" : (L.decision || "");
     kindRow.appendChild(sel);
     pane.appendChild(kindRow);
@@ -656,7 +657,7 @@
     upd.addEventListener("click", function () { if (L.edited) $("updateDialog").classList.remove("hidden"); else generateLetter("regenerate", sel.value); });
     var send = el("button", { type: "button", text: L.sent_at ? "Send again to the resident" : "Send to the resident" });
     send.addEventListener("click", async function () {
-      if (!confirm("Send this letter to the resident's conversation? Its status will change to " + ({ request_info: "needs info", accept_complete: "forwarded", answer: "answered", refer: "referred" }[sel.value || L.decision] || "the same") + ".")) return;
+      if (!confirm("Send this letter to the resident's conversation? Its status will change to " + ({ request_info: "needs info", accept_complete: "forwarded", answer: "answered", certified_yes: "answered", certified_no: "answered", refer: "referred" }[sel.value || L.decision] || "the same") + ".")) return;
       send.disabled = true;
       try { clearTimeout(letterTimer); await api("/api/staff/sessions/" + current.ref + "/letter", { method: "POST", body: JSON.stringify({ subject: subj.value, body: body.value, decision: sel.value || L.decision }) }); $("wsMsg").textContent = "Sent."; await loadQueue(); openSession(current.ref, true); }
       catch (e) { $("wsMsg").textContent = e.message; send.disabled = false; }

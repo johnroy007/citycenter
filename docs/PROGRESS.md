@@ -11,7 +11,7 @@
 - **Last updated:** 2026-11-04 by Claude Code on John's laptop (computer name John): session wrapped up. All code is committed, pushed and deployed.
 
 ## RESUME POINT
-**Video re-edit in progress (2026-11-04, deadline tonight 9 PM ET = 6 PM on the laptop's Pacific clock).** John moved the Meta models section to just before the last card (done in `video/scenes.js`, not yet in a finished video) and asked for help weighing outside feedback before the rebuild. The feedback asks for three things: a line saying who built this, one measured result on a card, and an earlier demo. Do not rebuild until John answers the questions in the 2026-11-04 video feedback log entry below. The video in Downloads does not have the move yet. Rebuild steps are in the next paragraph but one.
+**Video re-edit in progress (2026-11-04, deadline tonight 9 PM ET = 6 PM on the laptop's Pacific clock).** John's decisions so far: no recording of his own voice and no who-built-this line in the video (the original plan stands); do not shorten the trust story; the female voice stays on the judge-facing parts (`built`, `models`), which is how `video/scenes.js` already is. Still open: the measured test and card (yes or no), and removing the looser quote check (John asked what it would do; answered in chat). A small sample-resident label was proposed and not objected to. After those answers: deploy if code changed, re-record on the new message box layout, rebuild, copy to Downloads. The video in Downloads does not have the models move yet.
 
 **Start here:** ask John whether he has submitted (deadline 2026-11-04, 9 PM ET). If not, help with the submission wording first: redraft `notes/submission-draft.md` in the private notebook so it matches the live site (it still calls Trust City a "stand-in" and omits the department desks, certified questions, phone app, sketch pad and site plan). Add no features before the submission; after it, ship nothing to the live site until the vote closes on 2026-11-16 unless John says so, because judges must be able to tell what was built during the event. The Q&A tab on `/about` is a placeholder John will fill in. The demo video shows only Planning and the old bottom input bar; it is still truthful, so it does not need re-recording. The corrected video is in John's Downloads.
 
@@ -20,7 +20,8 @@ If the app changes again before the deadline: deploy with `npm run deploy`, re-r
 How the hosting works: the app calls Meta directly from Render. Do not turn the relay back on without asking Meta (see AGENTS.md). Deploys after a push need `npm run deploy`. Change Render settings by editing `.env.render-vars.local` and running `node scripts/render-env.js --file .env.render-vars.local`.
 
 ## Waiting on John
-- **Video feedback decisions (today):** check the eligibility thread in Discord; choose the wording of the who-built-this line and record it; say yes or no to the measured test; say how far to shorten the trust story. See the 2026-11-04 video feedback log entry.
+- **Video decisions (today):** say yes or no to the measured test and to removing the looser quote check. See the 2026-11-04 video feedback log entry.
+- **Eligibility:** check the Discord thread today. The new public Problem Statement page says "former City Manager and current community developer".
 - **Print one site plan and check the scale bar with a ruler** (it should measure exactly 1 inch). The print file measured true, but no physical printer has been tried.
 - **Try the app on a real phone:** the microphone, installing it, and drawing with a finger. All phone testing so far was in Chrome's phone emulation.
 - **Say whose voice is in `video/turn1.wav`.** It is in the public repo. If John doesn't want it there, remove it, knowing it stays in the repo's history.
@@ -87,6 +88,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 - Prices for Muse Spark/Wonder are unconfirmed (Meta's pricing page 404'd). Observed: a full resident run is about 20k input / 6k output tokens (7 calls); a staff pre-review about 12 tool calls. Check the Billing page after the first day.
 
 ## Log
+
+### 2026-11-04 — Claude Code on John's laptop (John) — Problem Statement tab
+Added a Problem Statement link to the top bar on the resident, staff and Information pages. It replaces the Trust Gap link. The new page at `/problem-statement` shows John's statement with the Trust Gap Model below it; `/trust-gap` still works and opens the same page. The robot now hides the new link in the video. 59 of 59 unit tests pass, checked by screenshot on desktop and at phone width, deployed, and live checked (commit 8e0e11d).
+John's text was cleaned for spelling. Three wording changes for accuracy, told to John: "the city's own form" became "city-style application" (AGENTS.md: our layout, not the city's real form); "every requirement quoted exactly from the code" became "the requirements quoted from the code" (14 of 134 saved staff review points had no quote); "open source and public record" became "public record".
 
 ### 2026-11-04 — Claude Code on John's laptop (John) — video feedback, models section moved
 John moved the models section to right before the last card: the order is now built, the story, the demo, line, models, close (`video/scenes.js`, README updated, draft of those four scenes builds). It keeps the second voice for now. Nothing rebuilt or uploaded.

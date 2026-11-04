@@ -80,7 +80,7 @@ async function buildScene(sc, d, idx) {
     base = "base";
     if (sc.title) overlays.push({ file: await overlay({ mode: "title", text: sc.title }, path.join(dir, "title.png")), a: 0.7, b: d - 0.25 });
   } else if (sc.card) {
-    const spec = sc.card === "close" ? { mode: "close", bg: "file:///" + path.join(HERE, "..", "public", "office", "office-bg.webp").replace(/\\/g, "/") } : sc.card === "models" ? { mode: "models", rows: sc.rows.map((r) => [r.model, r.text]), reveal: 0 } : { mode: sc.card, decide: "Only real City Officials can make decisions." };
+    const spec = sc.card === "close" ? { mode: "close", bg: "file:///" + path.join(HERE, "..", "public", "office", "office-bg.webp").replace(/\\/g, "/") } : sc.card === "models" ? { mode: "models", rows: sc.rows.map((r) => [r.model, r.text]), reveal: 0 } : sc.card === "result" ? { mode: "result", head: sc.head, stats: sc.stats, note: sc.note } : { mode: sc.card, decide: "Only real City Officials can make decisions." };
     const png = await overlay(spec, path.join(dir, "card.png"));
     if (sc.card === "models") {
       // Light up each model's row as the voice says its name (timed by where the name falls in the narration).
@@ -118,6 +118,7 @@ async function buildScene(sc, d, idx) {
     base = "base";
   }
 
+  if (sc.tag) overlays.push({ file: await overlay({ mode: "tag", text: sc.tag }, path.join(dir, "tag.png")), a: 0.2, b: d - 0.1 });
   for (const c of (sc.callouts || []).filter((c) => c.at < d - 1)) {
     const name = "callout-" + (c.model + "-" + c.text).replace(/[^a-z0-9]+/gi, "-").slice(0, 60) + ".png";
     overlays.push({ file: await overlay({ mode: "callout", model: c.model, text: c.text }, path.join(dir, name)), a: c.at, b: Math.min(d - 0.1, c.at + c.dur) });

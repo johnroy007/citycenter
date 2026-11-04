@@ -7,7 +7,7 @@ The 3-minute submission video is built by scripts, from the real live site, so i
 1. **The problem (about 70 s).** John's opening: "Do you trust your government?" Most people meet government locally (about 91,000 local governments in the U.S., Census of Governments 2022: 90,837). Officials are elected neighbors, residents aren't bureaucrats, but fairness needs a heavy process; when the process is too hard it gets personal and trust breaks. CityCenter lets residents be residents and gives officials the tools to treat everyone the same. Illustrations made with Muse Image (`art/`).
 2. **The resident (about 50 s).** A lot-split visit with an invented resident, recorded on the live site: plain words, hand-off to Planning, parcel map, code with verified quotes, SAM 3.1 drawing outlines, a city-style form, signature, submit.
 3. **The staff (about 40 s).** The same application in the four-step workspace: what was submitted, the code, point-by-point review with Muse Wonder's second read, the return letter sent back.
-4. **The line, the models and the close (about 35 s).** The AI never recommends, predicts or rates; only real city officials decide. Then, in the second voice, a card of the five Meta models that lights up each one as it is named. Last, the live link and code link.
+4. **The line, the models and the close (about 35 s).** The AI never recommends, predicts or rates; only real city officials decide. Then, in the second voice, a card of measured results from `npm run test:live`, and a card of the five Meta models that lights up each one as it is named. Last, the live link and code link.
 
 Small labels at the top of the screen name the Meta model doing each job. Sped-up waiting shows a "▶▶ N× speed" badge, so nothing is hidden.
 

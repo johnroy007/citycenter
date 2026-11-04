@@ -90,6 +90,14 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — outlined lots, flag lots, AI checklist, Download and print
+John traced a closed loop around a strip and the back of 865 N Canyon St (TC-2026-0147) and the plan treated it as loose marks. Now:
+- **An outlined area is the new lot.** `newPart` in `lib/siteplan.js` drops the parts of a stroke that hug the lot lines, and the rest becomes the clean line. Lots are named Proposed new lot and Remaining lot; the line is Proposed new lot line. With no outline, the new lot is the part without the main building.
+- **Flag lots:** `flagShape` finds a narrow strip to the street with a wider lot behind it. The desk adds section 152-37-10 (`gis.flagLotSection` in the town config) with a verified quote, the plan shows the strip's size and the flag portion's area beside the code's 26 ft and 500 ft limits, read from the code's own sentence, and the reply says so. A building in the strip becomes a question.
+- **Checklist is the AI review** (`reviewChecklist` in `lib/desk.js`, stored as `packet.checklist`): it refreshes every turn, nothing can be ticked by hand, Application prepared is last and ticks only when everything above is done. Done means provided, never that it meets the code.
+- **Download and print** goes straight to the print window through a hidden frame; `/site-plan` has a Back button and links open in the same tab. On a phone it goes to `/site-plan`.
+Run with John's real marks on the live site (TC-2026-0153).
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — worked examples rebuilt
 20 examples in five groups by what they show (`group`, `shows` in `data/demo.json`): site plan from anything (map drawing, words, hand drawing, a drawing that doesn't match the parcel), reads the real code, three levels of help, guardrails (will I be approved, emergency, a drawing that gives orders), and one per department. Dropped: daycare, water leak, police standby, fire alarm. `draw` on an example makes the sketch pad draw by itself on the aerial map. All 20 played through the real desk on a local copy.
 Changes that came from those runs: a prediction question now gets a fixed answer from code, first in the reply (`predictionNote` in `lib/desk.js`). With a drawing, the plan is drawn before the code review, so its numbers are compared with the code. Lot-size questions stay until a line is actually drawn.

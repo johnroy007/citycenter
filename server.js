@@ -15,6 +15,8 @@ const { openStore } = require("./lib/store");
 const { createClient, MetaError } = require("./lib/meta");
 const { runTurn } = require("./lib/desk");
 const { missingRequired } = require("./lib/servicedesk");
+const siteplan = require("./lib/siteplan");
+const { zoneSetbacks } = require("./lib/tools");
 const review = require("./lib/review");
 const { validateImage } = require("./lib/sketch");
 const signature = require("./lib/signature");
@@ -163,6 +165,23 @@ function publicSession(s, { staff }) {
 // Who reads a submission, in a sentence's subject.
 const officeLine = (s) => (review.isService(s) ? review.officeOf(s, town) + " staff" : "The planning office");
 
+// ---------- concept site plan ----------
+function planFacts(s) {
+  const a = (s.understanding && s.understanding.applicant) || {};
+  return { city: town.name, title: (s.packet && s.packet.title) || "Concept site plan", applicant: a.name || "", address: s.parcel ? s.parcel.address : "", parcel: s.parcel ? s.parcel.id : "", zone: s.parcel && s.parcel.zone ? s.parcel.zone + (s.parcel.zoneName ? " · " + s.parcel.zoneName : "") : "", ref: s.ref, date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: town.timezone }), notice: town.wording.planNotice };
+}
+function planSetbacks(s) {
+  const cfg = s.parcel && s.parcel.zone ? town.zones[s.parcel.zone] : null;
+  const sec = cfg ? code.getSection(cfg.standardsSection) : null;
+  if (!sec) return null;
+  const z = zoneSetbacks(sec.text, s.parcel.zone);
+  if (z.front == null && z.rear == null && z.side == null) return null;
+  return { ...z, section: "section " + sec.id, note: z.skipped.length ? `The ${z.skipped.join(" and ")} setback for this zone isn't a single number, so it isn't drawn; see section ${sec.id}.` : "" };
+}
+function buildPlan(s, extraction, answers) {
+  return siteplan.build({ frame: () => siteplan.parcelFrame(gis, s.parcel), parcel: s.parcel, setbacks: planSetbacks(s), extraction, marks: s.sketch_marks, answers, facts: planFacts(s) });
+}
+
 function startTurn(ref) {
   runningTurns++;
   runTurn(ref, ctx)
@@ -170,6 +189,21 @@ function startTurn(ref) {
     .finally(() => {
       runningTurns--;
     });
+}
+
+/** What a browser may send about a pad sketch: plain numbers and short labels, nothing else. */
+function cleanMarks(m) {
+  if (!m || !Array.isArray(m.items) || m.items.length > 400) return null;
+  const pt = (p) => (Array.isArray(p) && p.length === 2 && p.every(Number.isFinite) ? [p[0], p[1]] : null);
+  const items = [];
+  for (const x of m.items) {
+    if (x.type === "label" && typeof x.text === "string" && Number.isFinite(x.x) && Number.isFinite(x.y)) items.push({ type: "label", text: x.text.slice(0, 40), x: x.x, y: x.y });
+    else if ((x.type === "box" || x.type === "line") && pt(x.a) && pt(x.b)) items.push({ type: x.type, a: pt(x.a), b: pt(x.b), dash: !!x.dash });
+    else if (x.type === "pen" && Array.isArray(x.pts)) items.push({ type: "pen", pts: x.pts.slice(0, 600).map(pt).filter(Boolean) });
+  }
+  const map = m.map;
+  const good = map && Number.isFinite(map.meters) && map.meters > 0 && Array.isArray(map.svg) && map.svg.length === 2 && map.svg.every((n) => Number.isFinite(n) && n > 0) && Array.isArray(map.box) && map.box.length === 4 && map.box.every(Number.isFinite) && map.box[2] > 0;
+  return { items, map: good ? { meters: map.meters, svg: map.svg, box: map.box } : null };
 }
 
 function parseImage(body, res) {
@@ -228,6 +262,7 @@ async function handle(req, res) {
   if (req.method === "GET" && p === "/trust-gap") return serveStatic(res, "trust-gap.html");
   if (req.method === "GET" && p === "/about") return serveStatic(res, "about.html");
   if (req.method === "GET" && p === "/offline") return serveStatic(res, "offline.html");
+  if (req.method === "GET" && p === "/site-plan") return serveStatic(res, "plan-print.html");
   if (req.method === "GET" && p === "/manifest.webmanifest") return serveStatic(res, "manifest.webmanifest");
   if (req.method === "GET" && p === "/sw.js") return serveStatic(res, "sw.js");
   if (req.method === "GET" && p === "/privacy") return serveStatic(res, "privacy.html");
@@ -323,7 +358,7 @@ async function handle(req, res) {
 
   // Resident: read, message, submit, sketch. The visit code is required for everything except the drawing and the
   // signature image, which the (open) staff workspace shows. Only the visit code can read or change a visit here.
-  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature|pin))?$/);
+  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature|pin|siteplan\.svg|siteplan\/answer|siteplan))?$/);
   if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
     let ref = decodeURIComponent(m[1]).trim();
@@ -337,7 +372,7 @@ async function handle(req, res) {
     if (!REF_RE.test(ref)) return sendError(res, 404, "No visit with that code.");
     const s = store.getSession(ref);
     if (!s) return sendError(res, 404, "No visit with that code.");
-    const staffPicture = req.method === "GET" && (action === "sketch" || action === "signature");
+    const staffPicture = req.method === "GET" && (action === "sketch" || action === "signature" || action === "siteplan.svg");
     if (!staffPicture && !(key && sec.constantTimeEqual(key, s.view_key))) return sendError(res, 403, "That visit code is not complete. It looks like " + town.refPrefix + "-2026-0107-xxxxxxxx: the reference plus the part after it.");
     if (req.method === "GET" && !action) {
       const sigCurrent = !!(s.signature && s.packet && s.signature.doc_hash === signature.docHash(s.packet));
@@ -396,10 +431,60 @@ async function handle(req, res) {
       if (sketch === false) return;
       if (text.length < 1 && !sketch) return sendError(res, 400, "Type a message or attach a drawing.");
       if (text.length > MAX_TEXT_CHARS) return sendError(res, 400, `Please keep each message under ${MAX_TEXT_CHARS} characters.`);
-      if (sketch) store.setSketch(ref, sketch);
+      if (sketch) {
+        store.setSketch(ref, sketch);
+        // A new drawing replaces the old plan. Pad sketches also send where each mark sits.
+        store.updateSession(ref, { site_plan: null, sketch_marks: cleanMarks(body.marks) });
+      }
       store.addMessage(ref, { role: "resident", text: text || "(attached a drawing)", has_sketch: !!sketch });
       startTurn(ref);
       return sendJson(res, 202, { ok: true });
+    }
+    if (req.method === "GET" && action === "siteplan.svg") {
+      if (!s.site_plan || !s.site_plan.plan) return notFound(res);
+      res.writeHead(200, { "Content-Type": "image/svg+xml; charset=utf-8", "Cache-Control": "no-store" });
+      return res.end(siteplan.renderSvg(s.site_plan.plan));
+    }
+    if (req.method === "POST" && action === "siteplan") {
+      // Draw the concept plan from the sketch. A pad sketch over the parcel map needs no reading; a paper one goes to Muse Spark.
+      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many requests. Please slow down.");
+      if (s.busy) return sendError(res, 409, "The desk is still working. Try again when it finishes.");
+      if (!s.has_sketch) return sendError(res, 400, "Draw or upload a sketch first.");
+      try {
+        let extraction = { lot: {}, structures: [], lines: [] };
+        if (!(s.sketch_marks && s.sketch_marks.map && s.parcel)) {
+          const reading = (s.steps.find((x) => x.name === "sketch") || {}).output;
+          extraction = await siteplan.extractPlan(client, { image: store.getSketch(ref), town, reading, messages: s.messages, parcel: s.parcel, model: MODEL });
+        }
+        const plan = buildPlan(s, extraction, {});
+        if (plan.error) return sendError(res, 400, plan.error);
+        store.updateSession(ref, { site_plan: { extraction, answers: {}, plan, created_at: new Date().toISOString() } });
+        store.addMessage(ref, { role: "desk", department: s.department || "front_desk", character: s.character, text: plan.open ? `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. ${plan.open} measurement question${plan.open > 1 ? "s need" : " needs"} your answer before it's final.` : `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. It is a concept, not a survey. Check the measurements marked ≈ and tell me if any are wrong.` });
+        return sendJson(res, 200, { ok: true, open: plan.open });
+      } catch (e) {
+        const [st, msg] = errorFrom(e);
+        if (st === 500) console.error(e);
+        return sendError(res, st, msg);
+      }
+    }
+    if (req.method === "POST" && action === "siteplan/answer") {
+      if (!s.site_plan) return sendError(res, 400, "There is no site plan yet.");
+      const body = await readJson(req, MAX_JSON_BYTES);
+      const conflict = (s.site_plan.plan.conflicts || []).find((c) => c.id === body.id);
+      if (!conflict) return sendError(res, 400, "That question is no longer open.");
+      const answers = JSON.parse(JSON.stringify(s.site_plan.answers || {}));
+      if (body.option === "number") {
+        const n = Number(body.value);
+        if (!conflict.edit || !Number.isFinite(n) || n < 0 || n > 5000) return sendError(res, 400, "Give a number of feet.");
+        answers.values = { ...(answers.values || {}), [conflict.edit.path]: n };
+      } else {
+        if (!(conflict.options || []).some((o) => o.id === body.option)) return sendError(res, 400, "Choose one of the answers.");
+        answers[conflict.id] = body.option;
+      }
+      const plan = buildPlan(s, s.site_plan.extraction, answers);
+      if (plan.error) return sendError(res, 400, plan.error);
+      store.updateSession(ref, { site_plan: { ...s.site_plan, answers, plan } });
+      return sendJson(res, 200, { ok: true, open: plan.open });
     }
     if (req.method === "POST" && action === "pin") {
       // The resident marked a spot on the map. The desk's next turn reads it like anything else they said.

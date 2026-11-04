@@ -215,3 +215,99 @@ test("the dashes of one dashed line become one outline; separate lines stay sepa
   assert.equal(line.x1, 100);
   assert.equal(line.x2, 180);
 });
+
+// ---------- the concept site plan ----------
+const siteplan = require("../../lib/siteplan");
+const { zoneSetbacks } = require("../../lib/tools");
+const facts = { city: "Trust City", title: "Test", ref: "TC-1", notice: town.wording.planNotice };
+const parcelOf = (address) => gis.locate({ address }).parcel;
+const planFor = (o) => siteplan.build({ frame: () => siteplan.parcelFrame(gis, o.parcel), facts, ...o });
+
+test("site plan: setbacks come from the right headings of the real tables, and odd values stay out", () => {
+  const t = (zone) => zoneSetbacks(code.getSection(town.zones[zone].standardsSection).text, zone);
+  assert.deepEqual([t("R1-10").front, t("R1-10").rear, t("R1-10").side, t("R1-10").street], [25, 20, 10, 20]);
+  assert.deepEqual([t("R1-8").front, t("R1-8").rear, t("R1-8").side], [25, 10, 10]);
+  const ra = t("RA-1");
+  assert.equal(ra.front, 25); assert.equal(ra.rear, 30);
+  assert.equal(ra.side, null, "'10 feet one side and 20 feet other side' is not one number");
+  assert.ok(ra.skipped.includes("interior side"));
+});
+
+test("site plan: the ruler test. Measuring the drawing gives back the feet", () => {
+  const plan = siteplan.build({ parcel: null, facts, extraction: { lot: { width_ft: 100, depth_ft: 120 }, lines: [], structures: [{ name: "House", status: "existing", width_ft: 40, depth_ft: 30, from_front_ft: 25, from_left_ft: 20, from_rear_ft: null, from_right_ft: null }] } });
+  assert.equal(plan.conflicts.length, 0);
+  const inch = siteplan.PER_INCH / plan.perFoot;
+  assert.equal(inch, plan.feetPerInch);
+  const s = plan.structures[0];
+  assert.equal(s.w, 40); assert.equal(s.d, 30);
+  assert.equal(Math.round(s.dist.front.value), 25);
+  assert.equal(Math.round(s.dist.left.value), 20);
+  assert.equal(Math.round(s.dist.rear.value), 65, "120 deep less 25 less 30");
+  assert.equal(Math.round(s.dist.right.value), 40, "100 wide less 20 less 40");
+  const svg = siteplan.renderSvg(plan);
+  assert.match(svg, /width="10in" height="7\.5in" viewBox="0 0 1000 750"/, "100 drawing units are one real inch");
+  const m = svg.match(/<path d="M([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)L[\d. L]+Z" fill="#e6ebf2"/);
+  assert.ok(m, "the house is drawn");
+  assert.equal(Math.round(((Number(m[3]) - Number(m[1])) / 100) * plan.feetPerInch), 40, "a ruler on the page reads 40 feet");
+  assert.match(svg, new RegExp("1 inch = " + plan.feetPerInch + " feet"));
+  assert.match(svg, /NOT A SURVEY/);
+  assert.match(svg, /no legal effect/);
+  assert.doesNotMatch(svg, /meets the|is compliant|approved/i);
+});
+
+test("site plan: numbers that can't all be true become questions, and answers settle them", () => {
+  const parcel = parcelOf("345 E Jessop Ave");
+  const extraction = { lot: { width_ft: 200, depth_ft: 110 }, lines: [], structures: [] };
+  let plan = planFor({ parcel, extraction });
+  const c = plan.conflicts.find((x) => x.id === "lot-size");
+  assert.ok(c && plan.open === 1, "22,000 sq ft against about 42,000 on the record");
+  assert.equal(plan.lotSource, "parcel");
+  plan = planFor({ parcel, extraction, answers: { "lot-size": "mine" } });
+  assert.equal(plan.open, 0);
+  assert.equal(plan.lotSource, "given");
+  assert.equal(Math.round(plan.area), 22000);
+  const tight = siteplan.build({ parcel: null, facts, extraction: { lot: { width_ft: 60, depth_ft: 100 }, lines: [], structures: [{ name: "Shop", status: "proposed", width_ft: 50, depth_ft: 20, from_left_ft: 20, from_right_ft: 20, from_front_ft: 10, from_rear_ft: null }] } });
+  assert.ok(tight.conflicts.some((x) => x.id === "fit-w-0"), "20 + 50 + 20 does not fit in 60");
+  const fixed = siteplan.build({ parcel: null, facts, answers: { values: { "s0.from_right_ft": null, "s0.from_left_ft": 5 } }, extraction: { lot: { width_ft: 60, depth_ft: 100 }, lines: [], structures: [{ name: "Shop", status: "proposed", width_ft: 50, depth_ft: 20, from_left_ft: 20, from_right_ft: 20, from_front_ft: 10, from_rear_ft: null }] } });
+  assert.ok(!fixed.conflicts.some((x) => x.id === "fit-w-0"));
+});
+
+test("site plan: a number counts as given only if the resident wrote it", () => {
+  const out = siteplan.keepStated({ lot: { width_ft: "100", depth_ft: "999" }, structures: [{ name: "House", width_ft: "40", depth_ft: "77", from_front_ft: "", from_rear_ft: "", from_left_ft: "", from_right_ft: "" }], proposed_lines: [] }, new Set(["100", "40"]));
+  assert.equal(out.lot.width_ft, 100);
+  assert.equal(out.lot.depth_ft, null, "the model's invented depth is dropped");
+  assert.equal(out.structures[0].width_ft, 40);
+  assert.equal(out.structures[0].depth_ft, null);
+});
+
+test("site plan: a pad sketch keeps exact positions, in feet, on the real lot", () => {
+  const parcel = parcelOf("345 E Jessop Ave");
+  // A map 200 m tall on a 1000 x 750 picture, shown on a 1200 x 900 canvas: 100 canvas pixels are 200/900*100 m.
+  const map = { meters: 100, svg: [1000, 750], box: [0, 0, 1200, 900] };
+  const feetPerPx = (200 / 900) * 3.28084;
+  const marks = { map, items: [{ type: "box", a: [560, 400], b: [640, 500] }, { type: "line", a: [450, 450], b: [750, 450], dash: true }, { type: "label", text: "Shed", x: 600, y: 450 }] };
+  const plan = planFor({ parcel, marks });
+  const shed = plan.structures[0];
+  assert.equal(shed.name, "Shed");
+  assert.ok(Math.abs(Math.hypot(shed.poly[1][0] - shed.poly[0][0], shed.poly[1][1] - shed.poly[0][1]) - 80 * feetPerPx) < 0.5, "drawn size comes through exactly");
+  assert.ok(Math.abs(plan.lines[0].len - 300 * feetPerPx) < 0.5);
+  assert.equal(plan.lines[0].proposed, true);
+  const label = planFor({ parcel, marks: { map, items: [{ type: "line", a: [450, 450], b: [750, 450], dash: true }, { type: "label", text: "Lot line, 500 ft", x: 600, y: 455 }] } });
+  assert.ok(label.conflicts.some((x) => /your label and drawing differ/.test(x.title)), "a label far from the drawn length is a question");
+});
+
+test("site plan: no schema or drawing gives a verdict", () => {
+  assert.doesNotMatch(JSON.stringify(prompts.SITE_PLAN_SCHEMA), /"recommend|"approve|"score"|complies|compliant/i);
+  const plan = siteplan.build({ parcel: null, facts, setbacks: { front: 25, rear: 20, side: 10, section: "section 152-13-4", note: "" }, extraction: { lot: { width_ft: 100, depth_ft: 120 }, lines: [], structures: [] } });
+  assert.equal(plan.setbacks.length, 4);
+  const words = siteplan.renderSvg(plan).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  assert.match(words, /not a finding that anything complies/);
+});
+
+test("site plan: printing goes through a page that fixes the size in real inches", () => {
+  const read = (f) => fs.readFileSync(path.join(__dirname, "..", "..", "public", f), "utf8");
+  assert.match(read("plan-print.css"), /@page \{ size: 11in 8\.5in/);
+  assert.match(read("plan-print.css"), /#plan \{[^}]*width: 10in; height: 7\.5in/);
+  assert.match(read("resident.js"), /\/site-plan\?ref=/);
+  assert.doesNotMatch(read("plan-print.html"), /style="/);
+});

@@ -430,3 +430,9 @@ button.pp-close { background: #fff; color: var(--ink); border-color: #fff; font-
 .pp-notch { position: absolute; left: 50%; top: 12px; width: 76px; height: 7px; margin-left: -38px; background: #3a4150; border-radius: 4px; }
 .pp-screen { display: block; width: 390px; height: 844px; border: 0; border-radius: 36px; background: #fff; }
 @media (max-width: 800px) { .pp-side { display: none; } }
+
+/* The concept site plan */
+.planimg { display: block; width: 100%; max-width: 760px; margin: 8px 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.plan-q .row { margin-top: 8px; }
+.plan-num { max-width: 190px; }
+.planprint { font-weight: 600; }

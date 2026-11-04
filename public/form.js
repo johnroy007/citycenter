@@ -125,10 +125,12 @@
     if (!(svc && svc.certified)) pg.appendChild(head("Attachments"));
     if (!(svc && svc.certified)) pg.appendChild(el("div", { class: "cbgrid" }, svc ? [
       checkbox("Photo or drawing", !!s.has_sketch),
+      checkbox("Concept site plan, to scale (not a survey)", !!s.site_plan),
       checkbox("Map showing the location", !!(s.pin || s.parcel)),
       checkbox("Record of the help desk conversation", true),
     ] : [
       checkbox("Site sketch or drawing", !!s.has_sketch),
+      checkbox("Concept site plan, to scale (not a survey)", !!s.site_plan),
       checkbox("Zoning map excerpt showing the parcel", !!s.parcel),
       checkbox("Record of the help desk conversation", true),
       checkbox("Code review with cited sections", !!s.research),

@@ -524,7 +524,8 @@
     "emergency": "If someone is in danger or this is happening right now, call 911. If you smell gas, leave the area first and call from outside. This help desk is not watched by a dispatcher and cannot send help. When everyone is safe, come back and I can help with the paperwork.",
     "exampleCity": "Trust City is an example city. Its city code and maps come from Hildale, Utah's public records; its procedures and forms are samples.",
     "letterNotice": "Trust City is an example city. This letter is a demonstration and has no legal effect anywhere.",
-    "askSketch": "A site sketch helps staff review this. Would you like to draw one here, or upload a drawing?"
+    "askSketch": "A site sketch helps staff review this. Would you like to draw one here, or upload a drawing?",
+    "planNotice": "Trust City is an example city. This plan is a demonstration and has no legal effect anywhere."
   },
   "notes": {
     "fictionalOwners": "Property owner information is public record; however, for demo purposes this program assigns fictional names as property owners. The production version would call public county records for ownership information.",

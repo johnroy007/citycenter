@@ -117,6 +117,7 @@
       background = new Image();
       background.onload = redraw;
       background.src = "/api/map/parcel/" + encodeURIComponent(opts.parcel.id) + ".svg?m=" + metersFor(opts.parcel) + (opts.phone ? "&phone=1" : "");
+      background.dataset.meters = String(metersFor(opts.parcel));
     }
 
     var cancel = el("button", { type: "button", class: "quiet", text: "Cancel" });
@@ -136,8 +137,14 @@
     cancel.addEventListener("click", close);
     use.addEventListener("click", function () {
       var image = { mime: "image/jpeg", base64: canvas.toDataURL("image/jpeg", 0.88).split(",")[1] };
+      // Over the parcel map, each mark's real position is known. That is what lets the site plan be exact.
+      var map = null;
+      if (useMap && background && background.naturalWidth) {
+        var s = Math.min(W / background.naturalWidth, H / background.naturalHeight), w = background.naturalWidth * s, h = background.naturalHeight * s;
+        map = { meters: Number(background.dataset.meters), svg: [background.naturalWidth, background.naturalHeight], box: [(W - w) / 2, (H - h) / 2, w, h] };
+      }
       close();
-      opts.onDone(image);
+      opts.onDone(image, { items: marks, map: map });
     });
     document.body.appendChild(overlay);
     redraw();

@@ -81,6 +81,10 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (JOHN) — concept site plan
+John asked for a site plan generated from a hand sketch, accurate to scale on paper though not survey accurate. `lib/siteplan.js` draws it in plain code from the parcel and the sketch. A pad sketch over the parcel map keeps exact positions; a paper sketch goes through Muse Spark, and numbers not actually written are dropped. Each measurement is marked given, parcel record or estimated. Arithmetic conflicts become questions the resident answers. The zone's setback lines are read from the real table headings; non-numeric ones (such as RA-1's "10 feet one side and 20 feet other side") are left out with a note.
+It is deliberately not the formal site plan in 152-7-10, which needs a Utah professional engineer's stamp, contours and utility plans. Parcel lines are approximate, and their accuracy has not been measured.
+
 ### 2026-11-04 — Claude Code on John's laptop (JOHN) — site sketch pad, phone preview, directory
 John asked for on-screen drawing, a phone preview button for desktop, and a small directory of desks.
 - **Sketch pad** (`public/sketchpad.js`): pen, line, dashed "New line", box, label, undo and clear, on a blank page or over the parcel map, by mouse or finger. A pencil button sits beside the paperclip. Lot splits, ADUs and other requests marked `sketch` ask once: draw, upload or skip. The picture takes the same path as an upload, so Muse Spark reads it and SAM outlines it. `joinDashes` in `lib/segment.js` merges SAM's per-dash boxes into one line.

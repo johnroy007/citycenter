@@ -27,6 +27,7 @@ Not ours: the town's code and the county and state map data, and the real public
 - Department desks: Building, Utilities, Public Works, Police, Fire, Parks and Recreation, Code Enforcement and the City Recorder each answer questions from the real code and a sample procedure, then prepare the right form: for example a burn permit, a hydrant flow test, police standby for an event, or a pavilion reservation. Reports such as potholes need no signature.
 - Three levels of help at every department: **information** (the desk shows the code and draws no conclusion), a **certified question** (the desk helps the resident write it; staff answer in writing through the same four steps, and that answer can be relied on), and a **formal application** (a zoning verification, a lot split, a permit).
 - A site sketch pad: residents draw on screen, on a blank page or over their parcel map, with tools for lot lines, buildings, proposed lines and labels. The desk asks for a sketch on lot splits, accessory dwelling units and similar requests, and Muse Spark and SAM 3.1 read it like any drawing.
+- A concept site plan: from a sketch, plain code draws the real lot, buildings, proposed lines and the zone's setback lines at one true scale, ready to print. Sketches made over the parcel map keep their exact positions; paper sketches are read by Muse Spark, and any number not actually written is dropped. Each measurement shows its source, and numbers that can't all be true become questions for the resident. It is a concept, not a survey.
 - A phone app: on a phone the site becomes a chat with bottom tabs for the map, code, uploads and forms, and it can be installed to the home screen. It is the same site and server; desktop is unchanged.
 - A clickable street map: a resident marks a pothole on a real street, and the program finds the closest address and street for the crew.
 - Danger right now gets a fixed "call 911" message from plain code, before any model runs.
@@ -54,7 +55,7 @@ Not ours: the town's code and the county and state map data, and the real public
 | Routing, understanding, drafting, replies, letters | `muse-spark-1.3` | Chat Completions with structured output (JSON schema) |
 | Code research, staff considerations, staff questions | `muse-spark-1.3` | Tool calling: `search_code`, `get_section`, `zone_info`, `lookup_parcel`, `lot_math`, `animal_points`, `process_info` |
 | Department desks: answers, forms and certified questions | `muse-spark-1.3` | Tool calling (`read_service`, `search_services`, `search_code`, `get_section`, `lookup_parcel`), then structured output; each form's field list is fixed in the schema |
-| Reading drawings and photos, at every desk | `muse-spark-1.3` | Image input |
+| Reading drawings and photos, at every desk, and reading sketches for the site plan | `muse-spark-1.3` | Image input with structured output |
 | Outlining the drawing | `sam-3.1` | Responses API, text-prompted boxes |
 | Resident speaks | `muse-voice-transcribe-1.0` | `POST /v1/asr/transcribe` (WAV built in the browser) |
 | Second read of the considerations | `muse-wonder-1.0` | Chat Completions |

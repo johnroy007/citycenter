@@ -1,0 +1,11 @@
+/* The plan's size is set in real inches here, because a browser shrinks a bare drawing to fit the page and the scale would be false. */
+@page { size: 11in 8.5in; margin: 0.45in 0.5in; }
+body { margin: 0; background: #e9e6df; font: 15px/1.4 system-ui, sans-serif; color: #1f2a37; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; background: #fff; border-bottom: 1px solid #d8dde6; }
+.bar button { font: inherit; font-weight: 600; padding: 9px 16px; border: 0; border-radius: 10px; background: #1f5fbf; color: #fff; }
+#plan { display: block; width: 10in; height: 7.5in; margin: 16px auto; background: #fff; }
+@media print {
+  body { background: #fff; }
+  .bar { display: none; }
+  #plan { margin: 0; }
+}

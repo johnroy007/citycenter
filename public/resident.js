@@ -164,7 +164,7 @@
     CCSketch.open({
       parcel: state.session && state.session.parcel ? state.session.parcel : null,
       phone: isPhone(),
-      onDone: function (image) { sendMessage($("text").value.trim() || "Here is my site sketch.", image); },
+      onDone: function (image, marks) { sendMessage($("text").value.trim() || "Here is my site sketch.", image, marks); },
     });
   }
   $("drawBtn").addEventListener("click", openSketchPad);
@@ -243,7 +243,7 @@
   // ---------- sending ----------
   $("text").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); } });
   $("form").addEventListener("submit", function (ev) { ev.preventDefault(); sendMessage($("text").value.trim()); });
-  async function sendMessage(text, imagePayload) {
+  async function sendMessage(text, imagePayload, marks) {
     var image = imagePayload || pendingImage;
     if (!text && !image) return;
     $("send").disabled = true;
@@ -255,7 +255,7 @@
         rememberVisit();
         history.replaceState(null, "", "/?ref=" + encodeURIComponent(state.ref) + "&key=" + encodeURIComponent(state.key));
       } else {
-        await api("/api/sessions/" + encodeURIComponent(state.ref) + "/messages?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ text: text, image: image || undefined }) });
+        await api("/api/sessions/" + encodeURIComponent(state.ref) + "/messages?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ text: text, image: image || undefined, marks: marks || undefined }) });
       }
       addPendingResident(text, !!image);
       document.body.classList.remove("no-visit"); phoneShow("chat");
@@ -351,6 +351,7 @@
       chip("Upload a drawing", function () { state.sendOnPick = true; $("image").click(); });
       chip("Skip for now", function () { state.skipSketch = true; renderChat(state.session); });
     }
+    if (s && s.has_sketch && !s.site_plan && m.role === "desk") chip("Make a to-scale site plan", function () { makeSitePlan(); }, "primary");
     if (m.offers_pin && s && !s.submitted_at) chip("Mark it on the map", function () { state.channel = "map"; state.manual = true; phoneShow("screen"); renderScreen(state.session); renderRemote(state.session); }, "primary");
     if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && (s.parcel || isService(s)) && !s.submitted_at) {
       if (signatureFree(s)) chip("Send it", function () { sendWithoutSignature(); }, "primary");
@@ -665,6 +666,60 @@
     rows.forEach(function (r) { if (r[1] == null || r[1] === "") return; tb.appendChild(el("tr", null, [el("th", { text: r[0] }), el("td", { text: String(r[1]) })])); });
     return el("table", { class: "kv" }, [tb]);
   }
+  // ---------- the concept site plan ----------
+  async function makeSitePlan() {
+    state.channel = "submissions"; state.manual = true; state.planBusy = true; state.planError = "";
+    phoneShow("screen"); renderScreen(state.session); renderRemote(state.session);
+    try { await api("/api/sessions/" + encodeURIComponent(state.ref) + "/siteplan?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); }
+    catch (e) { state.planError = e.message; }
+    state.planBusy = false; state.lockOnce = true; $("screen").scrollTop = 0; // stay on the plan; don't jump to what else changed
+    poll();
+  }
+  async function answerPlan(id, option, value) {
+    try {
+      await api("/api/sessions/" + encodeURIComponent(state.ref) + "/siteplan/answer?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ id: id, option: option, value: value }) });
+      state.lockOnce = true;
+      poll();
+    } catch (e) { state.planError = e.message; renderScreen(state.session); }
+  }
+  function sitePlanBlock(screen, s) {
+    var sp = s.site_plan && s.site_plan.plan;
+    screen.appendChild(el("h2", { text: "Concept site plan" }));
+    if (state.planError) screen.appendChild(el("div", { class: "notice error", text: state.planError }));
+    if (state.planBusy) { screen.appendChild(el("p", { class: "small", text: "Drawing your plan to scale…" })); return; }
+    if (!sp) {
+      screen.appendChild(el("p", { class: "small", text: "Turn your sketch into a clean drawing, true to one scale. It is a concept, not a survey." }));
+      var go = el("button", { type: "button", text: "Make a to-scale site plan" });
+      go.addEventListener("click", makeSitePlan);
+      screen.appendChild(go);
+      return;
+    }
+    var src = "/api/sessions/" + encodeURIComponent(s.ref) + "/siteplan.svg?key=" + encodeURIComponent(state.key) + "&t=" + encodeURIComponent(s.updated_at);
+    (sp.conflicts || []).filter(function (c) { return !c.answer; }).forEach(function (c) {
+      var box = el("div", { class: "notice warn plan-q" }, [el("b", { text: c.title }), el("div", { text: c.detail })]);
+      var row = el("div", { class: "row" });
+      (c.options || []).forEach(function (o) {
+        var b = el("button", { type: "button", class: "quiet", text: o.label });
+        b.addEventListener("click", function () { answerPlan(c.id, o.id); });
+        row.appendChild(b);
+      });
+      if (c.edit) {
+        var input = el("input", { type: "text", inputmode: "decimal", class: "plan-num", "aria-label": c.edit.label, placeholder: c.edit.label });
+        var save = el("button", { type: "button", class: "quiet", text: "Use this number" });
+        save.addEventListener("click", function () { answerPlan(c.id, "number", input.value); });
+        row.appendChild(input); row.appendChild(save);
+      }
+      box.appendChild(row);
+      screen.appendChild(box);
+    });
+    var open = el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener" }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]);
+    screen.appendChild(open);
+    screen.appendChild(el("p", { class: "small", text: "To scale at 1 inch = " + sp.feetPerInch + " feet when printed from the button below. Measurements marked ≈ are estimates: tell " + characterFor(s.department || "front_desk").character + " if one is wrong." }));
+    var print = el("a", { class: "planprint", href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener", text: "Print at true scale" });
+    var redo = el("button", { type: "button", class: "quiet", text: "Redraw from my sketch" });
+    redo.addEventListener("click", makeSitePlan);
+    screen.appendChild(el("div", { class: "row" }, [print, redo]));
+  }
   function renderSubmissions(screen, s) {
     var u = s.understanding;
     var any = false;
@@ -680,6 +735,7 @@
         if (reading.dimensions && reading.dimensions.length) screen.appendChild(kv(reading.dimensions.map(function (d) { return [d.what, d.value_text]; })));
         if (reading.outline && reading.outline.objects) screen.appendChild(el("p", { class: "small", text: "SAM 3.1 outlined " + reading.outline.objects.length + " shape(s) for staff to check against your words." }));
       } else if (st && st.status === "running") screen.appendChild(el("p", { class: "small", text: "Reading the drawing…" }));
+      sitePlanBlock(screen, s);
     }
     if (u) {
       any = true;

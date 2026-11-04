@@ -20,7 +20,7 @@
   var COLORS = [[INK, "Dark blue"], [NEW, "Red"], ["#1f5fbf", "Blue"], ["#2e7d32", "Green"], ["#ef6c00", "Orange"], ["#ffffff", "White"]];
   var SIZES = [["Thin", 4], ["Medium", 7], ["Thick", 12]];
   var LAYERS = [["aerial", "Aerial photo"], ["parcels", "Parcel lines"], ["streets", "Streets"], ["zoning", "Zoning"]];
-  var M_PER_DEG = 110574, MIN_METERS = 15, MAX_METERS = 1500;
+  var M_PER_DEG = 110574, FEET_PER_M = 3.28084, MIN_METERS = 15, MAX_METERS = 1500;
 
   /** How far to zoom so the whole lot fills the page. */
   function metersFor(parcel) {
@@ -70,6 +70,19 @@
         }
       }
       ctx.stroke();
+      if (base && m.type !== "pen") drawSize(m);
+    }
+    // On the map every mark's true size is known, so it shows its own measurement.
+    function drawSize(m) {
+      var feet = 2 * base.meters / H * FEET_PER_M, dx = Math.abs(m.b[0] - m.a[0]) * feet, dy = Math.abs(m.b[1] - m.a[1]) * feet;
+      var text = m.type === "box" ? Math.round(dx) + " x " + Math.round(dy) + " ft" : m.type === "circle" ? Math.round(2 * Math.hypot(dx, dy)) + " ft across" : Math.round(Math.hypot(dx, dy)) + " ft";
+      if (Math.hypot(dx, dy) < 1) return;
+      var a = toScreen(m.a), b = toScreen(m.b), at = m.type === "circle" ? a : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      ctx.setLineDash([]);
+      ctx.font = "700 26px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineWidth = 7; ctx.lineJoin = "round";
+      ctx.strokeStyle = "#fff"; ctx.fillStyle = m.color === "#ffffff" ? INK : m.color;
+      ctx.strokeText(text, at[0], at[1]); ctx.fillText(text, at[0], at[1]);
+      ctx.textAlign = "start";
     }
     // A picture was made for one view; while a new one loads, the old one slides and scales with the map.
     function drawLayer(layer) {
@@ -127,12 +140,13 @@
       view.cx = keep[0] - (spot[0] - W / 2) / z; view.cy = keep[1] - (spot[1] - H / 2) / z;
       redraw(); loadSoon();
     }
-    function showMap(parcel) {
+    function showMap(parcel, why) {
       base = { lon: parcel.centroid[0], lat: parcel.centroid[1], meters: metersFor(parcel), parcelId: parcel.id, address: parcel.address || parcel.id };
       view = { cx: W / 2, cy: H / 2, z: 1 };
       photo = lines = null;
       addressBox.value = parcel.address || "";
       choices.replaceChildren();
+      hint.textContent = why || "";
       startRow.classList.add("hidden"); mapRow.classList.remove("hidden"); findRow.classList.remove("hidden");
       moveTool.classList.remove("hidden");
       canvas.setAttribute("aria-label", "Map of " + base.address + ". Draw your site sketch on it.");
@@ -141,7 +155,7 @@
     function blankPage() {
       base = null; photo = lines = null; loadId++;
       view = { cx: W / 2, cy: H / 2, z: 1 };
-      note.textContent = ""; choices.replaceChildren();
+      note.textContent = ""; hint.textContent = ""; choices.replaceChildren();
       startRow.classList.remove("hidden"); mapRow.classList.add("hidden"); findRow.classList.add("hidden");
       moveTool.classList.add("hidden");
       if (tool === "move") pick("pen");
@@ -167,6 +181,17 @@
         }
         note.textContent = "That address wasn't found in Trust City. Check the street name and number.";
       } catch (e) { note.textContent = "The address lookup didn't work. Please try again."; }
+    }
+
+    async function exampleLot() {
+      note.textContent = "Finding an example lot…";
+      try {
+        var r = await fetch("/api/parcels/example" + (base ? "?not=" + encodeURIComponent(base.parcelId) : ""));
+        var found = await r.json();
+        if (!found.parcel) throw new Error("none");
+        note.textContent = "";
+        showMap(found.parcel, "Example lot, picked at random for its size and street frontage. Only real City Officials can decide whether a lot can be split.");
+      } catch (e) { note.textContent = "No example lot is available right now."; }
     }
 
     // ---------- drawing ----------
@@ -288,8 +313,10 @@
     var startRow = el("div", { class: "sk-mapbar" }, [start]);
     var addressBox = el("input", { type: "text", maxlength: "120", placeholder: "Your street address", "aria-label": "Street address" });
     var findBtn = el("button", { type: "button", class: "quiet sk-small", text: "Find" });
-    var findRow = el("div", { class: "sk-find hidden" }, [addressBox, findBtn]);
+    var exampleBtn = el("button", { type: "button", class: "quiet sk-small", text: "Example lot", title: "Show a random lot with room to split" });
+    var findRow = el("div", { class: "sk-find hidden" }, [addressBox, findBtn, exampleBtn]);
     var note = el("p", { class: "sk-note", role: "status" });
+    var hint = el("p", { class: "sk-note" });
     var choices = el("div", { class: "sk-choices" });
     start.addEventListener("click", function () {
       if (opts.parcel) return showMap(opts.parcel);
@@ -298,6 +325,7 @@
       addressBox.focus();
     });
     findBtn.addEventListener("click", find);
+    exampleBtn.addEventListener("click", exampleLot);
     addressBox.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); find(); } });
 
     var zoomOut = el("button", { type: "button", class: "quiet sk-small", text: "− Zoom out" });
@@ -320,8 +348,8 @@
     var overlay = el("div", { class: "sk-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Draw a site sketch" }, [
       el("div", { class: "sk-panel" }, [
         el("h2", { text: "Draw a site sketch" }),
-        el("p", { class: "small sk-tip", text: "Show your lot lines, buildings and the road. Use New line for what you want to change, and Label for distances in feet. It doesn't need to be perfect; staff will check every measurement." }),
-        startRow, findRow, mapRow, note, choices, toolRow, styleRow, labelBox,
+        el("p", { class: "small sk-tip", text: "Show your lot lines, buildings and the road. Use New line for what you want to change. On the GIS map, what you draw measures itself. It doesn't need to be perfect; staff will check every measurement." }),
+        startRow, findRow, mapRow, note, hint, choices, toolRow, styleRow, labelBox,
         el("div", { class: "sk-stage" }, [canvas]),
         el("div", { class: "sk-actions" }, [cancel, use]),
       ]),

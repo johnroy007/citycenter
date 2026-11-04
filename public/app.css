@@ -143,6 +143,12 @@ body.tv-expanded .pages { max-width: 900px; margin: 10px auto 0; }
 .rbtn.active .rkey { background: rgba(0,0,0,.3); color: #fff; }
 .rbtn.empty { opacity: .55; }
 .rbtn.fresh::after { content: ""; position: absolute; right: 8px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: #ffb52e; box-shadow: 0 0 0 2px #2a2f38; }
+.rbtn.loading { opacity: 1; }
+.rbtn.loading .rkey { box-sizing: border-box; background: transparent; color: transparent; border: 2px solid rgba(255, 255, 255, .25); border-top-color: #fff; animation: rspin .9s linear infinite; }
+@keyframes rspin { from { transform: translateY(-50%) rotate(0); } to { transform: translateY(-50%) rotate(360deg); } }
+.rbtn.done { background: #1c6b46; border-color: #2fa36a; color: #fff; opacity: 1; }
+.rbtn.done .rkey { background: #2fa36a; color: #fff; }
+.rbtn.done.active { background: #1c6b46; border-color: #fff; box-shadow: 0 0 0 2px rgba(255, 255, 255, .4); }
 .inputbar { flex: none; border-top: 1px solid var(--line); background: var(--paper); padding: 8px 10px; }
 .inputbar form { display: grid; grid-template-columns: auto auto auto 1fr auto; gap: 6px; align-items: center; }
 .inputbar textarea { grid-column: 1 / -1; grid-row: 1; min-height: 44px; max-height: 120px; resize: none; }
@@ -412,6 +418,7 @@ table.standards td { font-size: 13px; }
 .sk-tip { margin: 0; }
 .sk-mapbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 14px; }
 .sk-find { display: flex; gap: 6px; }
+.sk-find button { flex: none; }
 .sk-find input { flex: 1; min-width: 0; padding: 7px 10px; font-size: 14px; }
 .sk-layers { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .sk-layers label { display: flex; align-items: center; gap: 4px; }

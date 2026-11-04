@@ -46,7 +46,7 @@
   var town = null;
   var state = {
     ref: null, key: null, timer: null, lastMsgCount: 0, session: null, typing: null, voiceOn: true, editing: false, demo: null,
-    channel: "welcome", manual: false, seen: { map: null, code: null, submissions: null, paperwork: null }, fresh: {}, lastParcelId: null,
+    progress: { active: false, shown: 0, nextAt: 0, reveal: null, timer: null }, channel: "welcome", manual: false, seen: { map: null, code: null, submissions: null, paperwork: null }, fresh: {}, lastParcelId: null,
     zoom: { welcome: 1, map: 1, code: 1, submissions: 1, paperwork: 1 }, expanded: false, mapView: "block",
   };
   try { var z0 = JSON.parse(localStorage.getItem("cc_zoom") || "{}"); Object.keys(z0).forEach(function (k) { if (state.zoom[k] !== undefined && z0[k] >= 0.5 && z0[k] <= 2) state.zoom[k] = z0[k]; }); } catch (e) {}
@@ -251,7 +251,7 @@
     $("formMsg").textContent = "";
     try {
       if (!state.ref) {
-        var data = await api("/api/sessions", { method: "POST", body: JSON.stringify({ text: text, image: image || undefined, demo_id: state.demo ? state.demo.example.id : undefined }) });
+        var data = await api("/api/sessions", { method: "POST", body: JSON.stringify({ text: text, image: image || undefined, marks: marks || undefined, demo_id: state.demo ? state.demo.example.id : undefined }) });
         state.ref = data.ref; state.key = data.view_key; state.lastMsgCount = 0;
         rememberVisit();
         history.replaceState(null, "", "/?ref=" + encodeURIComponent(state.ref) + "&key=" + encodeURIComponent(state.key));
@@ -317,9 +317,11 @@
     } else if (!s.busy && $("portrait").classList.contains("thinking")) {
       setPortrait(s.department || "front_desk", "neutral");
     }
+    trackProgress(s);
     autoChannel(s);
     renderScreen(s);
     renderRemote(s);
+    settleProgress(s);
   }
   function renderSteps(s) {
     var steps = $("steps"); steps.textContent = "";
@@ -413,6 +415,38 @@
     if (atBottom || s.messages.length !== state.lastMsgCount) chat.scrollTop = chat.scrollHeight;
   }
 
+  // While a desk works, all four buttons on the remote show a spinner. They turn green strictly left to right, one at a time,
+  // however the work really finishes, and the TV follows them, so a new resident can see the order of things.
+  var PROGRESS = [["map", "locate"], ["code", "research"], ["submissions", "understand"], ["paperwork", "draft"]];
+  var PROGRESS_GAP = 900;
+  function stepFinished(s, name) {
+    if (!s.busy) return true;
+    var st = (s.steps || []).filter(function (x) { return x.name === name; })[0];
+    return !!st && st.status !== "pending" && st.status !== "running";
+  }
+  function deskAtWork(s) {
+    return !!s.busy && (s.steps || []).some(function (x) { return ["understand", "locate", "research", "draft"].indexOf(x.name) >= 0 && (x.status === "running" || x.status === "done"); });
+  }
+  function trackProgress(s) {
+    var p = state.progress;
+    if (!p.active && deskAtWork(s)) { p.active = true; p.shown = 0; p.nextAt = 0; p.reveal = null; }
+    if (!p.active || p.shown >= PROGRESS.length || !stepFinished(s, PROGRESS[p.shown][1])) return;
+    var wait = p.nextAt - Date.now();
+    if (wait > 0) return;
+    p.reveal = PROGRESS[p.shown][0]; p.shown++; p.nextAt = Date.now() + PROGRESS_GAP;
+  }
+  function settleProgress(s) {
+    var p = state.progress;
+    clearTimeout(p.timer);
+    if (!p.active) return;
+    if (p.shown >= PROGRESS.length) { if (!s.busy) { p.active = false; renderRemote(s); } return; }
+    if (!stepFinished(s, PROGRESS[p.shown][1])) return;
+    p.timer = setTimeout(function () {
+      if (!state.session) return;
+      trackProgress(state.session); autoChannel(state.session); renderScreen(state.session); renderRemote(state.session); settleProgress(state.session);
+    }, Math.max(50, p.nextAt - Date.now()));
+  }
+
   // The TV changes channel when new work appears, unless the resident is mid-edit.
   function contentSig(s) {
     return {
@@ -433,10 +467,15 @@
     else if (changed.indexOf("code") >= 0) target = "code";
     else if (changed.indexOf("map") >= 0) target = "map";
     else if (changed.indexOf("submissions") >= 0 && s.has_sketch && state.seen.submissions === null) target = "submissions";
+    var p = state.progress;
+    if (p.active) {
+      target = p.reveal && changed.indexOf(p.reveal) >= 0 && (p.reveal !== "submissions" || s.has_sketch) ? p.reveal : null;
+      p.reveal = null;
+    }
     // A phone never jumps away from the chat by itself; the tab shows a dot instead.
     if (target && !state.editing && !state.lockOnce && !isPhone()) { state.channel = target; state.manual = false; }
     state.lockOnce = false;
-    if (state.channel === "welcome" && s.ref) state.channel = s.packet ? "paperwork" : s.research ? "code" : s.parcel ? "map" : (s.has_sketch || s.understanding) ? "submissions" : "welcome";
+    if (state.channel === "welcome" && s.ref && !p.active) state.channel = s.packet ? "paperwork" : s.research ? "code" : s.parcel ? "map" : (s.has_sketch || s.understanding) ? "submissions" : "welcome";
     var looking = !isPhone() || state.phoneView === "screen";
     order.forEach(function (c) { if (c === state.channel && looking) { state.seen[c] = sig[c]; state.fresh[c] = false; } else if (!sig[c]) state.seen[c] = sig[c]; });
   }
@@ -453,7 +492,11 @@
       var c = b.dataset.channel;
       b.classList.toggle("active", state.channel === c);
       b.classList.toggle("empty", !hasContent(s, c));
-      b.classList.toggle("fresh", !!state.fresh[c] && (state.channel !== c || (isPhone() && state.phoneView !== "screen")));
+      b.classList.toggle("fresh", isPhone() && !!state.fresh[c] && (state.channel !== c || state.phoneView !== "screen"));
+      var i = PROGRESS.map(function (x) { return x[0]; }).indexOf(c), loading = state.progress.active && i >= state.progress.shown;
+      b.classList.toggle("loading", loading);
+      b.classList.toggle("done", !loading && !!s && (c === "submissions" ? !!(s.has_sketch || s.understanding) : hasContent(s, c)));
+      b.setAttribute("aria-busy", loading ? "true" : "false");
       b.setAttribute("aria-selected", state.channel === c ? "true" : "false");
     });
   }
@@ -989,6 +1032,11 @@
     } catch (e) { $("demoList").appendChild(el("li", { text: e.message })); }
   });
   $("demoClose").addEventListener("click", function () { $("demoPanel").classList.add("hidden"); });
+  // Clicking anything else closes the list.
+  document.addEventListener("click", function (e) {
+    if ($("demoPanel").classList.contains("hidden") || $("demoPanel").contains(e.target) || $("demoBtn").contains(e.target)) return;
+    $("demoPanel").classList.add("hidden");
+  });
   async function startDemo(ex) {
     $("demoPanel").classList.add("hidden");
     if (state.ref) resetVisit();
@@ -999,6 +1047,7 @@
     demoNextTurn();
   }
   function resetVisit() {
+    clearTimeout(state.progress.timer); state.progress.active = false;
     state.ref = null; state.key = null; state.session = null; state.lastMsgCount = 0; state.lastParcelId = null; state.pinView = null; state.pinDraft = null; document.body.classList.add("no-visit"); phoneShow("chat"); state.channel = "welcome"; state.seen = { map: null, code: null, submissions: null, paperwork: null }; state.fresh = {};
     $("chat").textContent = ""; $("chat").appendChild(greetingItem(new Date().toISOString())); $("refline").textContent = "New visit"; $("statusChip").textContent = "";
     history.replaceState(null, "", "/");

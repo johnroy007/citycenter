@@ -8,6 +8,7 @@ require("./lib/env").loadEnv();
 
 const { loadTown } = require("./lib/townconfig");
 const { loadCode } = require("./lib/codestore");
+const { ownerFor } = require("./lib/owners");
 const { loadGis } = require("./lib/gis");
 const { createTools } = require("./lib/tools");
 const { loadServices, createServiceTools } = require("./lib/services");
@@ -179,6 +180,12 @@ function planSetbacks(s) {
   if (z.front == null && z.rear == null && z.side == null) return null;
   return { ...z, section: "section " + sec.id, note: z.skipped.length ? `The ${z.skipped.join(" and ")} setback for this zone isn't a single number, so it isn't drawn; see section ${sec.id}.` : "" };
 }
+/** A sketch drawn over the GIS map already says which lot it is, so the resident never has to. */
+function lotOfMarks(marks) {
+  const feature = marks && marks.map && marks.map.parcel ? gis.getParcel(marks.map.parcel) : null;
+  return feature ? { parcel: gis.summarize(feature), owner: ownerFor(feature.properties.id) } : {};
+}
+
 /** A sketch drawn over a map only lines up with the parcel that map was centered on. */
 function marksFor(s) {
   const m = s.sketch_marks;
@@ -197,6 +204,8 @@ function mapWindow(url) {
   if (meters < 15 || meters > 1500 || width < 200 || width > 1400 || height < 200 || height > 1400) return null;
   return { center: [lon, lat], meters, width, height };
 }
+
+let exampleLots = null;
 
 // Aerial pictures come from a public USGS service, kept for a while so the same view isn't fetched twice.
 const aerialCache = new Map();
@@ -358,6 +367,14 @@ async function handle(req, res) {
     const square = url.searchParams.get("phone") === "1";
     return res.end(gis.renderSvg({ parcelId: id, meters, width: square ? 520 : 1000, height: square ? 520 : 750 }));
   }
+  // An example lot for the sketch pad: picked for its size and frontage only. Staff still decide whether any lot can be split.
+  if (req.method === "GET" && p === "/api/parcels/example") {
+    if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
+    if (!exampleLots) exampleLots = siteplan.roomyLots(gis, code);
+    const choices = exampleLots.filter((id) => id !== url.searchParams.get("not"));
+    if (!choices.length) return notFound(res);
+    return sendJson(res, 200, { parcel: gis.summarize(gis.getParcel(choices[Math.floor(Math.random() * choices.length)])) });
+  }
   if (req.method === "GET" && p === "/api/parcels/lookup") {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
     const q = String(url.searchParams.get("q") || "").slice(0, 120);
@@ -403,6 +420,10 @@ async function handle(req, res) {
     if (sketch === false) return;
     const demoId = typeof body.demo_id === "string" ? body.demo_id.slice(0, 60) : null;
     const { ref, viewKey } = store.createSession({ town: town.id, text, sketch, demoId, residentId: null });
+    if (sketch) {
+      const marks = cleanMarks(body.marks);
+      if (marks) store.updateSession(ref, { sketch_marks: marks, ...lotOfMarks(marks) });
+    }
     startTurn(ref);
     return sendJson(res, 202, { ref, view_key: viewKey });
   }
@@ -485,7 +506,8 @@ async function handle(req, res) {
       if (sketch) {
         store.setSketch(ref, sketch);
         // A new drawing replaces the old plan. Pad sketches also send where each mark sits.
-        store.updateSession(ref, { site_plan: null, sketch_marks: cleanMarks(body.marks) });
+        const marks = cleanMarks(body.marks);
+        store.updateSession(ref, { site_plan: null, sketch_marks: marks, ...(s.parcel ? {} : lotOfMarks(marks)) });
       }
       store.addMessage(ref, { role: "resident", text: text || "(attached a drawing)", has_sketch: !!sketch });
       startTurn(ref);
@@ -511,7 +533,7 @@ async function handle(req, res) {
         const plan = buildPlan(s, extraction, {});
         if (plan.error) return sendError(res, 400, plan.error);
         store.updateSession(ref, { site_plan: { extraction, answers: {}, plan, created_at: new Date().toISOString() } });
-        store.addMessage(ref, { role: "desk", department: s.department || "front_desk", character: s.character, text: plan.open ? `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. ${plan.open} measurement question${plan.open > 1 ? "s need" : " needs"} your answer before it's final.` : `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. It is a concept, not a survey. Check the measurements marked ≈ and tell me if any are wrong.` });
+        store.addMessage(ref, { role: "desk", department: s.department || "front_desk", character: s.character, text: plan.open ? `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. ${plan.open} measurement question${plan.open > 1 ? "s need" : " needs"} your answer before it's final.` : marks && marks.map ? `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet, measured from the map. It is a concept, not a survey.` : `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. It is a concept, not a survey. Check the measurements marked ≈ and tell me if any are wrong.` });
         return sendJson(res, 200, { ok: true, open: plan.open });
       } catch (e) {
         const [st, msg] = errorFrom(e);

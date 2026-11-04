@@ -333,3 +333,25 @@ test("a sketch over the map: the first view's middle is the middle of the lot, a
   assert.doesNotMatch(photo, /fill="#f4f1ea"/, "the aerial picture must show through");
   assert.match(photo, /Aerial credit/);
 });
+
+test("site plan: marks on the map are measured from the map, and lots with room are found from the code's own table", () => {
+  const { lotMinimums, roomyLots, parcelFrame } = require("../../lib/siteplan");
+  const parcel = parcelOf("345 E Jessop Ave");
+  const map = { meters: 100, svg: [1200, 900], box: [0, 0, 1200, 900] };
+  const plan = planFor({ parcel, marks: { map, items: [{ type: "box", a: [560, 400], b: [640, 500] }, { type: "line", a: [450, 450], b: [750, 450], dash: true }] } });
+  assert.equal(plan.structures[0].sizeSource.w, "map");
+  assert.equal(plan.lines[0].source, "map");
+  assert.equal(plan.conflicts.length, 0, "nothing to ask the resident");
+
+  const table = code.getSection("152-13-4").text;
+  assert.deepEqual(lotMinimums(table, "R1-8"), { area: 6400, width: 70 });
+  assert.deepEqual(lotMinimums(table, "R1-15"), { area: 12000, width: 90 });
+  const lots = roomyLots(gis, code);
+  assert.ok(lots.length >= 5, "there are lots to pick from: " + lots.length);
+  for (const id of lots) {
+    const p = gis.summarize(gis.getParcel(id));
+    const min = lotMinimums(table, p.zone);
+    assert.ok(p.areaSqft >= 2 * min.area, id);
+    assert.ok(parcelFrame(gis, p).road, id + " is on a named street");
+  }
+});

@@ -100,6 +100,9 @@ body.pv-screen .inputbar { display: none; }
 .ricon-wrap { position: relative; display: block; width: 24px; height: 24px; }
 .ricon-dot { display: none; position: absolute; top: -2px; right: -5px; width: 10px; height: 10px; border-radius: 50%; background: #e0602f; border: 2px solid #fff; }
 .remote .rbtn.active, .remote .rbtn.active:hover { background: transparent; color: var(--blue); box-shadow: none; }
+.remote .rbtn.done, .remote .rbtn.done.active { background: transparent; border-color: transparent; color: #1c7a4b; box-shadow: none; }
+.remote .rbtn.loading .ricon { animation: rfade 1s ease-in-out infinite; }
+@keyframes rfade { 50% { opacity: .3; } }
 body.pv-chat .remote .rbtn.active { color: var(--muted); }
 body.pv-chat .remote .rbtn.active.empty { color: #a9b1bc; }
 body.pv-chat .remote .phonetab { color: var(--blue); }

@@ -20,7 +20,7 @@ function readEnv(name) {
 }
 
 const TURN1 = "Hi. I want to split my lot and sell the back half to my son so he can build a house.";
-const TURN2 = "I'm Devon Dunmore, 345 E Jessop Ave, 435-555-0104. The lot is just under an acre. The new lot would be about 20,000 square feet with 130 feet of width, and the other half keeps my house. Both halves reach the road, and water and sewer are in the street. Here is my sketch.";
+const TURN2 = "I'm Devon Dunmore, 345 E Jessop Ave, 435-555-0104. I drew the split on the map. Both halves reach the road, and water and sewer are in the street.";
 
 // A visible mouse pointer for viewers (headless screenshots have none).
 const CURSOR_JS = `

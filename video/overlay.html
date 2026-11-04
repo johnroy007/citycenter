@@ -39,6 +39,7 @@
   .eyebrow { font-size: 24px; letter-spacing: 3px; text-transform: uppercase; color: #9ec5ff; font-weight: 700; margin-bottom: 26px; }
   .card.dark h1.built { font-size: 60px; max-width: 1100px; margin-bottom: 34px; }
   .dates { font-size: 44px; font-weight: 600; color: #fff; }
+  .sourced { margin-top: 30px; max-width: 1040px; font-size: 27px; line-height: 1.35; color: rgba(255, 255, 255, 0.85); }
   .card.dark .eyebrow { border-top: 2px solid rgba(255, 255, 255, 0.2); padding-top: 26px; margin-bottom: 14px; }
   .card.dark h1.mh { font-size: 52px; margin-bottom: 30px; }
   .mlist { display: flex; flex-direction: column; gap: 14px; width: 1120px; text-align: left; }
@@ -94,6 +95,7 @@
       c.appendChild(el("h1", "built", "CityCenter was built for the Meta Global AI Developer Hackathon"));
       c.appendChild(el("div", "eyebrow", "Built entirely during the event"));
       c.appendChild(el("div", "dates", "October 26 – November 4, 2026"));
+      c.appendChild(el("div", "sourced", "Example data and mapping come from public records. A table on the site cites every source the program uses."));
       root.appendChild(c);
     }
     if (spec.mode === "models") {
@@ -110,7 +112,7 @@
       c.appendChild(el("p", "word", "CityCenter"));
       c.appendChild(el("p", "tag", "Residents get to be residents. Officials get the tools to treat everyone fairly."));
       const g = el("div", "models");
-      for (const [m, t] of [["Muse Spark", "understands, routes, researches the code with tools, fills in forms, lists review points"], ["SAM 3.1", "outlines the resident's drawing"], ["Muse Voice Transcribe", "talk instead of type"], ["Muse Wonder", "second read for staff"], ["Muse Image", "the characters, the office and this video's illustrations"], ["Real public data", "a real town's published code · county zoning · state parcels · invented people"]]) {
+      for (const [m, t] of [["Muse Spark", "understands, routes, researches the code with tools, fills in forms, lists review points"], ["SAM 3.1", "finds buildings on aerial photos, outlines drawings"], ["Muse Voice Transcribe", "talk instead of type"], ["Muse Wonder", "second read for staff"], ["Muse Image", "the characters, the office and this video's illustrations"], ["Real public data", "a real town's published code · county zoning · state parcels · invented people"]]) {
         const d = el("div"); d.appendChild(el("b", null, m)); d.appendChild(document.createTextNode(t)); g.appendChild(d);
       }
       c.appendChild(g);

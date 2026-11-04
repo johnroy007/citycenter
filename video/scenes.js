@@ -14,7 +14,7 @@ module.exports = [
   // ---------- Opening statement, in a second voice: built during the event (about 9 s) ----------
   {
     id: "built", card: "built", fadeIn: 0.6, fadeOut: 0.5, voice: INTRO_VOICE,
-    say: "CityCenter was built for the Meta Global AI Developer Hackathon, entirely during the dates of the event, October twenty-sixth to November fourth, twenty twenty-six.",
+    say: "CityCenter was built for the Meta Global AI Developer Hackathon, entirely during the event, October twenty-sixth to November fourth, twenty twenty-six. Example data and mapping come from public records, and a table on the site cites every source.",
   },
 
   // ---------- Act 1: the problem (about 70 s). Opening words are John's. ----------
@@ -67,22 +67,21 @@ module.exports = [
   },
   {
     id: "details", tag: "Sample resident (invented)",
-    clip: "resident", segs: [{ from: "juniper-asks", to: "typed2", w: 1 }, { from: "sent2", to: "drafted", w: 1.4 }],
-    say: "He gives his address and a sketch. The desk finds his parcel on the county's zoning map, and the planner researches the city's code, all eight hundred sixty-five sections of it.",
+    clip: "resident", segs: [{ from: "typed2", to: "map-found", w: 0.7 }, { from: "map-found", to: "drawn", w: 1 }, { from: "sent2", to: "drafted", w: 1 }],
+    say: "He finds his lot on the GIS map and draws the split by hand. The drawing measures itself, and the planner researches the city's code, all eight hundred sixty-five sections of it.",
     callouts: [
-      { at: 0.5, dur: 5, model: "Muse Spark", text: "reads the sketch through image input" },
-      { at: 6, dur: 7, model: "Muse Spark · tool calls", text: "researches 865 sections of the city's code" },
+      { at: 0.5, dur: 6, model: "Live GIS map", text: "USDA aerial photo · county zoning · state parcels" },
+      { at: 7, dur: 6, model: "Muse Spark · tool calls", text: "researches 865 sections of the city's code" },
     ],
   },
   {
     id: "channels", tag: "Sample resident (invented)", min: 12,
-    clip: "resident", segs: [{ from: "ch:map", to: "ch:code", w: 1 }, { from: "ch:code", to: "ch:submissions", w: 1 }, { from: "ch:submissions", to: "ch:paperwork", w: 1 }, { from: "ch:paperwork", to: "sign-open", w: 1.2 }],
-    say: "Quotes are checked against the code. SAM 3.1 outlines his drawing. Then Juniper fills out a city-style application.",
+    clip: "resident", segs: [{ from: "ch:code", to: "ch:submissions", w: 0.9 }, { from: "ch:paperwork", to: "plan-shown", w: 1.5 }, { from: "plan-shown", to: "sign-open", w: 1 }],
+    say: "Quotes are checked against the code. His rough line becomes a clean, measured site plan, with SAM 3.1 finding the buildings on the aerial photo. Then Juniper fills out a city-style application.",
     callouts: [
-      { at: 0.2, dur: 2.5, model: "Real public data", text: "Washington County zoning · UGRC SGID parcels (data modified) · owner names are fictional" },
-      { at: 3.0, dur: 2.5, model: "Verified quotes", text: "quotes are matched to the stored code text" },
-      { at: 5.9, dur: 2.5, model: "SAM 3.1", text: "outlines the shapes in the resident's drawing" },
-      { at: 8.8, dur: 2.9, model: "Muse Spark · structured output", text: "fills in a city-style application" },
+      { at: 0.2, dur: 3, model: "Verified quotes", text: "quotes are matched to the stored code text" },
+      { at: 3.4, dur: 4.4, model: "SAM 3.1", text: "finds the buildings on the aerial photo" },
+      { at: 8, dur: 3.5, model: "Muse Spark · structured output", text: "fills in a city-style application" },
     ],
   },
   {
@@ -133,10 +132,10 @@ module.exports = [
   },
   {
     id: "models", card: "models", fadeOut: 0.4, voice: INTRO_VOICE,
-    say: "It runs on Meta's models. Muse Spark reads requests, researches the code with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 outlines drawings. Muse Voice Transcribe lets residents talk. Muse Wonder gives staff a second read. And Muse Image drew the art.",
+    say: "It runs on Meta's models. Muse Spark reads requests, researches the code with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 reads drawings and aerial photos. Muse Voice Transcribe lets residents talk. Muse Wonder gives staff a second read. And Muse Image drew the art.",
     rows: [
       { model: "Muse Spark", text: "understands requests · researches the code with tool calls · fills in forms · prepares staff reviews" },
-      { model: "SAM 3.1", text: "outlines the shapes in residents' drawings" },
+      { model: "SAM 3.1", text: "finds buildings on aerial photos · outlines drawings" },
       { model: "Muse Voice Transcribe", text: "residents talk instead of typing" },
       { model: "Muse Wonder", text: "a second read for staff" },
       { model: "Muse Image", text: "drew the characters, the office and this video's art" },

@@ -611,7 +611,7 @@ async function handle(req, res) {
       if (!s.site_plan) return sendError(res, 400, "There is no site plan yet.");
       store.updateSession(ref, { site_plan: { ...s.site_plan, confirmed_at: new Date().toISOString() } });
       store.addMessage(ref, { role: "resident", text: "The site plan looks right." });
-      store.addMessage(ref, { role: "desk", department: s.department || "front_desk", character: s.character, text: "Thanks. I'll keep this plan with your application, so city staff can review it. It is a concept, not a survey." });
+      store.addMessage(ref, { role: "desk", department: s.department || "front_desk", character: s.character, text: "Thanks. I'll keep this plan with your application, so city staff can review it. It is a concept, not a survey.", offers_submit: !!s.packet });
       return sendJson(res, 200, { ok: true });
     }
     if (req.method === "POST" && action === "siteplan/answer") {

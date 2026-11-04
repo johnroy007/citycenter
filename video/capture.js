@@ -70,6 +70,37 @@ async function speakTurn(b) {
   return true;
 }
 
+// Opens the sketch pad, finds the lot on the GIS map, and draws the split by hand with real mouse movement.
+async function drawOnMap(b) {
+  await b.tap("#drawBtn", { pause: 700 });
+  b.mark("pad-open");
+  await sleep(900);
+  await b.tapText(".sk-panel button", "Start with GIS Map", { pause: 500 });
+  await b.tap(".sk-find input", { pause: 200 });
+  await b.type("345 E Jessop Ave", 45);
+  await b.tapText(".sk-panel button", "Find", { pause: 400 });
+  await b.waitFor(`!!document.querySelector(".sk-layers") && document.querySelector(".sk-layers").offsetParent !== null && document.querySelector(".sk-note").textContent === ""`, 40000);
+  await sleep(2500);
+  b.mark("map-found");
+  const box = await b.eval(`const c = document.querySelector(".sk-canvas"), r = c.getBoundingClientRect(); return { x: r.left, y: r.top, k: r.width / c.width }`);
+  const at = (x, y) => ({ x: box.x + x * box.k, y: box.y + y * box.k });
+  const pts = [];
+  for (let i = 0; i <= 90; i++) pts.push(at(657 + Math.sin(i / 4) * 5 + (i > 45 ? -3 : 0), 262 + i * 4.2));
+  await b.eval(`window.__vcur && window.__vcur(${pts[0].x}, ${pts[0].y})`);
+  await b.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: pts[0].x, y: pts[0].y });
+  await b.send("Input.dispatchMouseEvent", { type: "mousePressed", x: pts[0].x, y: pts[0].y, button: "left", buttons: 1, clickCount: 1 });
+  for (const p of pts) {
+    await b.eval(`window.__vcur && window.__vcur(${p.x}, ${p.y})`);
+    await b.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: p.x, y: p.y, button: "left", buttons: 1 });
+    await sleep(35);
+  }
+  const end = pts[pts.length - 1];
+  await b.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: end.x, y: end.y, button: "left", buttons: 0, clickCount: 1 });
+  b.mark("drawn");
+  await sleep(2500);
+  await b.tapText(".sk-actions button", "Use this sketch", { pause: 500 });
+}
+
 const hasChip = (b, text) => b.eval(`return [...document.querySelectorAll("button.qchip")].some(e => e.textContent.includes(${JSON.stringify(text)}))`);
 
 async function resident(b) {
@@ -94,16 +125,10 @@ async function resident(b) {
   await waitIdle(b);
   b.mark("juniper-asks");
   await sleep(3500);
-  const { root } = await b.send("DOM.getDocument", { depth: -1 });
-  const { nodeId } = await b.send("DOM.querySelector", { nodeId: root.nodeId, selector: "#image" });
-  await b.tap("#attachBtn", { pause: 500 });
-  await b.send("DOM.setFileInputFiles", { nodeId, files: [path.join(ROOT, "public", "sketches", "sketch-jessop.png")] });
-  await sleep(1800);
-  b.mark("attached");
   await b.tap("#text", { pause: 300 });
   await b.type(TURN2, 22);
   b.mark("typed2");
-  await b.tap("#send");
+  await drawOnMap(b);
   b.mark("sent2");
   await waitIdle(b, 420000);
   for (let round = 0; round < 2 && !(await hasChip(b, "Sign and submit")); round++) {
@@ -123,6 +148,15 @@ async function resident(b) {
     await b.tap(`.rbtn[data-channel="${ch}"]`, { pause: 500 });
     b.mark("ch:" + ch);
     await sleep(3500);
+    if (ch === "paperwork") {
+      // The plan sits at the top of the paperwork. Show it, then answer "Does this look right?".
+      await b.scrollIn("#screen", 420, 30, 45);
+      await sleep(3000);
+      b.mark("plan-shown");
+      await b.tapText("button.qchip", "Looks right", { pause: 900 });
+      await sleep(2500);
+      b.mark("plan-confirmed");
+    }
     await b.scrollIn("#screen", ch === "paperwork" ? 1400 : 500, ch === "paperwork" ? 70 : 30, 45);
     await sleep(2000);
     await b.eval(`document.getElementById("screen").scrollTop = 0`);

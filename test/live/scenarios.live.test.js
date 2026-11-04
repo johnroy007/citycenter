@@ -51,6 +51,16 @@ if (HAVE_KEY) {
   const services = loadServices(town);
   const deskTools = [...tools.filter((t) => ["search_code", "get_section", "lookup_parcel"].includes(t.name)), ...createServiceTools(services)];
   ctx = { store, client, town, code, gis, tools, services, deskTools, model: process.env.META_MODEL || "muse-spark-1.3" };
+  // The same plan step the server runs, without the aerial photo, so these runs take as long as a real visit.
+  const siteplan = require("../../lib/siteplan");
+  ctx.drawSitePlan = async (ref) => {
+    const s = store.getSession(ref);
+    if (!s.parcel) return null;
+    const extraction = await siteplan.extractPlan(client, { image: s.has_sketch ? store.getSketch(ref) : null, town, reading: null, messages: s.messages, parcel: s.parcel, model: ctx.model });
+    const plan = siteplan.build({ frame: () => siteplan.parcelFrame(gis, s.parcel), parcel: s.parcel, extraction, facts: {} });
+    if (!plan.error) store.updateSession(ref, { site_plan: { extraction, answers: {}, plan } });
+    return plan;
+  };
 }
 test.after(() => {
   if (!HAVE_KEY) return;

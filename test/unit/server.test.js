@@ -42,7 +42,7 @@ test("pages and static files come with security headers", async () => {
   const r = await fetch(BASE + "/");
   assert.equal(r.status, 200);
   assert.match(r.headers.get("content-security-policy"), /default-src 'self'/);
-  assert.equal(r.headers.get("x-frame-options"), "DENY");
+  assert.equal(r.headers.get("x-frame-options"), "SAMEORIGIN");
   assert.equal((await fetch(BASE + "/staff")).status, 200);
   assert.equal((await fetch(BASE + "/public/app.css")).status, 200);
   assert.equal((await fetch(BASE + "/public/../server.js")).status, 404);

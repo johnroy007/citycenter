@@ -86,7 +86,8 @@
         "src-01",
         "src-02",
         "src-03"
-      ]
+      ],
+      "sketch": true
     },
     {
       "id": "building_inspection",
@@ -245,7 +246,8 @@
         "src-06",
         "src-07",
         "src-08"
-      ]
+      ],
+      "sketch": true
     },
     {
       "id": "utility_new_service",
@@ -851,7 +853,8 @@
       "sources": [
         "src-22",
         "src-23"
-      ]
+      ],
+      "sketch": true
     },
     {
       "id": "police_report",
@@ -1497,7 +1500,8 @@
         "src-43",
         "src-44",
         "src-45"
-      ]
+      ],
+      "sketch": true
     },
     {
       "id": "pavilion_reservation",
@@ -1673,7 +1677,8 @@
       "sources": [
         "src-48",
         "src-49"
-      ]
+      ],
+      "sketch": true
     },
     {
       "id": "recreation_signup",

@@ -191,3 +191,27 @@ test("the phone app stays out of the desktop site and out of people's data", () 
   assert.match(js, /18 or older/, "the phone start screen keeps the age notice");
   assert.match(js, /AI assistants/, "the phone start screen keeps the AI notice");
 });
+
+test("lot splits and other site work ask for a drawing, and the site can only frame itself", () => {
+  for (const id of ["lot_split", "accessory_dwelling_unit"]) assert.equal(town.applicationTypes[id].sketch, true, id);
+  assert.match(town.wording.askSketch, /draw one here, or upload/);
+  assert.ok(services.get("building_permit").sketch);
+  const { securityHeaders } = require("../../lib/security");
+  const h = {};
+  securityHeaders({ setHeader: (k, v) => { h[k] = v; } }, true);
+  assert.match(h["Content-Security-Policy"], /frame-ancestors 'self'/);
+  assert.equal(h["X-Frame-Options"], "SAMEORIGIN");
+  for (const d of town.departments) if (d.id !== "front_desk") assert.ok(d.short, d.id + " has a short name for the directory");
+});
+
+test("the dashes of one dashed line become one outline; separate lines stay separate", () => {
+  const { joinDashes } = require("../../lib/segment");
+  const dash = (x, y) => ({ label: "dashed line", x1: x, y1: y, x2: x + 20, y2: y + 6, confidence: 0.5 });
+  const house = { label: "rectangle outline", x1: 10, y1: 10, x2: 200, y2: 200, confidence: 0.7 };
+  const out = joinDashes([house, dash(100, 300), dash(130, 300), dash(160, 301), dash(100, 700)], 1000);
+  assert.equal(out.filter((o) => o.label === "dashed line").length, 2);
+  assert.ok(out.includes(house));
+  const line = out.find((o) => o.label === "dashed line" && o.y1 === 300);
+  assert.equal(line.x1, 100);
+  assert.equal(line.x2, 180);
+});

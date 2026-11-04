@@ -159,11 +159,24 @@
     });
   }
   var pendingImage = null;
+  // A sketch drawn here takes the same path as an uploaded drawing.
+  function openSketchPad() {
+    CCSketch.open({
+      parcel: state.session && state.session.parcel ? state.session.parcel : null,
+      phone: isPhone(),
+      onDone: function (image) { sendMessage($("text").value.trim() || "Here is my site sketch.", image); },
+    });
+  }
+  $("drawBtn").addEventListener("click", openSketchPad);
   $("attachBtn").addEventListener("click", function () { $("image").click(); });
   $("image").addEventListener("change", async function () {
     var f = $("image").files[0];
     if (!f) return;
-    try { pendingImage = await shrinkImage(f); $("formMsg").textContent = "Drawing attached: " + f.name + " (sent with your next message)."; $("attachBtn").textContent = "📎✓"; }
+    try {
+      pendingImage = await shrinkImage(f);
+      if (state.sendOnPick) { state.sendOnPick = false; sendMessage($("text").value.trim() || "Here is my drawing."); $("image").value = ""; return; }
+      $("formMsg").textContent = "Drawing attached: " + f.name + " (sent with your next message)."; $("attachBtn").textContent = "📎✓";
+    }
     catch (e) { $("formMsg").textContent = e.message; }
   });
 
@@ -333,6 +346,11 @@
       row.appendChild(b); any = true;
     }
     (m.quick_replies || []).forEach(function (q) { chip(q, function () { sendMessage(q); }); });
+    if (m.offers_sketch && s && !s.has_sketch && !state.skipSketch) {
+      chip("Draw a site sketch", function () { openSketchPad(); }, "primary");
+      chip("Upload a drawing", function () { state.sendOnPick = true; $("image").click(); });
+      chip("Skip for now", function () { state.skipSketch = true; renderChat(state.session); });
+    }
     if (m.offers_pin && s && !s.submitted_at) chip("Mark it on the map", function () { state.channel = "map"; state.manual = true; phoneShow("screen"); renderScreen(state.session); renderRemote(state.session); }, "primary");
     if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && (s.parcel || isService(s)) && !s.submitted_at) {
       if (signatureFree(s)) chip("Send it", function () { sendWithoutSignature(); }, "primary");
@@ -492,6 +510,18 @@
     screen.classList.add("is-empty");
     screen.appendChild(el("div", { class: "empty" }, [el("div", { class: "big", text: title }), el("p", { text: text })]));
   }
+  // Every desk at a glance. Choosing one asks the front desk for it, so the resident's consent step still happens.
+  function directory() {
+    var grid = el("div", { class: "dir-grid" });
+    ((town && town.departments) || []).filter(function (d) { return d.id !== "front_desk"; }).forEach(function (d) {
+      var pic = el("img", { src: portraitSrc(d.id, "neutral"), alt: "", loading: "lazy" });
+      pic.onerror = function () { pic.onerror = null; pic.src = "/public/characters/fallback.svg"; };
+      var b = el("button", { type: "button", class: "dir-item", title: d.character + ", AI assistant with " + d.name }, [pic, el("span", { class: "dir-name", text: d.short || d.name }), el("span", { class: "dir-who", text: d.character })]);
+      b.addEventListener("click", function () { sendMessage("I'd like to talk to " + d.name + "."); });
+      grid.appendChild(b);
+    });
+    return el("div", { class: "directory" }, [el("div", { class: "dir-title", text: "Directory" }), grid]);
+  }
   function renderWelcome(screen) {
     var w = el("div", { class: "welcome" }, [
       el("h1", { text: "Welcome to the " + (town ? town.name : "city") + " help desk." }),
@@ -504,6 +534,7 @@
       el("p", { class: "small", id: "demoNote", text: "" }),
     ]);
     screen.appendChild(w);
+    w.insertBefore(directory(), w.querySelector(".examples").nextSibling);
     [["I want to split my lot and sell the back half to my son.", "lot split"], ["There's a big pothole on my street.", "pothole"], ["I need a burn permit for my weed pile.", "burn"], ["Why is my water bill so high?", "bill"], ["I'd like to reserve a park pavilion.", "pavilion"], ["We need police standby at our festival.", "standby"]].forEach(function (x) {
       var b = el("button", { type: "button", class: "quiet", text: x[0] });
       b.addEventListener("click", function () { $("text").value = x[0]; $("text").focus(); });
@@ -965,6 +996,7 @@
       grid.appendChild(b);
     });
     box.appendChild(grid);
+    box.appendChild(directory());
     box.appendChild(el("div", { class: "ps-notes" }, [
       el("p", null, [(town && town.wording.exampleCity || "") + " ", el("a", { href: "/about", text: "How this site works" })]),
       el("p", { text: "This is a public demo: others can read what you type, so please use made-up names and details." }),
@@ -987,8 +1019,35 @@
     $("text").placeholder = "Message";
     var standalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
     if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone) $("installHelp").classList.remove("hidden");
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(function () {});
+    if ("serviceWorker" in navigator && window.top === window) navigator.serviceWorker.register("/sw.js").catch(function () {});
   }
+
+  // ---------- phone version preview (desktop): the real phone layout, live, in a phone frame ----------
+  function openPreview() {
+    var ref = state.ref && state.key ? "?ref=" + encodeURIComponent(state.ref) + "&key=" + encodeURIComponent(state.key) : "";
+    var frame = el("iframe", { class: "pp-screen", src: "/" + ref, title: "Phone version preview", allow: "microphone" });
+    var phone = el("div", { class: "pp-phone" }, [el("div", { class: "pp-notch" }), frame]);
+    var closeBtn = el("button", { type: "button", class: "quiet pp-close", text: "Close preview" });
+    var overlay = el("div", { class: "pp-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Phone version preview" }, [
+      el("div", { class: "pp-side" }, [
+        el("h2", { text: "Phone version preview" }),
+        el("p", { text: "This is the real phone app, running live. Tap and type as you would on a phone." }),
+        el("p", { class: "small", text: "On a phone, open this same address and add it to your home screen to install it." }),
+        closeBtn,
+      ]),
+      phone,
+    ]);
+    function fit() { phone.style.transform = "scale(" + Math.min(1, (window.innerHeight - 32) / 890) + ")"; }
+    function close() { window.removeEventListener("resize", fit); document.removeEventListener("keydown", onKey); overlay.remove(); if (state.ref) poll(); }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    closeBtn.addEventListener("click", close);
+    overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+    window.addEventListener("resize", fit);
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(overlay);
+    fit();
+  }
+  $("previewBtn").addEventListener("click", openPreview);
 
   // ---------- boot ----------
   (async function boot() {

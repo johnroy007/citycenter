@@ -198,6 +198,7 @@ function townPublic() {
     county: town.county,
     refPrefix: town.refPrefix,
     departments: town.departments,
+    sketchServices: services.services.filter((s) => s.sketch).map((s) => s.id),
     processTiers: town.processTiers.map((t) => ({ id: t.id, label: t.screenLabel || t.label, decider: t.decider, screenDecider: t.screenDecider || "", resident: t.resident, sections: t.sections })),
     applicationTypes: town.applicationTypes,
     zones: Object.fromEntries(Object.entries(town.zones).map(([k, v]) => [k, { name: v.name, chapter: v.chapter, usesSection: v.usesSection, standardsSection: v.standardsSection, color: gis.zoneColor(k) }])),

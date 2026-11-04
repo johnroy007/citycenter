@@ -11,8 +11,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/public/icons/apple-touch-icon.png">
 <title>CityCenter: Virtual City Help Desk</title>
-<link rel="stylesheet" href="/public/app.css?v=20261103h">
-<link rel="stylesheet" href="/public/phone.css?v=20261103j" media="(max-width: 700px), (max-height: 500px) and (max-width: 950px)">
+<link rel="stylesheet" href="/public/app.css?v=20261104c">
+<link rel="stylesheet" href="/public/phone.css?v=20261104c" media="(max-width: 700px), (max-height: 500px) and (max-width: 950px)">
 <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 </head>
 <body class="resident">
@@ -23,6 +23,7 @@
     <button type="button" class="phone-only" id="newVisitBtn">Start a new visit</button>
     <button type="button" class="phone-only hidden" id="installBtn">Install the app</button>
     <div class="phone-only hidden" id="installHelp">To install: tap Share, then Add to Home Screen.</div>
+    <button type="button" class="quiet desktop-only" id="previewBtn" title="See how this works on a phone">📱 Phone version preview</button>
     <button type="button" class="quiet" id="muteBtn" title="Read replies aloud (browser voice)">🔊 Voice on</button>
     <button type="button" class="quiet" id="demoBtn" title="Worked examples for judges">▶ Examples</button>
     <a href="/about">Information</a>
@@ -100,6 +101,7 @@
     </div>
     <form id="form">
       <button type="button" class="icon secondary" id="attachBtn" title="Attach a drawing or photo">📎</button>
+      <button type="button" class="icon secondary" id="drawBtn" title="Draw a site sketch" aria-label="Draw a site sketch">✏️</button>
       <input type="file" id="image" accept="image/*" class="hidden">
       <textarea id="text" rows="1" placeholder="Type here, or hold the microphone and talk…" maxlength="6000"></textarea>
       <button type="button" class="icon secondary mic" id="micBtn" title="Hold to talk (Muse Voice Transcribe)">🎤</button>
@@ -110,6 +112,7 @@
 </main>
 <footer class="credits" id="credits"></footer>
 <script src="/public/form.js?v=20261103h"></script>
-<script src="/public/resident.js?v=20261103j"></script>
+<script src="/public/sketchpad.js?v=20261104a"></script>
+<script src="/public/resident.js?v=20261104b"></script>
 </body>
 </html>

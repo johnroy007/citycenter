@@ -81,6 +81,13 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (JOHN) — site sketch pad, phone preview, directory
+John asked for on-screen drawing, a phone preview button for desktop, and a small directory of desks.
+- **Sketch pad** (`public/sketchpad.js`): pen, line, dashed "New line", box, label, undo and clear, on a blank page or over the parcel map, by mouse or finger. A pencil button sits beside the paperclip. Lot splits, ADUs and other requests marked `sketch` ask once: draw, upload or skip. The picture takes the same path as an upload, so Muse Spark reads it and SAM outlines it. `joinDashes` in `lib/segment.js` merges SAM's per-dash boxes into one line.
+- **Phone version preview:** a desktop button opens the real phone app live in a phone frame. To allow it, `lib/security.js` now permits framing by this site only (`frame-ancestors 'self'`, `X-Frame-Options: SAMEORIGIN`).
+- **Directory:** nine small desk characters under a "Directory" label on the welcome screen and the phone start screen. Choosing one asks the front desk, so consent still happens.
+Tested in a real browser with the real models, on a local copy and then the live site. Port 3111 was taken by another project on this laptop, so local tests moved to 3199.
+
 ### 2026-11-03 (night) — Claude Code on John's laptop (JOHN) — phone app
 John asked for a phone layout and an installable app, with liberties on the design, and no change to desktop. Built `public/phone.css`, a bottom tab bar, a start screen with tiles, a slide-down menu, a tall street map with readable labels, a card-style form, finger signing, "continue your last visit", a manifest, icons, and a service worker that only serves a no-connection page. A phone never jumps away from the chat by itself; tabs show a dot and the chat offers buttons. Voice starts off on a phone.
 Tested in Chrome's phone emulation with touch input and the real models: pothole with map pin (taps landed 0 feet from the target), paperwork, sending, reopening a visit, finger signature, 911 line, install check, sizes 320 to 430 wide and landscape. With the server shut down, the no-connection page appeared. Desktop: old and new code on the same data at four window sizes, 44 screens, 40 with no visible pixel difference; the other 4 are the Privacy page, where a sentence was added on purpose.

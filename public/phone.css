@@ -195,3 +195,22 @@ body.staff table.standards { display: block; overflow-x: auto; }
 .mapviews button { min-height: 38px; }
 
 .tv-top .tv-label::before { content: none; display: none; }
+
+/* Sketch pad, directory and the preview button on a phone. */
+.desktop-only { display: none !important; }
+.sk-overlay { padding: 0; align-items: stretch; }
+.sk-panel { width: 100%; max-height: none; height: 100dvh; padding: calc(10px + var(--safe-t)) 12px calc(10px + var(--safe-b)); border-radius: 0; }
+.sk-panel h2 { font-size: 18px; }
+.sk-tip { font-size: 12.5px; line-height: 1.35; }
+.sk-tools { flex-wrap: wrap; }
+.sk-tool, .sk-small { flex: none; min-height: 40px; padding: 7px 12px; font-size: 14px; }
+.sk-label { font-size: 16px; min-height: 42px; }
+.sk-canvas { max-height: 100%; }
+.sk-actions button { flex: 1; min-height: 46px; font-size: 16px; }
+.directory { margin: 16px 0 2px; }
+.dir-title { font-size: 13px; letter-spacing: .03em; margin: 0 2px 6px; }
+.dir-grid { grid-template-columns: repeat(5, 1fr); }
+.dir-item { padding: 4px 0; }
+.dir-item img { width: 36px; height: 36px; }
+#drawBtn { width: 42px; height: 42px; flex: none; padding: 0; border-color: transparent; background: #f4f5f7; }
+.dir-name { font-size: 10px; }

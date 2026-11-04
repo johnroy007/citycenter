@@ -237,7 +237,8 @@
   }
   var mic = $("micBtn");
   mic.addEventListener("mousedown", startRecording); mic.addEventListener("touchstart", function (e) { e.preventDefault(); startRecording(); });
-  ["mouseup", "mouseleave"].forEach(function (ev) { mic.addEventListener(ev, stopRecording); });
+  // Released anywhere: the "Listening" line moves the button out from under the mouse, so leaving it can't count as letting go.
+  document.addEventListener("mouseup", stopRecording);
   mic.addEventListener("touchend", function (e) { e.preventDefault(); stopRecording(); });
 
   // ---------- sending ----------

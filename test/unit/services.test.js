@@ -290,8 +290,8 @@ test("site plan: a pad sketch keeps exact positions, in feet, on the real lot", 
   const shed = plan.structures[0];
   assert.equal(shed.name, "Shed");
   assert.ok(Math.abs(Math.hypot(shed.poly[1][0] - shed.poly[0][0], shed.poly[1][1] - shed.poly[0][1]) - 80 * feetPerPx) < 0.5, "drawn size comes through exactly");
-  assert.ok(Math.abs(plan.lines[0].len - 300 * feetPerPx) < 0.5);
   assert.equal(plan.lines[0].proposed, true);
+  assert.ok(plan.lines[0].len >= 300 * feetPerPx - 0.5, "a proposed line reaches the lot lines");
   const label = planFor({ parcel, marks: { map, items: [{ type: "line", a: [450, 450], b: [750, 450], dash: true }, { type: "label", text: "Lot line, 500 ft", x: 600, y: 455 }] } });
   assert.ok(label.conflicts.some((x) => /your label and drawing differ/.test(x.title)), "a label far from the drawn length is a question");
 });
@@ -338,7 +338,7 @@ test("site plan: marks on the map are measured from the map, and lots with room 
   const { lotMinimums, roomyLots, parcelFrame } = require("../../lib/siteplan");
   const parcel = parcelOf("345 E Jessop Ave");
   const map = { meters: 100, svg: [1200, 900], box: [0, 0, 1200, 900] };
-  const plan = planFor({ parcel, marks: { map, items: [{ type: "box", a: [560, 400], b: [640, 500] }, { type: "line", a: [450, 450], b: [750, 450], dash: true }] } });
+  const plan = planFor({ parcel, marks: { map, items: [{ type: "box", a: [560, 400], b: [640, 500] }, { type: "line", a: [450, 520], b: [750, 520], dash: true }] } });
   assert.equal(plan.structures[0].sizeSource.w, "map");
   assert.equal(plan.lines[0].source, "map");
   assert.equal(plan.conflicts.length, 0, "nothing to ask the resident");
@@ -354,4 +354,43 @@ test("site plan: marks on the map are measured from the map, and lots with room 
     assert.ok(p.areaSqft >= 2 * min.area, id);
     assert.ok(parcelFrame(gis, p).road, id + " is on a named street");
   }
+});
+
+test("site plan: a wobbly hand stroke becomes a clean lot line, and the two new lots are measured", () => {
+  const { padToFeet } = require("../../lib/siteplan");
+  const parcel = parcelOf("345 E Jessop Ave");
+  const map = { meters: 100, svg: [1200, 900], box: [0, 0, 1200, 900] };
+  // An L-shaped stroke with a shaky hand, stopping short of the lot lines.
+  const pts = [];
+  for (let i = 0; i <= 40; i++) pts.push([600 + Math.sin(i) * 2, 330 + i * 3]);
+  for (let i = 1; i <= 40; i++) pts.push([600 + i * 3.4, 450 + Math.cos(i) * 2]);
+  const plan = planFor({ parcel, marks: { map, items: [{ type: "pen", pts }] } });
+  assert.equal(plan.scribbles.length, 0, "no squiggle is left on the plan");
+  assert.equal(plan.lines.length, 1);
+  const line = plan.lines[0];
+  assert.equal(line.name, "Proposed lot line");
+  assert.ok(line.pts.length <= 4, "the wobble is gone: " + line.pts.length + " points");
+  assert.equal(plan.lots.length, 2);
+  assert.ok(Math.abs(plan.lots[0].area + plan.lots[1].area - plan.area) < 1, "the two lots add up to the whole lot");
+  assert.ok(plan.lots[0].feet >= plan.lots[1].feet, "lot 1 has the most frontage");
+  assert.ok(plan.lots[0].feet > 50, "frontage is measured along the street: " + plan.lots[0].feet);
+  assert.ok(plan.minimums === null || plan.minimums.area > 0);
+  const svg = siteplan.renderSvg({ ...plan, facts: { city: "Trust City", notice: "x" } });
+  assert.match(svg, /Lot 1/);
+  assert.match(svg, /PROPOSED LOTS/);
+  assert.doesNotMatch(svg, /complies with|meets the code|approved/i);
+});
+
+test("site plan: buildings from the aerial photo are placed, measured to the new line, and a line through one is a question", () => {
+  const parcel = parcelOf("345 E Jessop Ave");
+  const map = { meters: 100, svg: [1200, 900], box: [0, 0, 1200, 900] };
+  const buildings = { map, boxes: [{ a: [560, 400], b: [640, 470] }, { a: [700, 420], b: [720, 440] }, { a: [5, 5], b: [40, 40] }] };
+  const beside = { map, items: [{ type: "line", a: [450, 520], b: [750, 520], dash: true }] };
+  const plan = planFor({ parcel, marks: beside, buildings });
+  assert.equal(plan.structures.length, 2, "only buildings on the lot");
+  assert.equal(plan.structures[0].sizeSource.w, "aerial");
+  assert.equal(plan.structures[1].minor, true);
+  assert.ok(plan.structures[0].toLine.value > 0, "measured to the new line");
+  const through = planFor({ parcel, marks: { map, items: [{ type: "line", a: [450, 440], b: [750, 440], dash: true }] }, buildings });
+  assert.ok(through.conflicts.some((c) => /runs through/.test(c.title)));
 });

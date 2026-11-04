@@ -378,6 +378,12 @@
     });
     document.body.appendChild(overlay);
     redraw();
+    // Changing a drawing starts from the one already made, on the same map.
+    var old = opts.marks;
+    if (old && old.map && opts.parcel && old.map.svg[0] === W && old.map.svg[1] === H) {
+      marks = old.items.map(function (m) { var c = {}; Object.keys(m).forEach(function (k) { c[k] = m[k]; }); c.color = m.dash ? NEW : INK; c.width = 7; return c; });
+      showMap(opts.parcel);
+    }
   }
 
   window.CCSketch = { open: open };

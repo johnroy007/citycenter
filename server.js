@@ -17,6 +17,7 @@ const { createClient, MetaError } = require("./lib/meta");
 const { runTurn } = require("./lib/desk");
 const { missingRequired } = require("./lib/servicedesk");
 const siteplan = require("./lib/siteplan");
+const { parseSamText } = require("./lib/segment");
 const { zoneSetbacks } = require("./lib/tools");
 const review = require("./lib/review");
 const { validateImage } = require("./lib/sketch");
@@ -49,7 +50,7 @@ const deskTools = [...tools.filter((t) => ["search_code", "get_section", "lookup
 const store = openStore(null, { refPrefix: town.refPrefix });
 store.clearBusy();
 const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage(u), canCall: () => store.callsToday().n < DAILY_CAP });
-const ctx = { store, client, town, code, gis, tools, services, deskTools, model: MODEL };
+const ctx = { store, client, town, code, gis, tools, services, deskTools, model: MODEL, drawSitePlan };
 // Any two- or three-letter prefix is accepted, so references made before the town's prefix changed (HC-...) keep working.
 const REF_RE = /^[A-Z]{2,3}-\d{4}-\d{4}$/;
 // A visit code is the reference plus the access key in one string, e.g. TC-2026-0107-xzUHULux. Residents type only that.
@@ -191,8 +192,49 @@ function marksFor(s) {
   const m = s.sketch_marks;
   return m && m.map && s.parcel && m.map.parcel && m.map.parcel !== s.parcel.id ? { ...m, map: null } : m;
 }
-function buildPlan(s, extraction, answers) {
-  return siteplan.build({ frame: () => siteplan.parcelFrame(gis, s.parcel), parcel: s.parcel, setbacks: planSetbacks(s), extraction, marks: marksFor(s), answers, facts: planFacts(s) });
+function planMinimums(s) {
+  const cfg = s.parcel && s.parcel.zone ? town.zones[s.parcel.zone] : null;
+  const sec = cfg ? code.getSection(cfg.standardsSection) : null;
+  const min = sec ? siteplan.lotMinimums(sec.text, s.parcel.zone) : null;
+  return min ? { ...min, zone: s.parcel.zone } : null;
+}
+function buildPlan(s, extraction, answers, buildings) {
+  return siteplan.build({ frame: () => siteplan.parcelFrame(gis, s.parcel), parcel: s.parcel, setbacks: planSetbacks(s), extraction, marks: marksFor(s), buildings: buildings === undefined ? (s.site_plan && s.site_plan.buildings) || null : buildings, minimums: planMinimums(s), answers, facts: planFacts(s) });
+}
+
+/** SAM 3.1 finds the buildings on the aerial photo of the lot. Best effort: no picture or no answer just means no buildings on the plan. */
+async function aerialBuildings(parcel) {
+  const width = 1200, height = 900, meters = siteplan.viewMeters(parcel);
+  try {
+    const data = await aerialImage({ center: parcel.centroid, meters, width, height });
+    if (!data) return null;
+    const boxes = parseSamText(await client.segmentImage({ mime: "image/jpeg", data, prompt: "building" }))
+      .map((r) => r.box)
+      .filter((b) => (b.c || 0) >= 0.5)
+      .map((b) => ({ a: [b.x1, b.y1], b: [b.x2, b.y2] }));
+    return { map: { meters, svg: [width, height], box: [0, 0, width, height] }, boxes, parcel: parcel.id };
+  } catch (e) {
+    console.error(`aerial buildings: ${e.message}`);
+    return null;
+  }
+}
+
+/** Draw or redraw the concept plan from whatever the resident gave: map marks, a hand drawing, or only words. */
+async function drawSitePlan(ref) {
+  const s = store.getSession(ref);
+  if (!s.parcel) return null;
+  const marks = marksFor(s);
+  let extraction = { lot: {}, structures: [], lines: [] };
+  if (!(marks && marks.map)) {
+    const reading = (s.steps.find((x) => x.name === "sketch") || {}).output;
+    extraction = await siteplan.extractPlan(client, { image: s.has_sketch ? store.getSketch(ref) : null, town, reading, messages: s.messages, parcel: s.parcel, model: MODEL });
+  }
+  const kept = s.site_plan && s.site_plan.buildings;
+  const buildings = kept && kept.parcel === s.parcel.id ? kept : await aerialBuildings(s.parcel);
+  const plan = buildPlan(s, extraction, {}, buildings);
+  if (plan.error) return plan;
+  store.updateSession(ref, { site_plan: { extraction, answers: {}, plan, buildings, created_at: new Date().toISOString() } });
+  return plan;
 }
 
 /** The window a map request asks for, or null when it is nowhere near the town. Only plain numbers leave this function. */
@@ -430,7 +472,7 @@ async function handle(req, res) {
 
   // Resident: read, message, submit, sketch. The visit code is required for everything except the drawing and the
   // signature image, which the (open) staff workspace shows. Only the visit code can read or change a visit here.
-  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature|pin|siteplan\.svg|siteplan\/answer|siteplan))?$/);
+  m = p.match(/^\/api\/sessions\/([^/]+)(?:\/(messages|submit|sketch|packet|sign|signature|pin|siteplan\.svg|siteplan\/answer|siteplan\/confirm|siteplan))?$/);
   if (m) {
     if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
     let ref = decodeURIComponent(m[1]).trim();
@@ -522,17 +564,12 @@ async function handle(req, res) {
       // Draw the concept plan from the sketch. A pad sketch over the parcel map needs no reading; a paper one goes to Muse Spark.
       if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many requests. Please slow down.");
       if (s.busy) return sendError(res, 409, "The desk is still working. Try again when it finishes.");
-      if (!s.has_sketch) return sendError(res, 400, "Draw or upload a sketch first.");
+      if (!s.has_sketch && !s.parcel) return sendError(res, 400, "Draw or upload a sketch first.");
       try {
-        let extraction = { lot: {}, structures: [], lines: [] };
         const marks = marksFor(s);
-        if (!(marks && marks.map && s.parcel)) {
-          const reading = (s.steps.find((x) => x.name === "sketch") || {}).output;
-          extraction = await siteplan.extractPlan(client, { image: store.getSketch(ref), town, reading, messages: s.messages, parcel: s.parcel, model: MODEL });
-        }
-        const plan = buildPlan(s, extraction, {});
+        const plan = await drawSitePlan(ref);
+        if (!plan) return sendError(res, 400, "I need the property's address to draw this to scale.");
         if (plan.error) return sendError(res, 400, plan.error);
-        store.updateSession(ref, { site_plan: { extraction, answers: {}, plan, created_at: new Date().toISOString() } });
         store.addMessage(ref, { role: "desk", department: s.department || "front_desk", character: s.character, text: plan.open ? `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. ${plan.open} measurement question${plan.open > 1 ? "s need" : " needs"} your answer before it's final.` : marks && marks.map ? `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet, measured from the map. It is a concept, not a survey.` : `I drew your concept site plan to scale at 1 inch = ${plan.feetPerInch} feet. It is a concept, not a survey. Check the measurements marked ≈ and tell me if any are wrong.` });
         return sendJson(res, 200, { ok: true, open: plan.open });
       } catch (e) {
@@ -540,6 +577,14 @@ async function handle(req, res) {
         if (st === 500) console.error(e);
         return sendError(res, st, msg);
       }
+    }
+    if (req.method === "POST" && action === "siteplan/confirm") {
+      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many requests. Please slow down.");
+      if (!s.site_plan) return sendError(res, 400, "There is no site plan yet.");
+      store.updateSession(ref, { site_plan: { ...s.site_plan, confirmed_at: new Date().toISOString() } });
+      store.addMessage(ref, { role: "resident", text: "The site plan looks right." });
+      store.addMessage(ref, { role: "desk", department: s.department || "front_desk", character: s.character, text: "Thanks. I'll keep this plan with your application, so city staff can review it. It is a concept, not a survey." });
+      return sendJson(res, 200, { ok: true });
     }
     if (req.method === "POST" && action === "siteplan/answer") {
       if (!s.site_plan) return sendError(res, 400, "There is no site plan yet.");
@@ -557,7 +602,7 @@ async function handle(req, res) {
       }
       const plan = buildPlan(s, s.site_plan.extraction, answers);
       if (plan.error) return sendError(res, 400, plan.error);
-      store.updateSession(ref, { site_plan: { ...s.site_plan, answers, plan } });
+      store.updateSession(ref, { site_plan: { ...s.site_plan, answers, plan, confirmed_at: null } });
       return sendJson(res, 200, { ok: true, open: plan.open });
     }
     if (req.method === "POST" && action === "pin") {

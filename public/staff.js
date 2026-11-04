@@ -354,6 +354,7 @@
     if (s.site_plan && s.site_plan.plan) tabs.push({ label: "Site plan", render: function (box) {
       var sp = s.site_plan.plan;
       box.appendChild(el("div", { class: "small", text: "Concept only, not a survey. Drawn at 1 inch = " + sp.feetPerInch + " feet from the resident's measurements and public parcel data." }));
+      box.appendChild(el("div", { class: "small", text: s.site_plan.confirmed_at ? "The resident confirmed this plan." : "The resident has not confirmed this plan yet." }));
       (sp.conflicts || []).forEach(function (c) { box.appendChild(el("div", { class: "notice warn", text: c.title + ": " + c.detail + " (resident's answer: " + (c.answer || "none yet") + ")" })); });
       box.appendChild(el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/siteplan.svg", alt: "Concept site plan", style: "width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px" }));
       box.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener", text: "Print at true scale" }));

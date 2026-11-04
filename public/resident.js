@@ -160,9 +160,10 @@
   }
   var pendingImage = null;
   // A sketch drawn here takes the same path as an uploaded drawing.
-  function openSketchPad() {
+  function openSketchPad(keepDrawing) {
     CCSketch.open({
       parcel: state.session && state.session.parcel ? state.session.parcel : null,
+      marks: keepDrawing === true && state.session ? state.session.sketch_marks : null,
       phone: isPhone(),
       onDone: function (image, marks, address) { sendMessage($("text").value.trim() || (address ? "Here is my site sketch for " + address + "." : "Here is my site sketch."), image, marks); },
     });
@@ -355,6 +356,10 @@
       chip("Skip for now", function () { state.skipSketch = true; renderChat(state.session); });
     }
     if (s && s.has_sketch && !s.site_plan && m.role === "desk") chip("Make a to-scale site plan", function () { makeSitePlan(); }, "primary");
+    if (m.offers_plan_check && s && s.site_plan && !s.site_plan.confirmed_at) {
+      chip("Looks right", confirmPlan, "primary");
+      chip("Change the drawing", function () { openSketchPad(true); });
+    }
     if (m.offers_pin && s && !s.submitted_at) chip("Mark it on the map", function () { state.channel = "map"; state.manual = true; phoneShow("screen"); renderScreen(state.session); renderRemote(state.session); }, "primary");
     if (m.offers_submit && s && ["open", "ready"].includes(s.status) && s.packet && (s.parcel || isService(s)) && !s.submitted_at) {
       if (signatureFree(s)) chip("Send it", function () { sendWithoutSignature(); }, "primary");
@@ -726,6 +731,27 @@
       poll();
     } catch (e) { state.planError = e.message; renderScreen(state.session); }
   }
+  async function confirmPlan() {
+    try {
+      await api("/api/sessions/" + encodeURIComponent(state.ref) + "/siteplan/confirm?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" });
+      poll();
+    } catch (e) { $("formMsg").textContent = e.message; }
+  }
+  // The plan, right above the application, with the one question that matters.
+  function planCheck(screen, s) {
+    var sp = s.site_plan && s.site_plan.plan;
+    if (!sp) return;
+    var src = "/api/sessions/" + encodeURIComponent(s.ref) + "/siteplan.svg?key=" + encodeURIComponent(state.key) + "&t=" + encodeURIComponent(s.updated_at);
+    screen.appendChild(el("h2", { text: "Your concept site plan" }));
+    screen.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener" }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]));
+    if (s.site_plan.confirmed_at) { screen.appendChild(el("p", { class: "small", text: "You confirmed this plan. It stays with your application." })); return; }
+    var yes = el("button", { type: "button", text: "Looks right" });
+    var change = el("button", { type: "button", class: "quiet", text: "Change the drawing" });
+    yes.addEventListener("click", confirmPlan);
+    change.addEventListener("click", function () { openSketchPad(true); });
+    screen.appendChild(el("p", { text: "Does this look right? It is a concept, not a survey." }));
+    screen.appendChild(el("div", { class: "row" }, [yes, change]));
+  }
   function sitePlanBlock(screen, s) {
     var sp = s.site_plan && s.site_plan.plan;
     screen.appendChild(el("h2", { text: "Concept site plan" }));
@@ -878,6 +904,7 @@
     var pt = (town && town.packetTypes && town.packetTypes[p.packet_type]) || "Packet";
     screen.appendChild(el("p", { class: "lead", text: pt + ": " + (p.title || "") + ". " + (p.one_line_summary || "") }));
     if (p.process_summary) screen.appendChild(el("div", { class: "notice", text: p.process_summary }));
+    planCheck(screen, s);
     var pages = el("div", { class: "pages" });
     var sigSrc = s.signature ? "/api/sessions/" + encodeURIComponent(state.ref) + "/signature?key=" + encodeURIComponent(state.key) + "&t=" + encodeURIComponent(s.signature.signed_at) : null;
     (p.documents || []).forEach(function (d, di) {

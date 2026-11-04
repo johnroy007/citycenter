@@ -11,21 +11,10 @@
 const INTRO_VOICE = "en-US-Chirp3-HD-Kore"; // a second voice for the opening statement (Google voice five)
 
 module.exports = [
-  // ---------- Opening statement, in a second voice: built during the event, and the Meta models it uses (about 30 s) ----------
+  // ---------- Opening statement, in a second voice: built during the event (about 9 s) ----------
   {
-    id: "built", card: "built", fadeIn: 0.6, voice: INTRO_VOICE,
+    id: "built", card: "built", fadeIn: 0.6, fadeOut: 0.5, voice: INTRO_VOICE,
     say: "CityCenter was built for the Meta Global AI Developer Hackathon, entirely during the dates of the event, October twenty-sixth to November fourth, twenty twenty-six.",
-  },
-  {
-    id: "models", card: "models", fadeOut: 0.5, voice: INTRO_VOICE,
-    say: "It runs on Meta's models. Muse Spark understands each request, researches the city code with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 outlines drawings. Muse Voice Transcribe lets residents talk instead of type. Muse Wonder gives staff a second read. And Muse Image drew the characters and this video's art.",
-    rows: [
-      { model: "Muse Spark", text: "understands requests · researches the code with tool calls · fills in forms · prepares staff reviews" },
-      { model: "SAM 3.1", text: "outlines the shapes in residents' drawings" },
-      { model: "Muse Voice Transcribe", text: "residents talk instead of typing" },
-      { model: "Muse Wonder", text: "a second read for staff" },
-      { model: "Muse Image", text: "drew the characters, the office and this video's art" },
-    ],
   },
 
   // ---------- Act 1: the problem (about 70 s). Opening words are John's. ----------
@@ -129,13 +118,24 @@ module.exports = [
     say: "Fourth: a return letter, written from the planner's decisions, and sent back to Devon.",
   },
 
-  // ---------- Act 4: the line it never crosses, and the close (about 25 s) ----------
+  // ---------- Act 4: the line it never crosses, the Meta models (still in the second voice), and the close (about 35 s) ----------
   {
     id: "line", card: "line", fadeIn: 0.4,
     say: "The AI never recommends a decision, never predicts the outcome, and never rates the person. Only real city officials decide.",
   },
   {
-    id: "close", card: "close", fadeOut: 1.2,
+    id: "models", card: "models", fadeOut: 0.4, voice: INTRO_VOICE,
+    say: "It runs on Meta's models. Muse Spark understands each request, researches the city code with tool calls, fills in forms, and prepares staff reviews. SAM 3.1 outlines drawings. Muse Voice Transcribe lets residents talk instead of type. Muse Wonder gives staff a second read. And Muse Image drew the characters and this video's art.",
+    rows: [
+      { model: "Muse Spark", text: "understands requests · researches the code with tool calls · fills in forms · prepares staff reviews" },
+      { model: "SAM 3.1", text: "outlines the shapes in residents' drawings" },
+      { model: "Muse Voice Transcribe", text: "residents talk instead of typing" },
+      { model: "Muse Wonder", text: "a second read for staff" },
+      { model: "Muse Image", text: "drew the characters, the office and this video's art" },
+    ],
+  },
+  {
+    id: "close", card: "close", fadeIn: 0.4, fadeOut: 1.2,
     say: "CityCenter. Meta's AI carries the process, so every neighbor gets the same fair process.",
   },
 ];

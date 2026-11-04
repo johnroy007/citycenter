@@ -3,11 +3,11 @@
 The 3-minute submission video is built by scripts, from the real live site, so it can be rebuilt any time the app or the words change. Nothing here is part of the app; it uses only Node built-ins, Chrome and ffmpeg (no npm packages).
 
 ## The story (an opening statement, then four acts)
-0. **Opening statement (about 30 s), in a second voice (`voice` on the scene, Google voice Kore).** CityCenter was built for the Meta Global AI Developer Hackathon, entirely during the event (Oct 26 – Nov 4, 2026), then a card of the five Meta models that lights up each one as it is named.
+0. **Opening statement (about 9 s), in a second voice (`voice` on the scene, Google voice Kore).** CityCenter was built for the Meta Global AI Developer Hackathon, entirely during the event (Oct 26 – Nov 4, 2026).
 1. **The problem (about 70 s).** John's opening: "Do you trust your government?" Most people meet government locally (about 91,000 local governments in the U.S., Census of Governments 2022: 90,837). Officials are elected neighbors, residents aren't bureaucrats, but fairness needs a heavy process; when the process is too hard it gets personal and trust breaks. CityCenter lets residents be residents and gives officials the tools to treat everyone the same. Illustrations made with Muse Image (`art/`).
 2. **The resident (about 50 s).** A lot-split visit with an invented resident, recorded on the live site: plain words, hand-off to Planning, parcel map, code with verified quotes, SAM 3.1 drawing outlines, a city-style form, signature, submit.
 3. **The staff (about 40 s).** The same application in the four-step workspace: what was submitted, the code, point-by-point review with Muse Wonder's second read, the return letter sent back.
-4. **The line and the close (about 20 s).** The AI never recommends, predicts or rates; only real city officials decide. Models used, live link, code link.
+4. **The line, the models and the close (about 35 s).** The AI never recommends, predicts or rates; only real city officials decide. Then, in the second voice, a card of the five Meta models that lights up each one as it is named. Last, the live link and code link.
 
 Small labels at the top of the screen name the Meta model doing each job. Sped-up waiting shows a "▶▶ N× speed" badge, so nothing is hidden.
 

@@ -25,9 +25,19 @@ const fixtures = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "fixtures
 
 let ctx = null;
 const usage = { calls: 0, p: 0, c: 0 };
+const quotes = new Map(); // each different quote the models proposed -> its best result (a quote may be tried against several sections)
 if (HAVE_KEY) {
   const town = loadTown("trust-city");
   const code = loadCode(town);
+  const verify = code.verifyQuote;
+  const rank = { rejected: 0, looser: 1, exact: 2 };
+  code.verifyQuote = (quote, section) => {
+    const r = verify(quote, section);
+    const got = r.verified ? (r.approximate ? "looser" : "exact") : "rejected";
+    const key = String(quote || "").trim();
+    if (key && (!quotes.has(key) || rank[got] > rank[quotes.get(key)])) quotes.set(key, got);
+    return r;
+  };
   const gis = loadGis(town);
   const { tools } = createTools({ code, gis, town });
   const store = openStore(fs.mkdtempSync(path.join(os.tmpdir(), "cc-live-")), { refPrefix: town.refPrefix });
@@ -43,7 +53,11 @@ if (HAVE_KEY) {
   ctx = { store, client, town, code, gis, tools, services, deskTools, model: process.env.META_MODEL || "muse-spark-1.3" };
 }
 test.after(() => {
-  if (HAVE_KEY) console.log(`live usage: ${usage.calls} calls, ${usage.p} in / ${usage.c} out tokens`);
+  if (!HAVE_KEY) return;
+  console.log(`live usage: ${usage.calls} calls, ${usage.p} in / ${usage.c} out tokens`);
+  const count = (k) => [...quotes.values()].filter((v) => v === k).length;
+  console.log(`quotes proposed: ${quotes.size} different; exact ${count("exact")}, looser ${count("looser")}, removed ${count("rejected")}`);
+  if (process.env.MEASURE_OUT) fs.writeFileSync(process.env.MEASURE_OUT, JSON.stringify({ usage, quotes: [...quotes] }, null, 1));
 });
 
 const arr = (v) => (Array.isArray(v) ? v : [v]);

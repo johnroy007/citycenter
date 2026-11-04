@@ -357,7 +357,7 @@
       box.appendChild(el("div", { class: "small", text: s.site_plan.confirmed_at ? "The resident confirmed this plan." : "The resident has not confirmed this plan yet." }));
       (sp.conflicts || []).forEach(function (c) { box.appendChild(el("div", { class: "notice warn", text: c.title + ": " + c.detail + " (resident's answer: " + (c.answer || "none yet") + ")" })); });
       box.appendChild(el("img", { src: "/api/sessions/" + encodeURIComponent(s.ref) + "/siteplan.svg", alt: "Concept site plan", style: "width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px" }));
-      box.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener", text: "Print at true scale" }));
+      box.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), text: "Download and print" }));
     } });
     if (s.pin) tabs.push({ label: "Map pin", render: function (box) {
       box.appendChild(el("div", { text: [s.pin.road ? "Near " + s.pin.road : "", s.pin.address ? "closest address " + s.pin.address : "", s.pin.lat.toFixed(5) + ", " + s.pin.lon.toFixed(5)].filter(Boolean).join(" · ") }));

@@ -210,7 +210,11 @@ function planMinimums(s) {
   const cfg = s.parcel && s.parcel.zone ? town.zones[s.parcel.zone] : null;
   const sec = cfg ? code.getSection(cfg.standardsSection) : null;
   const min = sec ? siteplan.lotMinimums(sec.text, s.parcel.zone) : null;
-  return min ? { ...min, zone: s.parcel.zone } : null;
+  // The flag lot limits, read from the code's own sentence: "... of the staff portion at any point shall be twenty six feet (26') ... maximum length of a staff shall be five hundred feet (500')".
+  const fl = code.getSection(town.gis.flagLotSection), text = fl ? fl.text : "";
+  const width = text.match(/minimum width of the staff[^.]*\((\d+)'\)/i), length = text.match(/maximum length of a staff[^.]*\((\d+)'\)/i);
+  const flag = width && length ? { section: fl.id, minWidth: Number(width[1]), maxLength: Number(length[1]) } : null;
+  return min || flag ? { ...(min || {}), zone: s.parcel && s.parcel.zone, flag } : null;
 }
 function buildPlan(s, extraction, answers, buildings) {
   return siteplan.build({ frame: () => siteplan.parcelFrame(gis, s.parcel), parcel: s.parcel, setbacks: planSetbacks(s), extraction, marks: marksFor(s), buildings: buildings === undefined ? (s.site_plan && s.site_plan.buildings) || null : buildings, minimums: planMinimums(s), answers, facts: planFacts(s) });

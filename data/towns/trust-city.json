@@ -39,6 +39,7 @@
       "addressField": "PARCEL_ADD",
       "credit": "Parcels: UGRC SGID (data modified), CC BY 4.0"
     },
+    "flagLotSection": "152-37-10",
     "aerial": {
       "url": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage",
       "credit": "Aerial: USDA NAIP via USGS The National Map"

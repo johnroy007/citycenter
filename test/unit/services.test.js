@@ -368,15 +368,15 @@ test("site plan: a wobbly hand stroke becomes a clean lot line, and the two new 
   assert.equal(plan.scribbles.length, 0, "no squiggle is left on the plan");
   assert.equal(plan.lines.length, 1);
   const line = plan.lines[0];
-  assert.equal(line.name, "Proposed lot line");
+  assert.equal(line.name, "Proposed new lot line");
   assert.ok(line.pts.length <= 4, "the wobble is gone: " + line.pts.length + " points");
   assert.equal(plan.lots.length, 2);
   assert.ok(Math.abs(plan.lots[0].area + plan.lots[1].area - plan.area) < 1, "the two lots add up to the whole lot");
-  assert.ok(plan.lots[0].feet >= plan.lots[1].feet, "lot 1 has the most frontage");
-  assert.ok(plan.lots[0].feet > 50, "frontage is measured along the street: " + plan.lots[0].feet);
+  assert.deepEqual(plan.lots.map((l) => l.name), ["Proposed new lot", "Remaining lot"]);
+  assert.ok(plan.lots.some((l) => l.feet > 50), "frontage is measured along the street");
   assert.ok(plan.minimums === null || plan.minimums.area > 0);
   const svg = siteplan.renderSvg({ ...plan, facts: { city: "Trust City", notice: "x" } });
-  assert.match(svg, /Lot 1/);
+  assert.match(svg, /Proposed new lot/);
   assert.match(svg, /PROPOSED LOTS/);
   assert.doesNotMatch(svg, /complies with|meets the code|approved/i);
 });
@@ -404,8 +404,33 @@ test("site plan: north is at the top of the page, and a map sketch says what it 
   const parcel = parcelOf("345 E Jessop Ave");
   const map = { meters: 100, svg: [1200, 900], box: [0, 0, 1200, 900] };
   const plan = planFor({ parcel, marks: { map, items: [{ type: "line", a: [600, 330], b: [600, 570], dash: true }] } });
-  assert.match(drawingWords(plan), /split this lot into 2 lots/);
+  assert.match(drawingWords(plan), /a lot split: a proposed new lot of about/);
   const svg = siteplan.renderSvg(plan);
   assert.match(svg, /JESSOP AVE/);
   assert.equal(drawingWords(planFor({ parcel, marks: { map, items: [] } })), "");
+});
+
+test("site plan: a loop traced around part of the lot is read as the new lot, and a flag lot shape is found", () => {
+  const { padToFeet, parcelFrame } = require("../../lib/siteplan");
+  const parcel = gis.summarize(gis.getParcel("HD-SHCR-9-25"));
+  // John's drawing on this lot: up a strip from the street, across, then along the lot lines back to the start.
+  const frame = parcelFrame(gis, parcel), map = { meters: 57, svg: [1200, 900], box: [0, 0, 1200, 900] };
+  const toFeet = padToFeet(map);
+  // Invert the map: find the pixel for a spot on the lot by searching nearby, using the frame's own numbers.
+  const pixel = (target) => { let best = [600, 450], d = 1e9; for (let x = 0; x <= 1200; x += 4) for (let y = 0; y <= 900; y += 4) { const q = frame.toLot(toFeet([x, y])), e = Math.hypot(q[0] - target[0], q[1] - target[1]); if (e < d) { d = e; best = [x, y]; } } return best; };
+  const route = [[34, 2], [36, 60], [36, 130], [40, 165], [90, 173], [130, 174], [164, 175], [162, 240], [160, 290], [80, 292], [10, 290], [3, 200], [2, 100], [3, 20], [20, 2], [34, 2]];
+  const pts = [];
+  route.forEach((p, i) => { if (!i) return; const a = route[i - 1]; for (let t = 0; t < 8; t++) pts.push(pixel([a[0] + (p[0] - a[0]) * t / 8 + Math.sin(i * 5 + t) * 2, a[1] + (p[1] - a[1]) * t / 8])); });
+  const plan = planFor({ parcel, marks: { map, items: [{ type: "pen", pts }] }, minimums: { area: 8000, width: 80, zone: "R1-10", flag: { section: "152-37-10", minWidth: 26, maxLength: 500 } } });
+  assert.equal(plan.scribbles.length, 0, "the loop became a lot line, not a squiggle");
+  assert.equal(plan.lines[0].name, "Proposed new lot line");
+  const fresh = plan.lots.find((l) => l.isNew), left = plan.lots.find((l) => !l.isNew);
+  assert.equal(fresh.name, "Proposed new lot");
+  assert.ok(fresh.area > left.area * 0.5, "the outlined area is the new lot");
+  assert.ok(fresh.flag, "a strip to the street with a wider lot behind it is a flag lot");
+  assert.ok(Math.abs(fresh.flag.staffWidth - 34) < 8, "strip width: " + fresh.flag.staffWidth);
+  assert.ok(Math.abs(fresh.flag.staffLength - 170) < 25, "strip length: " + fresh.flag.staffLength);
+  const svg = siteplan.renderSvg({ ...plan, facts: { city: "x", notice: "x" } });
+  assert.match(svg, /Flag lot shape/);
+  assert.match(svg, /Section 152-37-10: strip at least 26 ft wide/);
 });

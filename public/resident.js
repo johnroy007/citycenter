@@ -770,6 +770,16 @@
       poll();
     } catch (e) { state.planError = e.message; renderScreen(state.session); }
   }
+  // Straight to the print window, where "Save as PDF" downloads it. The plan keeps its true scale on its own page.
+  function printPlan(s) {
+    var src = "/site-plan?ref=" + encodeURIComponent(s.ref);
+    if (isPhone()) { location.href = src; return; }
+    var old = document.getElementById("planFrame");
+    if (old) old.remove();
+    var frame = el("iframe", { id: "planFrame", src: src + "&print=1", title: "Concept site plan for printing" });
+    frame.style.position = "fixed"; frame.style.width = "0"; frame.style.height = "0"; frame.style.border = "0"; frame.style.right = "0"; frame.style.bottom = "0";
+    document.body.appendChild(frame);
+  }
   async function confirmPlan() {
     try {
       await api("/api/sessions/" + encodeURIComponent(state.ref) + "/siteplan/confirm?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" });
@@ -784,7 +794,7 @@
     var wrap = el("div", { class: "plan-check" });
     screen.appendChild(wrap);
     wrap.appendChild(el("h2", { text: "Your concept site plan" }));
-    wrap.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener" }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]));
+    wrap.appendChild(el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref) }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]));
     if (s.site_plan.confirmed_at) { wrap.appendChild(el("p", { class: "small", text: "You confirmed this plan. It stays with your application." })); return; }
     var yes = el("button", { type: "button", text: "Looks right" });
     var change = el("button", { type: "button", class: "quiet", text: "Change the drawing" });
@@ -795,36 +805,26 @@
   }
 
   // ---------- what's left to do, as a checklist ----------
-  function ticks(ref) { try { return JSON.parse(localStorage.getItem("cc_ticks_" + ref)) || {}; } catch (e) { return {}; } }
+  // The AI's review, not the resident's: it refreshes each time they send something, and nothing here can be ticked by hand.
   function stillNeeded(screen, s, p, blanks) {
-    var mine = ticks(s.ref), items = [];
-    items.push({ text: "Application prepared", done: true });
-    if (s.site_plan) items.push({ text: "Check your concept site plan", done: !!s.site_plan.confirmed_at });
-    (blanks || []).forEach(function (b) { items.push({ text: "Fill in: " + b, done: false }); });
-    (p.questions || []).forEach(function (q) { items.push({ text: q, tick: true, done: !!mine[q] }); });
-    items.push({ text: signatureFree(s) ? "Send it to " + deskName(s) : "Sign and submit to " + deskName(s), done: false });
-    var count = el("span", { class: "small" });
+    var items = [];
+    if (p.checklist && p.checklist.length) p.checklist.forEach(function (c) { items.push({ text: c.item, done: !!c.done }); });
+    else {
+      (blanks || []).forEach(function (b) { items.push({ text: b, done: false }); });
+      (p.questions || []).forEach(function (q) { items.push({ text: q, done: false }); });
+    }
+    if (s.site_plan) items.push({ text: "Your concept site plan checked", done: !!s.site_plan.confirmed_at });
+    // Always last, and only ticked once everything above it is.
+    items.push({ text: "Application prepared", done: items.every(function (i) { return i.done; }) });
     var list = el("ul", { class: "checklist-items" });
-    function refresh() { count.textContent = items.filter(function (i) { return i.done; }).length + " of " + items.length + " done"; }
     items.forEach(function (it) {
-      var box = el("input", { type: "checkbox", "aria-label": it.text });
-      box.checked = it.done;
-      // Only the items the resident handles can be ticked by hand; the app ticks the others itself.
-      box.disabled = !it.tick;
-      var row = el("li", { class: it.done ? "done" : "" }, [el("label", null, [box, el("span", { text: it.text })])]);
-      box.addEventListener("change", function () {
-        it.done = box.checked; row.className = it.done ? "done" : "";
-        var now = ticks(s.ref); if (it.done) now[it.text] = true; else delete now[it.text];
-        try { localStorage.setItem("cc_ticks_" + s.ref, JSON.stringify(now)); } catch (e) {}
-        refresh();
-      });
-      list.appendChild(row);
+      var mark = el("span", { class: "check-box" + (it.done ? " on" : ""), "aria-hidden": "true", text: it.done ? "✓" : "" });
+      list.appendChild(el("li", { class: it.done ? "done" : "" }, [mark, el("span", { text: it.text + (it.done ? "" : " (still needed)") })]));
     });
-    refresh();
     screen.appendChild(el("div", { class: "checklist" }, [
-      el("div", { class: "checklist-head" }, [el("h3", { text: "Still needed" }), count]),
+      el("div", { class: "checklist-head" }, [el("h3", { text: "Still needed" }), el("span", { class: "small", text: items.filter(function (i) { return i.done; }).length + " of " + items.length + " done" })]),
       list,
-      el("p", { class: "small", text: "Your ticks are only a reminder for you. Tell " + characterFor(s.department || "planning").character + " the answers so they go in your application." }),
+      el("p", { class: "small", text: characterFor(s.department || "planning").character + " reviews this each time you send something. It shows what has been provided, not whether anything meets the code. Only real City Officials can make decisions." }),
     ]));
   }
 
@@ -894,10 +894,11 @@
       box.appendChild(row);
       screen.appendChild(box);
     });
-    var open = el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener" }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]);
+    var open = el("a", { href: "/site-plan?ref=" + encodeURIComponent(s.ref) }, [el("img", { class: "planimg", src: src, alt: "Concept site plan, drawn to scale" })]);
     screen.appendChild(open);
     screen.appendChild(el("p", { class: "small", text: "To scale at 1 inch = " + sp.feetPerInch + " feet when printed from the button below. Measurements marked ≈ are estimates: tell " + characterFor(s.department || "front_desk").character + " if one is wrong." }));
-    var print = el("a", { class: "planprint", href: "/site-plan?ref=" + encodeURIComponent(s.ref), target: "_blank", rel: "noopener", text: "Print at true scale" });
+    var print = el("button", { type: "button", text: "Download and print" });
+    print.addEventListener("click", function () { printPlan(s); });
     var redo = el("button", { type: "button", class: "quiet", text: "Redraw from my sketch" });
     redo.addEventListener("click", makeSitePlan);
     screen.appendChild(el("div", { class: "row" }, [print, redo]));

@@ -388,9 +388,10 @@ table.standards td { font-size: 13px; }
 .checklist-head h3 { margin: 0; font-size: 16px; }
 .checklist-items { list-style: none; margin: 8px 0 6px; padding: 0; }
 .checklist-items li { padding: 6px 0; border-top: 1px solid var(--line); }
-.checklist-items label { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; line-height: 1.35; }
-.checklist-items input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: #1c7a4b; }
-.checklist-items li.done span { color: var(--muted); text-decoration: line-through; }
+.checklist-items li { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; line-height: 1.35; }
+.check-box { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-top: 1px; border: 2px solid #9aa6b8; border-radius: 4px; font-size: 13px; font-weight: 800; color: #fff; }
+.check-box.on { background: #1c7a4b; border-color: #1c7a4b; }
+.checklist-items li.done { color: var(--muted); }
 .checklist > .small { margin: 2px 0 0; }
 
 /* Staff queue: column heading menus (sort and filter) */

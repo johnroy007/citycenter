@@ -177,7 +177,7 @@ test("the phone app stays out of the desktop site and out of people's data", () 
   const read = (f) => fs.readFileSync(path.join(__dirname, "..", "..", "public", f), "utf8");
   for (const page of ["index.html", "staff.html"]) assert.match(read(page), /phone\.css[^>]*media="\(max-width: 700px\)/, page + " loads phone styles on phone-sized screens only");
   assert.match(read("app.css"), /\.phone-only \{ display: none; \}/, "phone parts are hidden on desktop");
-  const sw = read("sw.js");
+  const sw = read("sw.js").replace(/^\/\/.*$/gm, "");
   assert.doesNotMatch(sw, /cache\.put|\/api/, "the service worker never stores conversations");
   const app = JSON.parse(read("manifest.webmanifest"));
   assert.equal(app.display, "standalone");

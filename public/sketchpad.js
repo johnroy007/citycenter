@@ -378,6 +378,35 @@
     });
     document.body.appendChild(overlay);
     redraw();
+    // A worked example draws by itself, so a visitor can watch it happen. Points are in feet from the middle of the lot; y runs south.
+    async function playDrawing(p) {
+      var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+      start.click();
+      addressBox.value = p.address;
+      await wait(700);
+      await find();
+      for (var t = 0; t < 60 && !(base && lines && note.textContent === ""); t++) await wait(250);
+      if (!base || !overlay.isConnected) return;
+      await wait(1000);
+      var perFoot = H / (2 * base.meters * FEET_PER_M), at = function (q) { return [W / 2 + q[0] * perFoot, H / 2 + q[1] * perFoot]; };
+      pick("pen");
+      current = { type: "pen", pts: [at(p.line[0])], color: NEW, width: 8 };
+      for (var i = 1; i < p.line.length; i++) {
+        var a = at(p.line[i - 1]), b = at(p.line[i]);
+        for (var k = 1; k <= 28; k++) {
+          if (!overlay.isConnected) return;
+          var f = k / 28, shake = Math.sin(k * 1.7 + i) * 3;
+          current.pts.push([a[0] + (b[0] - a[0]) * f + shake, a[1] + (b[1] - a[1]) * f]);
+          redraw();
+          await wait(26);
+        }
+      }
+      remember(); marks.push(current); current = null;
+      redraw();
+      await wait(1200);
+      if (overlay.isConnected) use.click();
+    }
+    if (opts.play) playDrawing(opts.play);
     // Changing a drawing starts from the one already made, on the same map.
     var old = opts.marks;
     if (old && old.map && opts.parcel && old.map.svg[0] === W && old.map.svg[1] === H) {

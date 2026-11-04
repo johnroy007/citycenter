@@ -177,11 +177,12 @@ table.kv th { width: 34%; font-size: 12px; text-transform: none; letter-spacing:
 .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
 .toollog { font-size: 13px; color: var(--muted); }
 .toollog li { margin: 3px 0; }
-.demo-panel { position: fixed; right: 18px; top: 64px; width: 360px; max-width: calc(100vw - 36px); background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px; z-index: 20; }
+.demo-panel { position: fixed; right: 18px; top: 64px; width: 420px; max-width: calc(100vw - 36px); background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px; z-index: 20; }
 .demo-panel h2 { font-size: 16px; margin: 0 0 6px; }
-.demo-panel ul { list-style: none; padding: 0; margin: 8px 0; max-height: 50vh; overflow: auto; }
+.demo-panel ul { list-style: none; padding: 0; margin: 8px 0; max-height: 68vh; overflow: auto; }
 .demo-panel li { padding: 8px 10px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
 .demo-panel li:hover { background: #f3f7ff; border-color: #d6e0f5; }
+.demo-panel li.demo-group, .demo-panel li.demo-group:hover { margin-top: 8px; padding: 4px 10px; background: none; border-color: transparent; cursor: default; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .demo-panel form { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
 .demo-panel .tabs button.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 .demo-panel .notice { margin: 8px 0 0; }

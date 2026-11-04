@@ -105,3 +105,14 @@ test("zoneStandardsFromText handles a header row that names the zones", () => {
   const rows = zoneStandardsFromText("Development Standard | R1-10 | R1-8\nMinimum lot area | 8,000 sq. ft. | 6,400 sq. ft.\nMinimum lot width | 80 ft. | 70 ft.", "R1-8");
   assert.deepEqual(rows, [{ standard: "Minimum lot area", value: "6,400 sq. ft." }, { standard: "Minimum lot width", value: "70 ft." }]);
 });
+
+test("a resident who asks for a prediction gets the plain answer once, from code", () => {
+  const { predictionNote } = require("../../lib/desk");
+  const town = { wording: { staffDecide: "Only real City Officials can make decisions." } };
+  const asked = [{ role: "resident", text: "Will the city approve it? What are my chances?" }];
+  const note = predictionNote(asked, town);
+  assert.match(note, /can't tell you whether this will be approved/);
+  assert.match(note, /Only real City Officials/);
+  assert.equal(predictionNote([...asked, { role: "desk", text: note }], town), "", "said once");
+  assert.equal(predictionNote([{ role: "resident", text: "I want to split my lot." }], town), "");
+});

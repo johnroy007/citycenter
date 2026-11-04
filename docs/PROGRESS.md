@@ -90,6 +90,11 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — worked examples rebuilt
+20 examples in five groups by what they show (`group`, `shows` in `data/demo.json`): site plan from anything (map drawing, words, hand drawing, a drawing that doesn't match the parcel), reads the real code, three levels of help, guardrails (will I be approved, emergency, a drawing that gives orders), and one per department. Dropped: daycare, water leak, police standby, fire alarm. `draw` on an example makes the sketch pad draw by itself on the aerial map. All 20 played through the real desk on a local copy.
+Changes that came from those runs: a prediction question now gets a fixed answer from code, first in the reply (`predictionNote` in `lib/desk.js`). With a drawing, the plan is drawn before the code review, so its numbers are compared with the code. Lot-size questions stay until a line is actually drawn.
+The live test's cost and time figures predate this. A local copy stops at 400 model calls a day; set `DAILY_CALL_CAP` for long test runs.
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — pending messages, north up, code review follows the sketch
 - **Nothing bounces:** a message sent while the desk works waits in line, shown as Pending, and goes when the desk is free (`state.outbox`, `flushOutbox` in `public/resident.js`). The line lives in the open page, so closing the page loses a waiting message. The plan button does the same (`state.planWaiting`).
 - **Button renamed** Generate Site Sketch.

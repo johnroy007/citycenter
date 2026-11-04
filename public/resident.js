@@ -1161,8 +1161,10 @@
     if ($("demoList").children.length) return;
     try {
       var d = await api("/api/demo");
+      var group = null;
       d.examples.forEach(function (ex) {
-        var li = el("li", null, [el("div", null, [el("strong", { text: ex.title })]), el("div", { class: "small", text: ex.turns.length + " turn(s)" + (ex.sketch ? " · with a drawing" : "") })]);
+        if (ex.group !== group) { group = ex.group; $("demoList").appendChild(el("li", { class: "demo-group", text: group })); }
+        var li = el("li", null, [el("div", null, [el("strong", { text: ex.title })]), el("div", { class: "small", text: ex.shows })]);
         li.addEventListener("click", function () { startDemo(ex); });
         $("demoList").appendChild(li);
       });
@@ -1208,6 +1210,11 @@
     }
     if (d.turn >= d.example.turns.length) { $("demoStatus").textContent = "Example finished. If " + characterFor((state.session && state.session.department) || "planning").character + " still has questions, answer them yourself in the box below, edit the paperwork, or press Submit."; return; }
     var text = d.example.turns[d.turn];
+    if (d.example.draw && d.turn === 0) {
+      $("demoStatus").textContent = d.example.persona + " is drawing on the GIS map…";
+      CCSketch.open({ parcel: null, phone: isPhone(), play: d.example.draw, onDone: function (image, marks) { d.waiting = true; d.turn++; sendMessage(text, image, marks); $("demoStatus").textContent = "Waiting for the desk…"; } });
+      return;
+    }
     $("demoStatus").textContent = d.example.persona + " is typing (turn " + (d.turn + 1) + " of " + d.example.turns.length + ")…";
     var box = $("text"); box.value = ""; var i = 0;
     var iv = setInterval(function () {

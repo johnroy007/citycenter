@@ -6,7 +6,9 @@ Entry for the Indie track of the Meta Global AI Developer Hackathon (Oct 26 to N
 
 ## Judges: start here
 
-1. Open https://citycenter-puh5.onrender.com and press **Examples**, then choose Devon's lot split. It plays the resident's side while the desk answers live. A full example takes about five minutes, because each planner reply takes a minute or two.
+**Demo video (3 minutes):** https://youtu.be/1UKLjOt-okY
+
+1. Open https://citycenter-puh5.onrender.com and press **Examples**, then choose **Draw a lot split on the GIS map**. It draws by itself, then the desk answers live, which takes a minute or two. The list is grouped by what each example shows, including the guardrails.
 2. Or type your own request. Try "Can I keep a rooster at 595 E 1400 N?"
 3. Open https://citycenter-puh5.onrender.com/staff (no sign-in), pick a Submitted application, and walk the four steps across the bar. Opening a step for the first time runs the models, which can take up to two minutes.
 
@@ -26,8 +28,9 @@ Not ours: the town's code and the county and state map data, and the real public
 - The moment: *"It looks like you need a zoning map amendment and a lot split application. I have prepared them for your review. Hit Submit, edit them, or tell me what to change."* Residents can edit fields directly or just say what to change.
 - Department desks: Building, Utilities, Public Works, Police, Fire, Parks and Recreation, Code Enforcement and the City Recorder each answer questions from the real code and a sample procedure, then prepare the right form: for example a burn permit, a hydrant flow test, police standby for an event, or a pavilion reservation. Reports such as potholes need no signature.
 - Three levels of help at every department: **information** (the desk shows the code and draws no conclusion), a **certified question** (the desk helps the resident write it; staff answer in writing through the same four steps, and that answer can be relied on), and a **formal application** (a zoning verification, a lot split, a permit).
-- A site sketch pad: residents draw on screen, on a blank page or over their parcel map, with tools for lot lines, buildings, proposed lines and labels. The desk asks for a sketch on lot splits, accessory dwelling units and similar requests, and Muse Spark and SAM 3.1 read it like any drawing.
-- A concept site plan: from a sketch, plain code draws the real lot, buildings, proposed lines and the zone's setback lines at one true scale, ready to print. Sketches made over the parcel map keep their exact positions; paper sketches are read by Muse Spark, and any number not actually written is dropped. Each measurement shows its source, and numbers that can't all be true become questions for the resident. It is a concept, not a survey.
+- A site sketch pad: residents start on a blank page or find their lot on a GIS map with aerial photo, parcel, street and zoning layers, then draw with lines, shapes, colors, erase and undo. On the map, what they draw measures itself.
+- A concept site plan from a map drawing, a hand drawing or only words: plain code turns rough strokes into clean lines that meet the lot lines, works out the new lots, finds a flag lot shape and brings in that section of the code, and draws everything at one true scale with north up. SAM 3.1 finds the existing buildings on the aerial photo. The desk fills the numbers into the application and asks if the plan looks right.
+- A checklist of what the application still needs, reviewed by the AI on every turn, with documents attached to each line.
 - A phone app: on a phone the site becomes a chat with bottom tabs for the map, code, uploads and forms, and it can be installed to the home screen. It is the same site and server; desktop is unchanged.
 - A clickable street map: a resident marks a pothole on a real street, and the program finds the closest address and street for the crew.
 - Danger right now gets a fixed "call 911" message from plain code, before any model runs.
@@ -56,7 +59,7 @@ Not ours: the town's code and the county and state map data, and the real public
 | Code research, staff considerations, staff questions | `muse-spark-1.3` | Tool calling: `search_code`, `get_section`, `zone_info`, `lookup_parcel`, `lot_math`, `animal_points`, `process_info` |
 | Department desks: answers, forms and certified questions | `muse-spark-1.3` | Tool calling (`read_service`, `search_services`, `search_code`, `get_section`, `lookup_parcel`), then structured output; each form's field list is fixed in the schema |
 | Reading drawings and photos, at every desk, and reading sketches for the site plan | `muse-spark-1.3` | Image input with structured output |
-| Outlining the drawing | `sam-3.1` | Responses API, text-prompted boxes |
+| Outlining the drawing, finding buildings on the aerial photo | `sam-3.1` | Responses API, text-prompted boxes |
 | Resident speaks | `muse-voice-transcribe-1.0` | `POST /v1/asr/transcribe` (WAV built in the browser) |
 | Second read of the considerations | `muse-wonder-1.0` | Chat Completions |
 | Characters, office background, video art | `muse-image-1.0` | Generated once during the event (`scripts/make-characters.js`, `scripts/make-office.js`, `video/make-art.js`) |

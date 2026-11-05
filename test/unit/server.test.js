@@ -154,3 +154,26 @@ test("a session without an API key is accepted, ends in a clear error; reading n
   assert.ok(after.messages.some((m) => m.letter), "the resident sees the saved letter in the conversation");
   assert.equal(after.staff_actions.length, 1);
 });
+
+test("documents on the checklist: only real PDFs and pictures, only with the visit code, and they can be removed", async () => {
+  const visit = await (await post("/api/sessions", { text: "Hello, I have a question." })).json();
+  const url = `/api/sessions/${visit.ref}/documents`, key = `?key=${encodeURIComponent(visit.view_key)}`;
+  const pdf = Buffer.from("%PDF-1.4 sample").toString("base64");
+  assert.equal((await post(url, { item: "Water letter", name: "w.pdf", base64: pdf })).status, 403, "no visit code");
+  assert.equal((await post(url + key, { item: "Water letter", name: "w.pdf", base64: Buffer.from("<script>alert(1)</script>").toString("base64") })).status, 400, "a web page named .pdf is refused");
+  assert.equal((await post(url + key, { item: "", name: "w.pdf", base64: pdf })).status, 400, "it must belong to a line");
+  const made = await post(url + key, { item: "Water letter", name: "w<x>.pdf", base64: pdf });
+  assert.equal(made.status, 200);
+  const { id } = await made.json();
+  const got = await fetch(BASE + url + "/" + id);
+  assert.equal(got.headers.get("content-type"), "application/pdf");
+  assert.equal(got.headers.get("x-content-type-options"), "nosniff");
+  assert.match(got.headers.get("content-disposition"), /filename="w_x_.pdf"/);
+  const s = await (await fetch(BASE + `/api/sessions/${visit.ref}` + key)).json();
+  assert.equal(s.documents.length, 1);
+  assert.equal(s.documents[0].item, "Water letter");
+  assert.equal(s.documents[0].data, undefined, "the file itself never rides along with the visit");
+  assert.equal((await fetch(BASE + url + "/" + id, { method: "DELETE" })).status, 403);
+  assert.equal((await fetch(BASE + url + "/" + id + key, { method: "DELETE" })).status, 200);
+  assert.equal((await fetch(BASE + url + "/" + id)).status, 404);
+});

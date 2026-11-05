@@ -388,7 +388,22 @@ table.standards td { font-size: 13px; }
 .checklist-head h3 { margin: 0; font-size: 16px; }
 .checklist-items { list-style: none; margin: 8px 0 6px; padding: 0; }
 .checklist-items li { padding: 6px 0; border-top: 1px solid var(--line); }
-.checklist-items li { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; line-height: 1.35; }
+.checklist-items li { font-size: 14px; line-height: 1.35; }
+.check-line { display: flex; align-items: flex-start; gap: 9px; }
+.check-text { flex: 1; min-width: 0; }
+.check-attach { flex: none; }
+.check-attach button { padding: 3px 10px; font-size: 13px; }
+.doc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 2px 27px; }
+.doc-pair { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; }
+.doc-chip { display: inline-flex; align-items: center; gap: 7px; min-width: 0; padding: 3px 10px 3px 3px; font-size: 13px; font-weight: 500; background: #f3f7ff; color: var(--ink); border: 1px solid #d6e0f5; border-radius: 8px; }
+.doc-thumb { flex: none; width: 34px; height: 34px; object-fit: cover; border-radius: 5px; }
+.doc-thumb.pdf { display: inline-flex; align-items: center; justify-content: center; background: #a02020; color: #fff; font-size: 10px; font-weight: 800; }
+.doc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+.doc-drop { padding: 0 6px; font-size: 16px; line-height: 1.4; background: none; border: 0; color: var(--muted); }
+.doc-panel { display: flex; flex-direction: column; gap: 10px; width: min(900px, 100%); max-height: 100%; padding: 14px 18px; overflow: auto; background: #fff; border-radius: 14px; }
+.doc-panel h2 { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
+.doc-image { display: block; max-width: 100%; max-height: 70vh; margin: 0 auto; }
+.doc-frame { width: 100%; height: 70vh; border: 1px solid var(--line); border-radius: 8px; }
 .check-box { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-top: 1px; border: 2px solid #9aa6b8; border-radius: 4px; font-size: 13px; font-weight: 800; color: #fff; }
 .check-box.on { background: #1c7a4b; border-color: #1c7a4b; }
 .checklist-items li.done { color: var(--muted); }

@@ -351,6 +351,13 @@
       box.appendChild(drawingWithOutline("/api/sessions/" + encodeURIComponent(s.ref) + "/sketch", skStep ? skStep.output : null));
       if (skStep && skStep.output) { var o = skStep.output; box.appendChild(el("p", { class: "small", text: "Read by Muse Spark as " + String(o.drawing_type || "").replace(/_/g, " ") + ", " + o.readability + ". SAM 3.1 outlines drawn on the image." + (o.building_code_site_plan_note ? " " + o.building_code_site_plan_note : "") })); if (o.dimensions && o.dimensions.length) box.appendChild(el("ul", null, o.dimensions.map(function (d) { return el("li", { text: d.what + ": " + d.value_text }); }))); }
     } });
+    if ((s.documents || []).length) tabs.push({ label: "Attached documents", render: function (box) {
+      s.documents.forEach(function (d) {
+        var src = "/api/sessions/" + encodeURIComponent(s.ref) + "/documents/" + d.id;
+        box.appendChild(el("p", null, [el("b", { text: d.item + ": " }), el("a", { href: src, target: "_blank", rel: "noopener", text: d.name })]));
+        if (d.mime !== "application/pdf") box.appendChild(el("img", { src: src, alt: d.name, style: "max-width:100%;border-radius:10px;border:1px solid var(--line)" }));
+      });
+    } });
     if (s.site_plan && s.site_plan.plan) tabs.push({ label: "Site plan", render: function (box) {
       var sp = s.site_plan.plan;
       box.appendChild(el("div", { class: "small", text: "Concept only, not a survey. Drawn at 1 inch = " + sp.feetPerInch + " feet from the resident's measurements and public parcel data." }));

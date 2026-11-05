@@ -357,6 +357,7 @@
     trackProgress(s);
     autoChannel(s);
     renderScreen(s);
+    if (state.keepScroll != null) { $("screen").scrollTop = state.keepScroll; state.keepScroll = null; }
     renderRemote(s);
     settleProgress(s);
   }
@@ -811,25 +812,83 @@
   // ---------- what's left to do, as a checklist ----------
   // The AI's review, not the resident's: it refreshes each time they send something, and nothing here can be ticked by hand.
   function stillNeeded(screen, s, p, blanks) {
-    var items = [];
-    if (p.checklist && p.checklist.length) p.checklist.forEach(function (c) { items.push({ text: c.item, done: !!c.done }); });
+    var items = [], docs = s.documents || [];
+    if (p.checklist && p.checklist.length) p.checklist.forEach(function (c) { items.push({ text: c.item, done: !!c.done, attach: true }); });
     else {
-      (blanks || []).forEach(function (b) { items.push({ text: b, done: false }); });
-      (p.questions || []).forEach(function (q) { items.push({ text: q, done: false }); });
+      (blanks || []).forEach(function (b) { items.push({ text: b, done: false, attach: true }); });
+      (p.questions || []).forEach(function (q) { items.push({ text: q, done: false, attach: true }); });
     }
+    // A document attached to a line counts as provided, whatever the last review said.
+    items.forEach(function (it) { if (docs.some(function (d) { return d.item === it.text; })) it.done = true; });
     if (s.site_plan) items.push({ text: "Your concept site plan checked", done: !!s.site_plan.confirmed_at });
     // Always last, and only ticked once everything above it is.
     items.push({ text: "Application prepared", done: items.every(function (i) { return i.done; }) });
     var list = el("ul", { class: "checklist-items" });
     items.forEach(function (it) {
       var mark = el("span", { class: "check-box" + (it.done ? " on" : ""), "aria-hidden": "true", text: it.done ? "✓" : "" });
-      list.appendChild(el("li", { class: it.done ? "done" : "" }, [mark, el("span", { text: it.text + (it.done ? "" : " (still needed)") })]));
+      var row = el("div", { class: "check-line" }, [mark, el("span", { class: "check-text", text: it.text + (it.done ? "" : " (still needed)") })]);
+      if (it.attach) row.appendChild(attachButton(s, it.text));
+      var li = el("li", { class: it.done ? "done" : "" }, [row]);
+      var mine = docs.filter(function (d) { return d.item === it.text; });
+      if (mine.length) li.appendChild(el("div", { class: "doc-chips" }, mine.map(function (d) { return docChip(s, d); })));
+      list.appendChild(li);
     });
+    // A document whose line the review has since reworded still shows, so nothing goes missing.
+    var known = items.map(function (i) { return i.text; }), other = docs.filter(function (d) { return known.indexOf(d.item) < 0; });
+    if (other.length) list.appendChild(el("li", null, [el("div", { class: "check-line" }, [el("span", { class: "check-text", text: "Other documents you attached" })]), el("div", { class: "doc-chips" }, other.map(function (d) { return docChip(s, d); }))]));
     screen.appendChild(el("div", { class: "checklist" }, [
       el("div", { class: "checklist-head" }, [el("h3", { text: "Still needed" }), el("span", { class: "small", text: items.filter(function (i) { return i.done; }).length + " of " + items.length + " done" })]),
       list,
       el("p", { class: "small", text: characterFor(s.department || "planning").character + " reviews this each time you send something. It shows what has been provided, not whether anything meets the code. Only real City Officials can make decisions." }),
+      el("p", { class: "small", text: "This is a public demo that others can see, so attach sample documents only. PDF, JPG or PNG, up to 5 MB." }),
     ]));
+  }
+  // Attaching or removing something shouldn't move the resident: same screen, same spot.
+  function refreshInPlace() { state.lockOnce = true; state.keepScroll = $("screen").scrollTop; poll(); }
+  function docUrl(s, d) { return "/api/sessions/" + encodeURIComponent(s.ref) + "/documents/" + d.id; }
+  function attachButton(s, item) {
+    var input = el("input", { type: "file", accept: "application/pdf,image/jpeg,image/png", class: "hidden", "aria-label": "Attach a document for " + item });
+    var b = el("button", { type: "button", class: "quiet sk-small", text: "Attach" });
+    b.addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function () {
+      var f = input.files && input.files[0];
+      if (!f) return;
+      if (f.size > 5 * 1024 * 1024) { $("formMsg").textContent = "That file is over 5 MB."; return; }
+      b.disabled = true; b.textContent = "Attaching…";
+      var reader = new FileReader();
+      reader.onload = async function () {
+        try {
+          await api("/api/sessions/" + encodeURIComponent(s.ref) + "/documents?key=" + encodeURIComponent(state.key), { method: "POST", body: JSON.stringify({ item: item, name: f.name, base64: String(reader.result).split(",")[1] }) });
+          refreshInPlace();
+        } catch (e) { b.disabled = false; b.textContent = "Attach"; $("formMsg").textContent = e.message; }
+      };
+      reader.readAsDataURL(f);
+    });
+    return el("span", { class: "check-attach" }, [input, b]);
+  }
+  function docChip(s, d) {
+    var isPdf = d.mime === "application/pdf";
+    var open = el("button", { type: "button", class: "doc-chip", title: "Preview " + d.name }, [isPdf ? el("span", { class: "doc-thumb pdf", text: "PDF" }) : el("img", { class: "doc-thumb", src: docUrl(s, d), alt: "" }), el("span", { class: "doc-name", text: d.name })]);
+    open.addEventListener("click", function () { previewDoc(s, d); });
+    var drop = el("button", { type: "button", class: "doc-drop", title: "Remove " + d.name, "aria-label": "Remove " + d.name, text: "×" });
+    drop.addEventListener("click", async function () {
+      try { await api("/api/sessions/" + encodeURIComponent(s.ref) + "/documents/" + d.id + "?key=" + encodeURIComponent(state.key), { method: "DELETE" }); refreshInPlace(); }
+      catch (e) { $("formMsg").textContent = e.message; }
+    });
+    return el("span", { class: "doc-pair" }, [open, drop]);
+  }
+  function previewDoc(s, d) {
+    var src = docUrl(s, d);
+    var view = d.mime === "application/pdf" ? el("iframe", { class: "doc-frame", src: src, title: d.name }) : el("img", { class: "doc-image", src: src, alt: d.name });
+    var close = el("button", { type: "button", text: "Close" });
+    var tab = el("a", { href: src, target: "_blank", rel: "noopener", text: "Open in a new tab" });
+    var box = el("div", { class: "sk-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Preview of " + d.name }, [el("div", { class: "doc-panel" }, [el("h2", { text: d.name }), view, el("div", { class: "sk-actions" }, [tab, close])])]);
+    function done() { document.removeEventListener("keydown", key); box.remove(); }
+    function key(e) { if (e.key === "Escape") done(); }
+    document.addEventListener("keydown", key);
+    close.addEventListener("click", done);
+    box.addEventListener("click", function (e) { if (e.target === box) done(); });
+    document.body.appendChild(box);
   }
 
   // ---------- the printed packet: the application, then every attachment ticked on it ----------
@@ -847,6 +906,11 @@
       if (a.id === "record") page(a, s.messages.map(function (m) {
         var who = m.role === "resident" ? "Resident" : characterFor(m.department || s.department || "front_desk").character + " (AI assistant)";
         return el("div", { class: "pack-msg" }, [el("b", { text: who + (m.at ? " · " + new Date(m.at).toLocaleString() : "") }), el("p", { text: m.text || "" })]);
+      }));
+      if (a.id === "docs") page(a, s.documents.map(function (d) {
+        var line = el("b", { text: d.name + " (for: " + d.item + ")" });
+        // A browser can't place one PDF inside another, so PDFs are listed and print on their own.
+        return el("div", { class: "pack-msg" }, d.mime === "application/pdf" ? [line, el("p", { text: "PDF attached separately; print it from your checklist." })] : [line, el("img", { class: "pack-img", src: docUrl(s, d), alt: d.name })]);
       }));
       if (a.id === "code") {
         var r = s.research || {};

@@ -37,6 +37,8 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 
 const MAX_JSON_BYTES = 64 * 1024;
 const MAX_SUBMIT_BYTES = 8 * 1024 * 1024;
+const MAX_DOCUMENT_BYTES = 5 * 1024 * 1024;
+const MAX_DOCUMENTS = 12;
 const MAX_AUDIO_BYTES = 6 * 1024 * 1024;
 const MAX_TEXT_CHARS = 6000;
 const MAX_CONCURRENT_RUNS = 4;
@@ -318,6 +320,14 @@ function cleanMarks(m) {
   return { items, map: good ? { meters: map.meters, svg: map.svg, box: map.box, parcel: typeof map.parcel === "string" ? map.parcel.slice(0, 40) : null } : null };
 }
 
+/** A document's type comes from its first bytes, never from what the browser says or what the file is called. */
+function documentType(data) {
+  if (data.length > 4 && data.subarray(0, 5).toString("latin1") === "%PDF-") return "application/pdf";
+  if (data.length > 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) return "image/jpeg";
+  if (data.length > 8 && data.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
+  return null;
+}
+
 function parseImage(body, res) {
   if (!body.image || typeof body.image !== "object") return null;
   const mime = String(body.image.mime || "");
@@ -494,6 +504,43 @@ async function handle(req, res) {
     if (marks) store.updateSession(ref, { sketch_marks: marks, ...lot });
     startTurn(ref);
     return sendJson(res, 202, { ref, view_key: viewKey });
+  }
+
+  // Documents attached to the checklist. Adding or removing one needs the visit code; reading one follows the drawing, which the open staff side shows.
+  m = p.match(/^\/api\/sessions\/([^/]+)\/documents(?:\/(\d+))?$/);
+  if (m) {
+    if (!readLimiter.check(ip)) return sendError(res, 429, "Too many requests.");
+    const ref = decodeURIComponent(m[1]).trim(), id = m[2] ? Number(m[2]) : null;
+    if (!REF_RE.test(ref)) return sendError(res, 404, "No visit with that code.");
+    const s = store.getSession(ref);
+    if (!s) return sendError(res, 404, "No visit with that code.");
+    if (req.method === "GET" && id) {
+      const doc = store.getDocument(ref, id);
+      if (!doc) return notFound(res);
+      res.writeHead(200, { "Content-Type": doc.mime, "Content-Disposition": `inline; filename="${doc.name.replace(/[^\w. -]/g, "_")}"`, "Cache-Control": "private, max-age=600", "Content-Length": doc.data.length });
+      return res.end(doc.data);
+    }
+    if (!sec.constantTimeEqual(url.searchParams.get("key") || "", s.view_key)) return sendError(res, 403, "That visit code is not complete.");
+    if (req.method === "DELETE" && id) {
+      if (!store.deleteDocument(ref, id)) return notFound(res);
+      return sendJson(res, 200, { ok: true });
+    }
+    if (req.method === "POST" && !id) {
+      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many uploads. Please slow down.");
+      if (s.documents.length >= MAX_DOCUMENTS) return sendError(res, 400, `A visit can hold ${MAX_DOCUMENTS} documents.`);
+      const body = await readJson(req, MAX_SUBMIT_BYTES);
+      const data = Buffer.from(String(body.base64 || ""), "base64");
+      if (data.length > MAX_DOCUMENT_BYTES) return sendError(res, 400, "That file is over 5 MB.");
+      const mime = documentType(data);
+      if (!mime) return sendError(res, 400, "Please attach a PDF, JPG or PNG.");
+      const item = String(body.item || "").trim().slice(0, 160), name = String(body.name || "document").trim().slice(0, 100);
+      if (!item) return sendError(res, 400, "Say which item this document is for.");
+      const newId = store.addDocument(ref, { item, name, mime, data });
+      store.addMessage(ref, { role: "resident", text: `I attached ${name} for: ${item.replace(/[.?!]+$/, "")}.` });
+      if (s.submitted_at) store.updateSession(ref, { changed_since_submit: true });
+      return sendJson(res, 200, { id: newId });
+    }
+    return sendError(res, 405, "Not allowed.");
   }
 
   // Resident: read, message, submit, sketch. The visit code is required for everything except the drawing and the

@@ -30,7 +30,7 @@
       { id: "plan", label: "Concept site plan, to scale (not a survey)", on: !!s.site_plan },
       { id: "map", label: isService ? "Map showing the location" : "Zoning map excerpt showing the parcel", on: !!(isService ? s.pin || s.parcel : s.parcel) },
       { id: "record", label: "Record of the help desk conversation", on: true },
-    ].concat(isService ? [] : [{ id: "code", label: "Code review with cited sections", on: !!s.research }]);
+    ].concat(isService ? [] : [{ id: "code", label: "Code review with cited sections", on: !!s.research }], [{ id: "docs", label: "Supporting documents you attached", on: !!(s.documents && s.documents.length) }]);
   }
   function checkbox(label, checked) {
     return el("div", { class: "cb" }, [el("span", { class: "box" + (checked ? " on" : ""), text: checked ? "✓" : "" }), el("span", { text: label })]);

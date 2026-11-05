@@ -90,6 +90,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — documents on the checklist
+Each Still needed line has an Attach button (PDF, JPG or PNG, 5 MB, 12 per visit; type read from the file's first bytes). A document marks its line as provided, shows as a thumbnail, and opens in a preview; × removes it. The next AI review is told what is attached. Files sit in a new `documents` table; adding or removing needs the visit code, and reading follows the drawing's rule because the staff side is open. The page tells people to attach sample documents only. Staff see an Attached documents tab. The PDF packet includes pictures; a browser can't merge PDFs, so those are listed. The AI doesn't read attached files, so a line is ticked because something was attached, not because it was checked. This is not in the video.
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — results card reworded
 John found the results card unpolished and "request" meaningless. The card now matches the models card and says sample residents, right desk and process, about a minute, and 84 of 85 quotes matched with the other thrown out. Footnote is John's wording; he wrote November 3, but the test ran November 4, so the card says November 4. The card no longer names the home cafe miss or says expected answers were set in advance; both are in this log. A few short demo scenes lost about 2 seconds so it fits 3:00. The Problem Statement page says resident's visit and sample residents.
 

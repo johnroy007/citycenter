@@ -28,7 +28,7 @@ test.before(async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-srv-"));
   child = spawn(process.execPath, [path.join(__dirname, "..", "..", "server.js")], {
     // MODEL_API_KEY is set to empty on purpose: the .env loader never overrides a variable that already exists, so no real calls happen.
-    env: { ...process.env, PORT: String(PORT), DATA_DIR: dir, MODEL_API_KEY: "", STAFF_PASSCODE: PASS, COOKIE_SECRET: "0123456789abcdef0123456789abcdef", DAILY_CALL_CAP: "5" },
+    env: { ...process.env, PORT: String(PORT), DATA_DIR: dir, MODEL_API_KEY: "", TURNS_PER_HOUR: "1000", TURNS_PER_DAY: "1000", STAFF_PASSCODE: PASS, COOKIE_SECRET: "0123456789abcdef0123456789abcdef", DAILY_CALL_CAP: "5" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   child.stderr.on("data", (d) => process.stderr.write(d));

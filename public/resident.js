@@ -294,7 +294,7 @@
     } catch (e) {
       state.flushing = false;
       // Busy or crowded: stay in line and try again. Anything else is a real problem, so give the words back.
-      if (e.status === 409 || e.status === 429 || e.status === 503) { setTimeout(function () { if (state.session && state.session.busy) poll(); else flushOutbox(); }, 2500); return; }
+      if (e.status === 409 || e.status === 503) { setTimeout(function () { if (state.session && state.session.busy) poll(); else flushOutbox(); }, 2500); return; }
       state.outbox.shift();
       showOutbox();
       $("text").value = o.text || "";
@@ -762,7 +762,7 @@
     state.planWaiting = false;
     try { await api("/api/sessions/" + encodeURIComponent(state.ref) + "/siteplan?key=" + encodeURIComponent(state.key), { method: "POST", body: "{}" }); }
     catch (e) {
-      if (e.status === 409 || e.status === 429) { state.planWaiting = true; setTimeout(poll, 2500); return; }
+      if (e.status === 409) { state.planWaiting = true; setTimeout(poll, 2500); return; }
       state.planError = e.message;
     }
     state.planBusy = false; state.lockOnce = true; $("screen").scrollTop = 0; // stay on the plan; don't jump to what else changed
@@ -1390,6 +1390,7 @@
       $("chat").appendChild(greetingItem(new Date().toISOString()));
       say("front_desk", greetingText());
     }
+    if (params.get("judge") === "1") $("formMsg").textContent = "Judge access is on. Your visits aren't limited.";
     if (params.get("ch") && CHANNEL_LABEL[params.get("ch")]) { state.channel = params.get("ch"); state.manual = true; state.lockOnce = true; phoneShow("screen"); }
     if (params.get("expand") === "1") setExpanded(true);
     if (params.get("sign") === "1") { state.signing = true; state.channel = "paperwork"; state.manual = true; state.lockOnce = true; }

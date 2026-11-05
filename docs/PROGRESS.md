@@ -90,6 +90,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — spending limits and the judge link
+John set a public limit of about $60 a week. `DAILY_BUDGET_USD` (8.5) stops public model calls once the day's spend at list prices reaches it; the day turns over at 4 PM Pacific (UTC). Per person: 15 desk turns an hour and 25 a day; 20 staff AI steps an hour and 30 a day. The private link `/judge?code=...` sets a cookie; those requests skip every limit, are logged with `judge = 1` and don't count against the public budget. John chose no cap on judges, so a leaked link could spend without limit: if that happens, change `JUDGE_CODE` in `.env.render-vars.local` and run `node scripts/render-env.js --file .env.render-vars.local`. The link is in the git-ignored `.env.judge.local`. `/api/health` shows the day's public spend.
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — documents on the checklist
 Each Still needed line has an Attach button (PDF, JPG or PNG, 5 MB, 12 per visit; type read from the file's first bytes). A document marks its line as provided, shows as a thumbnail, and opens in a preview; × removes it. The next AI review is told what is attached. Files sit in a new `documents` table; adding or removing needs the visit code, and reading follows the drawing's rule because the staff side is open. The page tells people to attach sample documents only. Staff see an Attached documents tab. The PDF packet includes pictures; a browser can't merge PDFs, so those are listed. The AI doesn't read attached files, so a line is ticked because something was attached, not because it was checked. This is not in the video.
 

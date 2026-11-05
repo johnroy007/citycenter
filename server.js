@@ -2,6 +2,7 @@
 // The Meta API key and the staff passcode live only in the server's environment. They never reach the browser.
 "use strict";
 const http = require("http");
+const { AsyncLocalStorage } = require("node:async_hooks");
 const fs = require("fs");
 const path = require("path");
 require("./lib/env").loadEnv();
@@ -31,6 +32,8 @@ const MODEL = process.env.META_MODEL || "muse-spark-1.3";
 const REVIEW_MODEL = process.env.META_MODEL_REVIEW || MODEL;
 const SECOND_READ_MODEL = process.env.META_MODEL_SECOND_READ || "muse-wonder-1.0";
 const DAILY_CAP = Number(process.env.DAILY_CALL_CAP || 400);
+const DAILY_BUDGET = Number(process.env.DAILY_BUDGET_USD || 8.5); // the public's dollars per day: about $60 a week
+const JUDGE_CODE = process.env.JUDGE_CODE || "";
 const STAFF_PASSCODE = process.env.STAFF_PASSCODE || "";
 const COOKIE_SECRET = process.env.COOKIE_SECRET || "";
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -52,7 +55,11 @@ const services = loadServices(town);
 const deskTools = [...tools.filter((t) => ["search_code", "get_section", "lookup_parcel"].includes(t.name)), ...createServiceTools(services)];
 const store = openStore(null, { refPrefix: town.refPrefix });
 store.clearBusy();
-const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage(u), canCall: () => store.callsToday().n < DAILY_CAP });
+// A request from a judge's browser carries this through everything it starts, including a desk turn that outlives the request.
+const judgeScope = new AsyncLocalStorage();
+const isJudge = () => judgeScope.getStore() === true;
+const withinBudget = () => { const t = store.publicToday(); return t.usd < DAILY_BUDGET && t.n < DAILY_CAP; };
+const client = createClient({ model: MODEL, onUsage: (u) => store.logUsage({ ...u, judge: isJudge() }), canCall: () => isJudge() || withinBudget() });
 const ctx = { store, client, town, code, gis, tools, services, deskTools, model: MODEL, drawSitePlan };
 // Any two- or three-letter prefix is accepted, so references made before the town's prefix changed (HC-...) keep working.
 const REF_RE = /^[A-Z]{2,3}-\d{4}-\d{4}$/;
@@ -66,6 +73,15 @@ const voiceLimiter = sec.createRateLimiter({ limit: 60, windowMs: 60 * 60 * 1000
 const loginLimiter = sec.createRateLimiter({ limit: 10, windowMs: 15 * 60 * 1000 });
 const readLimiter = sec.createRateLimiter({ limit: 900, windowMs: 60 * 1000 });
 const aerialLimiter = sec.createRateLimiter({ limit: 60, windowMs: 60 * 1000 });
+// One person's share of the day, so nobody can use up the public budget alone. A visit normally needs a handful of these.
+const HOUR = 60 * 60 * 1000, DAY = 24 * HOUR;
+const perPerson = (hourly, daily) => {
+  const hour = sec.createRateLimiter({ limit: hourly, windowMs: HOUR }), day = sec.createRateLimiter({ limit: daily, windowMs: DAY });
+  return (ip) => isJudge() || (hour.check(ip) && day.check(ip));
+};
+const turnAllowed = perPerson(Number(process.env.TURNS_PER_HOUR || 15), Number(process.env.TURNS_PER_DAY || 25));
+const staffAiAllowed = perPerson(Number(process.env.STAFF_AI_PER_HOUR || 20), Number(process.env.STAFF_AI_PER_DAY || 30));
+const LIMIT_REACHED = "You've reached this public demo's limit for now, which keeps it working for everyone. Please try again later.";
 let runningTurns = 0;
 let citySvgCache = null;
 
@@ -371,6 +387,12 @@ function townPublic() {
 }
 
 // ---------- routes ----------
+/** What a judge's cookie holds: proof of the code, without the code itself. Empty when judge access isn't set up. */
+function judgeToken() {
+  return JUDGE_CODE.length >= 12 && COOKIE_SECRET.length >= 16 ? crypto.createHmac("sha256", COOKIE_SECRET).update("judge:" + JUDGE_CODE).digest("hex") : "";
+}
+const judgeRequest = (req) => { const t = judgeToken(); return !!t && sec.constantTimeEqual(sec.parseCookies(req.headers.cookie).cc_judge || "", t); };
+
 async function handle(req, res) {
   const url = new URL(req.url, "http://localhost");
   const ip = sec.clientIp(req);
@@ -379,6 +401,13 @@ async function handle(req, res) {
   const p = url.pathname;
   let m;
 
+  // The private link for judges: it marks their browser, then opens the same site.
+  if (req.method === "GET" && p === "/judge") {
+    const good = judgeToken() && sec.constantTimeEqual(url.searchParams.get("code") || "", JUDGE_CODE);
+    if (good) res.setHeader("Set-Cookie", `cc_judge=${judgeToken()}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000${https ? "; Secure" : ""}`);
+    res.writeHead(302, { Location: good ? "/?judge=1" : "/" });
+    return res.end();
+  }
   if (req.method === "GET" && p === "/") return serveStatic(res, "index.html");
   if (req.method === "GET" && p === "/staff") return serveStatic(res, "staff.html");
   if (req.method === "GET" && (p === "/problem-statement" || p === "/trust-gap")) return serveStatic(res, "trust-gap.html");
@@ -393,7 +422,7 @@ async function handle(req, res) {
 
   if (req.method === "GET" && p === "/api/health") {
     const u = store.callsToday();
-    return sendJson(res, 200, { ok: true, town: town.name, model: MODEL, review_model: REVIEW_MODEL, calls_today: u.n, daily_cap: DAILY_CAP, staff_portal: true, code_sections: code.count, parcels: gis.counts.parcels });
+    return sendJson(res, 200, { ok: true, town: town.name, model: MODEL, review_model: REVIEW_MODEL, calls_today: u.n, daily_cap: DAILY_CAP, public_spend_today: Math.round(store.publicToday().usd * 100) / 100, daily_budget: DAILY_BUDGET, staff_portal: true, code_sections: code.count, parcels: gis.counts.parcels });
   }
   if (req.method === "GET" && p === "/api/town") return sendJson(res, 200, townPublic());
   if (req.method === "GET" && p === "/api/demo") return sendJson(res, 200, DEMO);
@@ -489,8 +518,9 @@ async function handle(req, res) {
 
   // Resident: start a session
   if (req.method === "POST" && p === "/api/sessions") {
-    if (!submitLimiter.check(ip)) return sendError(res, 429, "Too many new conversations from this connection. Please try again in an hour.");
-    if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
+    if (!isJudge() && !submitLimiter.check(ip)) return sendError(res, 429, "Too many new conversations from this connection. Please try again in an hour.");
+    if (!turnAllowed(ip)) return sendError(res, 429, LIMIT_REACHED);
+    if (runningTurns >= MAX_CONCURRENT_RUNS && !isJudge()) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
     const body = await readJson(req, MAX_SUBMIT_BYTES);
     const text = typeof body.text === "string" ? body.text.trim() : "";
     if (text.length < 2) return sendError(res, 400, "Say a few words about what you need.");
@@ -609,9 +639,10 @@ async function handle(req, res) {
       return res.end(img.data);
     }
     if (req.method === "POST" && action === "messages") {
-      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many messages. Please slow down.");
+      if (!isJudge() && !messageLimiter.check(ip)) return sendError(res, 429, "Too many messages. Please slow down.");
       if (s.busy) return sendError(res, 409, "The desk is still working on your last message.");
-      if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
+      if (!turnAllowed(ip)) return sendError(res, 429, LIMIT_REACHED);
+      if (runningTurns >= MAX_CONCURRENT_RUNS && !isJudge()) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
       const body = await readJson(req, MAX_SUBMIT_BYTES);
       const text = typeof body.text === "string" ? body.text.trim() : "";
       const sketch = parseImage(body, res);
@@ -640,6 +671,7 @@ async function handle(req, res) {
       if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many requests. Please slow down.");
       if (s.busy) return sendError(res, 409, "The desk is still working. Try again when it finishes.");
       if (!s.has_sketch && !s.parcel) return sendError(res, 400, "Draw or upload a sketch first.");
+      if (!turnAllowed(ip)) return sendError(res, 429, LIMIT_REACHED);
       try {
         const marks = marksFor(s);
         const plan = await drawSitePlan(ref);
@@ -682,9 +714,10 @@ async function handle(req, res) {
     }
     if (req.method === "POST" && action === "pin") {
       // The resident marked a spot on the map. The desk's next turn reads it like anything else they said.
-      if (!messageLimiter.check(ip)) return sendError(res, 429, "Too many messages. Please slow down.");
+      if (!isJudge() && !messageLimiter.check(ip)) return sendError(res, 429, "Too many messages. Please slow down.");
       if (s.busy) return sendError(res, 409, "The desk is still working on your last message.");
-      if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
+      if (!turnAllowed(ip)) return sendError(res, 429, LIMIT_REACHED);
+      if (runningTurns >= MAX_CONCURRENT_RUNS && !isJudge()) return sendError(res, 503, "The help desk is busy right now. Please try again in a minute.");
       const body = await readJson(req, MAX_JSON_BYTES);
       const lon = Number(body.lon), lat = Number(body.lat);
       if (!Number.isFinite(lon) || !Number.isFinite(lat) || !gis.inCity(lon, lat)) return sendError(res, 400, "That spot is outside " + town.name + ". Please mark a place inside the city.");
@@ -791,6 +824,7 @@ async function handle(req, res) {
       return sendJson(res, 200, { ...publicSession(s, { staff: true }), ...reviewMeta(s), signature_current: sigCurrent });
     }
     try {
+      if (req.method === "POST" && ["summary", "code-summary", "letter/generate", "considerations", "ask", "second-read", "letter/draft", "rerun"].includes(action) && !staffAiAllowed(ip)) return sendError(res, 429, LIMIT_REACHED);
       if (req.method === "POST" && action === "summary") {
         if (s.busy) return sendError(res, 409, "The resident-side desk is still working on this one.");
         const out = await review.summarizeSubmission(client, s, { town, model: REVIEW_MODEL });
@@ -898,7 +932,7 @@ async function handle(req, res) {
       }
       if (req.method === "POST" && action === "rerun") {
         if (s.busy) return sendError(res, 409, "Already running.");
-        if (runningTurns >= MAX_CONCURRENT_RUNS) return sendError(res, 503, "Busy. Try again in a minute.");
+        if (runningTurns >= MAX_CONCURRENT_RUNS && !isJudge()) return sendError(res, 503, "Busy. Try again in a minute.");
         startTurn(ref);
         return sendJson(res, 202, { ok: true });
       }
@@ -914,7 +948,7 @@ async function handle(req, res) {
 }
 
 const server = http.createServer((req, res) => {
-  handle(req, res).catch((e) => {
+  judgeScope.run(judgeRequest(req), () => handle(req, res)).catch((e) => {
     const [status, message] = errorFrom(e);
     if (status === 500) console.error(e);
     if (!res.headersSent) sendError(res, status, message);

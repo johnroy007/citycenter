@@ -38,7 +38,7 @@ async function settled(ref, key) {
 test.before(async () => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-acct-"));
   child = spawn(process.execPath, [path.join(__dirname, "..", "..", "server.js")], {
-    env: { ...process.env, PORT: String(PORT), DATA_DIR: dir, MODEL_API_KEY: "", STAFF_PASSCODE: "test-passcode-123", COOKIE_SECRET: "0123456789abcdef0123456789abcdef", DAILY_CALL_CAP: "5" },
+    env: { ...process.env, PORT: String(PORT), DATA_DIR: dir, MODEL_API_KEY: "", TURNS_PER_HOUR: "1000", TURNS_PER_DAY: "1000", STAFF_PASSCODE: "test-passcode-123", COOKIE_SECRET: "0123456789abcdef0123456789abcdef", DAILY_CALL_CAP: "5" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   child.stderr.on("data", (d) => process.stderr.write(d));

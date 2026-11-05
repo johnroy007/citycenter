@@ -1,5 +1,7 @@
 # citycenter
 
+**FROZEN: John submitted on 2026-11-04. Do not change anything in this project (code, data, video, settings, or a deploy) until John says the judging results are in.** Winners are expected Nov 9, and the community vote runs to Nov 16. Judges must see what was submitted. If the site goes down or something looks wrong, tell John and wait for his word. Only John can lift this.
+
 ## What this is
 John's entry in the Meta Global AI Developer Hackathon (Oct 26 to Nov 4, 2026; submission due Nov 4, 9 PM ET). A virtual city help desk for **Trust City**, an example city, not a real place. Its code and county/state map layers are the real public records of Hildale, Utah, which the Information page (`/about`) says plainly (John, 2026-11-03); the town config's `sourceName` holds the name as it appears in that data, and `lib/townconfig.js` swaps it for "Trust City" in every text value as the data loads, never in web addresses. A resident talks to cartoon desk characters. The planner reads the real code and the parcel and zoning layers and prepares a city-style application (our own layout, not the city's real form). The eight other department desks answer from the code and a catalog of sample procedures and prepare the right form. The resident signs and submits it (reports need no signature). Town staff review it in a four-step workspace (what was submitted, the code that applies, point-by-point review, return letter). Only real city officials decide; the agent never recommends, predicts or rates. See `README.md` for the judges' description.
 

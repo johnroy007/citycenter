@@ -90,6 +90,9 @@ Recorded during the Oct 27 to 28 overnight build. Each is a placeholder John can
 
 ## Log
 
+### 2026-11-04 — Claude Code on John's laptop (John) — results card reworded
+John found the results card unpolished and "request" meaningless. The card now matches the models card and says sample residents, right desk and process, about a minute, and 84 of 85 quotes matched with the other thrown out. Footnote is John's wording; he wrote November 3, but the test ran November 4, so the card says November 4. The card no longer names the home cafe miss or says expected answers were set in advance; both are in this log. A few short demo scenes lost about 2 seconds so it fits 3:00. The Problem Statement page says resident's visit and sample residents.
+
 ### 2026-11-04 — Claude Code on John's laptop (John) — drawing close-up and a real signature
 The video's new `draw` scene brings the camera in on the sketch pad (`crop` on a scene in `video/scenes.js`, read by `video/build.js`), with a thick red line drawn in real time. The robot now signs "Devon" in real pen strokes (`SIGNATURE` in `video/capture.js`). Voice sped up 11%. Visit TC-2026-0161.
 

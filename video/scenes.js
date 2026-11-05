@@ -67,7 +67,7 @@ module.exports = [
   },
   {
     // The sketch pad gets its own close-up: the camera comes in on the tools and the map.
-    id: "draw", min: 10, crop: [0.16, 0.27, 0.68, 0.68],
+    id: "draw", min: 9.5, crop: [0.16, 0.27, 0.68, 0.68],
     clip: "resident", segs: [{ from: "pad-open", to: "map-found", w: 0.55 }, { from: "map-found", to: "drawn", w: 1 }, { from: "drawn", to: "sent2", w: 0.3 }],
     say: "He opens the sketch pad, finds his lot on the GIS map, and draws the split by hand, right on the aerial photo. No drafting software needed.",
     callouts: [
@@ -82,7 +82,7 @@ module.exports = [
     callouts: [{ at: 0.5, dur: 4.5, model: "Muse Spark · tool calls", text: "researches 865 sections of the city's code" }],
   },
   {
-    id: "channels", tag: "Sample resident (invented)", min: 11,
+    id: "channels", tag: "Sample resident (invented)", min: 10.3,
     clip: "resident", segs: [{ from: "ch:code", to: "ch:submissions", w: 0.9 }, { from: "ch:paperwork", to: "plan-shown", w: 1.5 }, { from: "plan-shown", to: "sign-open", w: 1 }],
     say: "Quotes are checked against the code. His rough line becomes a clean, measured site plan, with buildings found by SAM 3.1. Then Juniper fills out a city-style application.",
     callouts: [
@@ -92,7 +92,7 @@ module.exports = [
     ],
   },
   {
-    id: "sign", tag: "Sample resident (invented)", min: 5,
+    id: "sign", tag: "Sample resident (invented)", min: 4.4,
     clip: "resident", segs: [{ from: "sign-open", to: "end", w: 1 }],
     say: "Devon reads it, signs it, and submits it.",
   },
@@ -105,7 +105,7 @@ module.exports = [
     callouts: [{ at: 1, dur: 6, model: "Staff workspace", text: "review in four steps · the agent prepares, staff decide" }],
   },
   {
-    id: "staff2", min: 5.5,
+    id: "staff2", min: 4.8,
     clip: "staff", segs: [{ from: "step2-click", to: "step3-click", w: 1 }],
     say: "Second: the code that applies, summarized, with the exact text.",
   },
@@ -131,11 +131,15 @@ module.exports = [
   },
   {
     // From `npm run test:live` on 2026-11-04. Rerun and update these numbers if the desks change.
-    id: "result", card: "result", voice: INTRO_VOICE,
-    head: "Measured: 22 test requests on real parcels",
-    stats: [["21 of 22", "reached the expected outcome"], ["84 of 85", "code quotes matched exactly; the checker removed the other"], ["68 s", "average time to finish a request"]],
-    note: "Self-run test, November 4, 2026. Invented people; expected answers written in advance. The miss: a home cafe the desk marked unclear.",
-    say: "In a self-run test of twenty-two requests, twenty-one reached the expected outcome. Eighty-four of eighty-five quotes matched exactly, and the checker removed the other.",
+    id: "result", card: "models", voice: INTRO_VOICE,
+    head: "Tested with 22 sample residents",
+    note: "Internal test ran November 4, 2026 with sample resident data.",
+    say: "We tested twenty-two sample residents. Twenty-one got the right desk and process, in about a minute each. Of eighty-five code quotes, eighty-four matched the real text, and the other was thrown out.",
+    rows: [
+      { model: "21 of 22", say: "Twenty-one", text: "got the right desk and process" },
+      { model: "About 1 minute", say: "about a minute", text: "to get their answer or paperwork, on average" },
+      { model: "84 of 85", say: "Of eighty-five", text: "code quotes matched the real text; the other was thrown out" },
+    ],
   },
   {
     id: "models", card: "models", fadeOut: 0.4, voice: INTRO_VOICE,

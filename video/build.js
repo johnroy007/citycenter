@@ -80,7 +80,7 @@ async function buildScene(sc, d, idx) {
     base = "base";
     if (sc.title) overlays.push({ file: await overlay({ mode: "title", text: sc.title }, path.join(dir, "title.png")), a: 0.7, b: d - 0.25 });
   } else if (sc.card) {
-    const spec = sc.card === "close" ? { mode: "close", bg: "file:///" + path.join(HERE, "..", "public", "office", "office-bg.webp").replace(/\\/g, "/") } : sc.card === "models" ? { mode: "models", rows: sc.rows.map((r) => [r.model, r.text]), reveal: 0 } : sc.card === "result" ? { mode: "result", head: sc.head, stats: sc.stats, note: sc.note } : { mode: sc.card, decide: "Only real City Officials can make decisions." };
+    const spec = sc.card === "close" ? { mode: "close", bg: "file:///" + path.join(HERE, "..", "public", "office", "office-bg.webp").replace(/\\/g, "/") } : sc.card === "models" ? { mode: "models", head: sc.head, note: sc.note, rows: sc.rows.map((r) => [r.model, r.text]), reveal: 0 } : sc.card === "result" ? { mode: "result", head: sc.head, stats: sc.stats, note: sc.note } : { mode: sc.card, decide: "Only real City Officials can make decisions." };
     const png = await overlay(spec, path.join(dir, "card.png"));
     if (sc.card === "models") {
       // Light up each model's row as the voice says its name (timed by where the name falls in the narration).

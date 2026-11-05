@@ -47,6 +47,7 @@
   .mrow.on { opacity: 1; background: rgba(255, 255, 255, 0.1); border-color: rgba(158, 197, 255, 0.45); }
   .mrow .mname { flex: 0 0 300px; background: linear-gradient(90deg, #0866ff, #7b3fe4); border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 24px; text-align: center; }
   .mrow .muse { font-size: 26px; line-height: 1.3; }
+  .rnote2 { margin-top: 26px; font-size: 22px; color: rgba(255, 255, 255, 0.6); }
   .card.dark h1.rh { font-size: 50px; margin-bottom: 36px; max-width: 1150px; }
   .stats { display: flex; gap: 22px; width: 1180px; margin-bottom: 30px; }
   .stat { flex: 1; border: 2px solid rgba(158, 197, 255, 0.45); background: rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px 16px; }
@@ -100,10 +101,11 @@
     }
     if (spec.mode === "models") {
       const c = el("div", "card dark");
-      c.appendChild(el("h1", "mh", "The Meta models inside CityCenter"));
+      c.appendChild(el("h1", "mh", spec.head || "The Meta models inside CityCenter"));
       const l = el("div", "mlist");
       (spec.rows || []).forEach(([m, t], i) => { const r = el("div", "mrow" + (i < (spec.reveal || 0) ? " on" : "")); r.appendChild(el("span", "mname", m)); r.appendChild(el("span", "muse", t)); l.appendChild(r); });
       c.appendChild(l);
+      if (spec.note) c.appendChild(el("div", "rnote2", spec.note));
       root.appendChild(c);
     }
     if (spec.mode === "close") {
